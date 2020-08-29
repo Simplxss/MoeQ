@@ -13,6 +13,7 @@ public:
 	Socket();
 public:
 	bool Connect(const char* IP, const unsigned short Port);
+	bool IsConnected();
 	void Close();
 	void Send(LPBYTE buffer);
 	LPBYTE Receive();

@@ -5,14 +5,7 @@
 #include "pch.h"
 #include "framework.h"
 #include "MoeQ.h"
-#include "ExportFunction.h"
 #include "MainFrm.h"
-#include <fcntl.h>
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#endif
-
 
 // CMoeQApp
 
@@ -36,14 +29,6 @@ CMoeQApp::CMoeQApp()
 // The one and only CMoeQApp object
 
 CMoeQApp theApp;
-
-wchar_t DataPath[MAX_PATH + 1];
-bool DevMode = true;
-
-PluginSystem Plugin;
-
-Android Sdk("861891778567", "460013521635791", (const byte*)"\x86\xA4\x45\xBF\x44\xA2\xC2\x87\x59\x76\x18\xF6\xF3\x6E\xB6\x8C", (const byte*)"\0\0\0\0\0\2", "XiaoMi", "MIX Alpha");
-
 
 // CMoeQApp initialization
 
@@ -76,29 +61,12 @@ BOOL CMoeQApp::InitInstance()
 	// of your final executable, you should remove from the following
 	// the specific initialization routines you do not need
 	// Change the registry key under which our settings are stored
-	// TODO: You should modify this string to be something appropriate
 	// such as the name of your company or organization
-	SetRegistryKey(_T("Local AppWizard-Generated Applications"));
+	SetRegistryKey(_T("MoeQ"));
 
-	MainFrm MainFrm;
-	m_pMainWnd = &MainFrm;
-
-	INT_PTR nResponse = MainFrm.DoModal();
-	if (nResponse == IDOK)
-	{
-		// TODO: Place code here to handle when the dialog is
-		//  dismissed with OK
-	}
-	else if (nResponse == IDCANCEL)
-	{
-		// TODO: Place code here to handle when the dialog is
-		//  dismissed with Cancel
-	}
-	else if (nResponse == -1)
-	{
-		TRACE(traceAppMsg, 0, "Warning: dialog creation failed, so application is terminating unexpectedly.\n");
-		TRACE(traceAppMsg, 0, "Warning: if you are using MFC controls on the dialog, you cannot #define _AFX_NO_MFC_CONTROLS_IN_DIALOGS.\n");
-	}
+	m_pMainWnd = new ::MainFrm;
+	m_pMainWnd->ShowWindow(m_nCmdShow);
+	m_pMainWnd->UpdateWindow();
 
 	// Delete the shell manager created above.
 	if (pShellManager != nullptr)
@@ -110,8 +78,6 @@ BOOL CMoeQApp::InitInstance()
 	ControlBarCleanUp();
 #endif
 
-	// Since the dialog has been closed, return FALSE so that we exit the
-	//  application, rather than start the application's message pump.
-	return FALSE;
+	return TRUE;
 }
 

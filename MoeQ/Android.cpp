@@ -162,6 +162,10 @@ bool Android::Fun_Connect()
 		return false;
 	};
 	delete[] IP;
+
+	std::thread MsgLoop(&Android::Fun_Msg_Loop, this);
+	MsgLoop.detach();
+
 	return true;
 }
 
@@ -370,7 +374,7 @@ LPBYTE Android::Fun_Send_Sync(const uint PacketType, const byte EncodeType, cons
 
 void Android::Fun_Msg_Loop()
 {
-	while (QQ.Status != 21)
+	while (TCP.IsConnected())
 	{
 		LPBYTE bin = TCP.Receive();
 		if (bin != nullptr)
@@ -2008,6 +2012,8 @@ void Android::Un_Tlv_Get(const unsigned short cmd, const byte* bin, const uint l
 		memcpy(QQ.Nick, UnPack.GetBin(length), length);
 	}
 	break;
+	case 0x11d:
+		break;
 	case 0x11F:
 		UnPack.GetInt();
 		UnPack.GetInt();
@@ -2124,6 +2130,8 @@ void Android::Un_Tlv_Get(const unsigned short cmd, const byte* bin, const uint l
 		if (QQ.Token.D2Key != nullptr) delete[] QQ.Token.D2Key;
 		QQ.Token.D2Key = new byte[len];
 		memcpy(QQ.Token.D2Key, bin, len);
+		break;
+	case 0x322:
 		break;
 	case 0x402:
 		if (QQ.Login->token_402 != nullptr) delete[] QQ.Login->token_402;
@@ -2701,7 +2709,7 @@ byte Android::QQ_Login(const char* Password)
 	};
 	Utils::Ecdh_Crypt(QQ.Login->ECDH, PublicKey, 49);
 	Fun_Connect();
-	this->wtlogin_login();
+	wtlogin_login();
 	return QQ.Login->state;
 }
 
@@ -2766,9 +2774,6 @@ char* Android::QQ_Get_Viery_PhoneNumber()
 
 void Android::QQ_Online()
 {
-	std::thread MsgLoop(&Android::Fun_Msg_Loop, this);
-	MsgLoop.detach();
-
 	QQ.Status = 11;
 	StatSvc_Register(11);
 	//friendlist_getFriendGroupList(0);

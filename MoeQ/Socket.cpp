@@ -28,6 +28,11 @@ bool Socket::Connect(const char* IP, const unsigned short Port) {
 	return true;
 }
 
+bool Socket::IsConnected()
+{
+	return true;
+}
+
 void Socket::Close() 
 {
 	closesocket(Client);

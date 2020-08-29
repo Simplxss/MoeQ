@@ -3,12 +3,12 @@
 
 // MainFrm dialog
 
-class MainFrm : public CDialogEx
+class MainFrm : public CDialog
 {
 	DECLARE_DYNAMIC(MainFrm)
 
 public:
-	MainFrm(CWnd* pParent = nullptr);   // standard constructor
+	MainFrm();   // standard constructor
 	virtual ~MainFrm();
 
 // Dialog Data
@@ -21,5 +21,11 @@ protected:
 
 	DECLARE_MESSAGE_MAP()
 public:
+	virtual BOOL OnInitDialog();
+	virtual void OnOK();
+	virtual void OnCancel();
+	afx_msg void OnEnChangeAccount();
+	afx_msg void OnEnChangePassword();
 	afx_msg void OnBnClickedLogin();
+	afx_msg void OnBnClickedSignout();
 };

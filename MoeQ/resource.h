@@ -15,14 +15,15 @@
 #define IDC_LOG                         1010
 #define IDC_LOG_TYPE                    1012
 #define IDC_VERSION                     1013
+#define IDC_MFCVSLISTBOX2               1015
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        110
+#define _APS_NEXT_RESOURCE_VALUE        111
 #define _APS_NEXT_COMMAND_VALUE         40002
-#define _APS_NEXT_CONTROL_VALUE         1014
+#define _APS_NEXT_CONTROL_VALUE         1016
 #define _APS_NEXT_SYMED_VALUE           102
 #endif
 #endif
