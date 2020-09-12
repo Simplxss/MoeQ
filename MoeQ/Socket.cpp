@@ -5,14 +5,24 @@ Socket::Socket()
 {
 	WSADATA wsaData;
 	if (WSAStartup(MAKEWORD(2, 2), &wsaData)) throw "Init error";
-}
-
-bool Socket::Connect(const char* IP, const unsigned short Port) {
 	Client = WSASocket(AF_INET, SOCK_STREAM, 0, NULL, 0, WSA_FLAG_OVERLAPPED);
 	if (Client == INVALID_SOCKET)
 	{
 		WSACleanup();
-		return false;
+		throw "create socket error";
+	}
+}
+
+bool Socket::Connect(const char* IP, const unsigned short Port) {
+	if (!IsConnected())
+	{
+		closesocket(Client);
+		Client = WSASocket(AF_INET, SOCK_STREAM, 0, NULL, 0, WSA_FLAG_OVERLAPPED);
+		if (Client == INVALID_SOCKET)
+		{
+			WSACleanup();
+			throw "create socket error";
+		}
 	}
 	SOCKADDR_IN addrServer;
 	addrServer.sin_family = AF_INET;
@@ -33,13 +43,13 @@ bool Socket::IsConnected()
 	return true;
 }
 
-void Socket::Close() 
+void Socket::Close()
 {
 	closesocket(Client);
 	WSACleanup();
 }
 
-void Socket::Send(const LPBYTE data) 
+void Socket::Send(const LPBYTE data)
 {
 	send(Client, (const char*)data, XBin::Bin2Int(data), 0);
 }
@@ -79,20 +89,20 @@ void Socket::DomainGetIP(const wchar_t* Domain, wchar_t*& szHostaddress) {
 
 	DWORD dwRetval;
 	ADDRINFOW* result = NULL;
-	ADDRINFOW* ptr = NULL; 
+	ADDRINFOW* ptr = NULL;
 	dwRetval = GetAddrInfoW(Domain, L"", &hints, &result);
 	if (dwRetval != 0) throw "Get ERROR";
-	szHostaddress = new wchar_t[46]; 
+	szHostaddress = new wchar_t[46];
 	for (ptr = result; ptr != NULL; ptr = ptr->ai_next) {
-        switch (ptr->ai_family) {
-        case AF_INET:
+		switch (ptr->ai_family) {
+		case AF_INET:
 			DWORD ipbufferlength = 46;
 			INT iRetval = WSAAddressToString((LPSOCKADDR)ptr->ai_addr, (DWORD)ptr->ai_addrlen, NULL, szHostaddress, &ipbufferlength);
 			if (iRetval)
 				throw "WSAAddressToString failed";
 			else
 				return;
-            break;
-        }
-    }
+			break;
+		}
+	}
 }

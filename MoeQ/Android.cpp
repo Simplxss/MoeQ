@@ -1,8 +1,6 @@
 ﻿#include "pch.h"
 #include "Android.h"
 
-::ThreadPool HandleThreads;
-
 namespace Message
 {
 	LPBYTE Pack1(const char* Text, const uint AtQQ)
@@ -153,18 +151,31 @@ Android::Android(const char* IMEI, const char IMSI[16], const byte GUID[16], con
 	HandleThreads.start();
 }
 
-bool Android::Fun_Connect()
+bool Android::Fun_Connect(const char* IP, const unsigned short Port)
 {
-	wchar_t* IP = nullptr;
-	TCP.DomainGetIP(L"msfwifi.3g.qq.com", IP);
-	if (!TCP.Connect(Iconv::Unicode2Ansi(IP), 8080)) {
+	if (MsgLoop.joinable())
+	{
+		std::this_thread::yield();
+	}
+	if (IP == nullptr || Port == 0)
+	{
+		wchar_t* IP = nullptr;
+		TCP.DomainGetIP(L"msfwifi.3g.qq.com", IP);
+		if (!TCP.Connect(Iconv::Unicode2Ansi(IP), 8080)) {
+			delete[] IP;
+			return false;
+		};
 		delete[] IP;
-		return false;
-	};
-	delete[] IP;
+	}
+	else
+	{
+		if (!TCP.Connect(IP, Port)) {
+			return false;
+		};
+	}
 
-	std::thread MsgLoop(&Android::Fun_Msg_Loop, this);
-	MsgLoop.detach();
+	
+	MsgLoop.join();
 
 	return true;
 }
@@ -2657,7 +2668,7 @@ void Android::Un_Pack_StatSvc_SvcReqMSFLoginNotify(const LPBYTE BodyBin, const u
 void Android::Un_Pack_ConfigPushSvc_PushReq(const LPBYTE BodyBin, const uint sso_seq)
 {
 	LPBYTE sBuffer;
-	Un_Pack_Body_Request_Packet(BodyBin, sBuffer);
+	Un_Pack_Body_Request_Packet(BodyBin + 4, sBuffer);
 
 	UnJce UnJce(sBuffer);
 	std::vector<JceStruct::Map<char*, std::vector<JceStruct::Map<char*, LPBYTE>>>> Map;
@@ -2669,6 +2680,31 @@ void Android::Un_Pack_ConfigPushSvc_PushReq(const LPBYTE BodyBin, const uint sso
 		{
 			UnJce.Reset(Map[i].Value[j].Value);
 			UnJce.Read(UnJce, 0);
+
+			int type;
+			UnJce.Read(type, 1);
+
+			if (type == 1) //need reference
+			{
+				LPBYTE ips;
+				UnJce.Read(ips, 2);
+				UnJce.Reset(ips);
+
+				std::vector<::UnJce> ipl;
+				UnJce.Read(ipl, 1);
+
+				char* IP;
+				int Port;
+
+				int r = Utils::GetRandom(0, ipl.size() - 1);
+				ipl[r].Read(IP, 1);
+				ipl[r].Read(Port, 2);
+
+				Fun_Connect(IP, Port);
+
+				delete[] IP;
+				delete[] ips;
+			}
 
 			delete[] Map[i].Value[j].Key;
 			delete[] Map[i].Value[j].Value;
@@ -2728,6 +2764,22 @@ byte Android::QQ_Login_Second()
 	return QQ.Login->state;
 }
 
+void Android::QQ_Login_Finish()
+{
+	if (QQ.Login == nullptr) return;
+	if (QQ.Login->RandKey != nullptr) delete[] QQ.Login->RandKey;
+	if (QQ.Login->VieryToken1 != nullptr) delete[] QQ.Login->VieryToken1;
+	if (QQ.Login->VieryToken2 != nullptr) delete[] QQ.Login->VieryToken2;
+	if (QQ.Login->token_402 != nullptr) delete[] QQ.Login->token_402;
+	if (QQ.Login->token_403 != nullptr) delete[] QQ.Login->token_403;
+	if (QQ.Login->Viery_Image != nullptr) delete[] QQ.Login->Viery_Image;
+	if (QQ.Login->Viery_Ticket != nullptr) delete[] QQ.Login->Viery_Ticket;
+	if (QQ.Login->PhoneNumber != nullptr) delete[] QQ.Login->PhoneNumber;
+	if (QQ.Login->SmsToken != nullptr) delete[] QQ.Login->SmsToken;
+	delete QQ.Login;
+	QQ.Login = nullptr;
+}
+
 byte Android::QQ_Send_Sms()
 {
 	wtlogin_login_Send_Sms();
@@ -2744,22 +2796,6 @@ byte Android::QQ_Viery_Sms(const char* SmsCode)
 {
 	wtlogin_login_Viery_Sms(SmsCode);
 	return QQ.Login->state;
-}
-
-void Android::QQ_Login_Finish()
-{
-	if (QQ.Login == nullptr) return;
-	if (QQ.Login->RandKey != nullptr) delete[] QQ.Login->RandKey;
-	if (QQ.Login->VieryToken1 != nullptr) delete[] QQ.Login->VieryToken1;
-	if (QQ.Login->VieryToken2 != nullptr) delete[] QQ.Login->VieryToken2;
-	if (QQ.Login->token_402 != nullptr) delete[] QQ.Login->token_402;
-	if (QQ.Login->token_403 != nullptr) delete[] QQ.Login->token_403;
-	if (QQ.Login->Viery_Image != nullptr) delete[] QQ.Login->Viery_Image;
-	if (QQ.Login->Viery_Ticket != nullptr) delete[] QQ.Login->Viery_Ticket;
-	if (QQ.Login->PhoneNumber != nullptr) delete[] QQ.Login->PhoneNumber;
-	if (QQ.Login->SmsToken != nullptr) delete[] QQ.Login->SmsToken;
-	delete QQ.Login;
-	QQ.Login = nullptr;
 }
 
 char* Android::QQ_Get_Viery_Ticket()
@@ -2782,7 +2818,6 @@ void Android::QQ_Online()
 
 void Android::QQ_Offline()
 {
-	QQ.Status = 21;
 	StatSvc_Register(21);
 }
 

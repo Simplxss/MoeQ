@@ -138,9 +138,13 @@ private:
 	QQ QQ;
 	Device Device;
 	Socket TCP;
+	std::thread MsgLoop{ &Android::Fun_Msg_Loop ,this};
+	::ThreadPool HandleThreads;
 	SenderInfo SendList[64]; //6λ 0x3F
+public:
+	Android(const char* IMEI, const char IMSI[16], const byte GUID[16], const byte MAC[6], const char* _device, const char* Brand);
 private:
-	bool Fun_Connect();
+	bool Fun_Connect(const char* IP = nullptr, const unsigned short Port = 0);
 	void Fun_Send(const uint PacketType, const byte EncodeType, const char* ServiceCmd, LPBYTE Buffer);
 	LPBYTE Fun_Send_Sync(const uint PacketType, const byte EncodeType, const char* ServiceCmd, LPBYTE Buffer);
 	void Fun_Msg_Loop();
@@ -189,15 +193,13 @@ private:
 	void Un_Pack_StatSvc_SvcReqMSFLoginNotify(const LPBYTE BodyBin, const uint sso_seq);
 	void Un_Pack_ConfigPushSvc_PushReq(const LPBYTE BodyBin, const uint sso_seq);
 public:
-	Android(const char* IMEI, const char IMSI[16], const byte GUID[16], const byte MAC[6], const char* _device, const char* Brand);
-public:
 	void QQ_Init(const char* Account);
 	byte QQ_Login(const char* Password);
 	byte QQ_Login_Second();
+	void QQ_Login_Finish();
 	byte QQ_Send_Sms();
 	byte QQ_Viery_Ticket(const char* Ticket);
 	byte QQ_Viery_Sms(const char* SmsCode);
-	void QQ_Login_Finish();
 	char* QQ_Get_Viery_Ticket();
 	char* QQ_Get_Viery_PhoneNumber();
 	void QQ_Online();
