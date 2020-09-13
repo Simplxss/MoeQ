@@ -153,30 +153,26 @@ Android::Android(const char* IMEI, const char IMSI[16], const byte GUID[16], con
 
 bool Android::Fun_Connect(const char* IP, const unsigned short Port)
 {
-	if (MsgLoop.joinable())
-	{
-		std::this_thread::yield();
-	}
 	if (IP == nullptr || Port == 0)
 	{
 		wchar_t* IP = nullptr;
 		TCP.DomainGetIP(L"msfwifi.3g.qq.com", IP);
+		if (Connected) TCP.Close();
 		if (!TCP.Connect(Iconv::Unicode2Ansi(IP), 8080)) {
 			delete[] IP;
 			return false;
 		};
+		Connected = true;
 		delete[] IP;
 	}
 	else
 	{
-		if (!TCP.Connect(IP, Port)) {
-			return false;
-		};
+		if (Connected) TCP.Close();
+		if (!TCP.Connect(IP, Port)) return false;
+		Connected = true;
 	}
-
-	
-	MsgLoop.join();
-
+	std::thread MsgLoop(&Android::Fun_Msg_Loop, this);
+	MsgLoop.detach();
 	return true;
 }
 
@@ -385,14 +381,9 @@ LPBYTE Android::Fun_Send_Sync(const uint PacketType, const byte EncodeType, cons
 
 void Android::Fun_Msg_Loop()
 {
-	while (TCP.IsConnected())
-	{
-		LPBYTE bin = TCP.Receive();
-		if (bin != nullptr)
-		{
-			HandleThreads.exec(std::bind(&Android::Fun_Receice, this, bin), bin);
-		}
-	}
+	LPBYTE bin;
+	while ((bin = TCP.Receive()) != nullptr) { HandleThreads.exec(std::bind(&Android::Fun_Receice, this, bin), bin); }
+	Connected = false;
 }
 
 void Android::Fun_Receice(const LPBYTE bin)
@@ -2684,8 +2675,10 @@ void Android::Un_Pack_ConfigPushSvc_PushReq(const LPBYTE BodyBin, const uint sso
 			int type;
 			UnJce.Read(type, 1);
 
-			if (type == 1) //need reference
+			/*
+			if (type == 1) //need redirect
 			{
+				Log::AddLog(Log::LogType::NOTICE, Log::MsgType::OTHER, L"Online", L"Need Redirect");
 				LPBYTE ips;
 				UnJce.Read(ips, 2);
 				UnJce.Reset(ips);
@@ -2701,10 +2694,12 @@ void Android::Un_Pack_ConfigPushSvc_PushReq(const LPBYTE BodyBin, const uint sso
 				ipl[r].Read(Port, 2);
 
 				Fun_Connect(IP, Port);
+				QQ_Online();
 
 				delete[] IP;
 				delete[] ips;
 			}
+			*/
 
 			delete[] Map[i].Value[j].Key;
 			delete[] Map[i].Value[j].Value;
@@ -2833,6 +2828,19 @@ void Android::QQ_SetOnlineType(const byte Type)
 void Android::QQ_Heart_Beat()
 {
 	StatSvc_Register();
+}
+
+void Android::QQ_SyncCookie()
+{
+	QQ.Token.md52 = new byte[16];
+	byte tmp[24] = { 0 };
+	memcpy(tmp, QQ.Token.md5, 16);
+	byte* bin = XBin::Int2Bin(QQ.QQ);
+	memcpy(tmp + 20, bin, 4);
+	delete[] bin;
+	memcpy(QQ.Token.md52, Utils::MD5(tmp, 24), 16);
+	QQ.Login = new Login;
+	wtlogin_exchange_emp();
 }
 
 /// <summary>

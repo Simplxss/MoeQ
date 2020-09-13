@@ -5,24 +5,14 @@ Socket::Socket()
 {
 	WSADATA wsaData;
 	if (WSAStartup(MAKEWORD(2, 2), &wsaData)) throw "Init error";
+}
+
+bool Socket::Connect(const char* IP, const unsigned short Port) {
 	Client = WSASocket(AF_INET, SOCK_STREAM, 0, NULL, 0, WSA_FLAG_OVERLAPPED);
 	if (Client == INVALID_SOCKET)
 	{
 		WSACleanup();
 		throw "create socket error";
-	}
-}
-
-bool Socket::Connect(const char* IP, const unsigned short Port) {
-	if (!IsConnected())
-	{
-		closesocket(Client);
-		Client = WSASocket(AF_INET, SOCK_STREAM, 0, NULL, 0, WSA_FLAG_OVERLAPPED);
-		if (Client == INVALID_SOCKET)
-		{
-			WSACleanup();
-			throw "create socket error";
-		}
 	}
 	SOCKADDR_IN addrServer;
 	addrServer.sin_family = AF_INET;
@@ -38,15 +28,9 @@ bool Socket::Connect(const char* IP, const unsigned short Port) {
 	return true;
 }
 
-bool Socket::IsConnected()
-{
-	return true;
-}
-
 void Socket::Close()
 {
 	closesocket(Client);
-	WSACleanup();
 }
 
 void Socket::Send(const LPBYTE data)
@@ -58,10 +42,10 @@ LPBYTE Socket::Receive()
 {
 	byte len[4];
 	LPBYTE buffer;
-	if (recv(Client, (char*)len, 4, 0) != 4)
+	int state = recv(Client, (char*)len, 4, MSG_PEEK);
+	if (state != 4)
 	{
-		throw "read len failure";
-		return nullptr;
+		if (state < 0 && errno != EINTR) return nullptr;
 	}
 	int length = XBin::Bin2Int(len);
 	if (length <= 4)
@@ -70,11 +54,16 @@ LPBYTE Socket::Receive()
 		return nullptr;
 	}
 	buffer = new byte[length];
-	memcpy(buffer, len, 4);
 	uint reclen = 0;
-	while (reclen < length - 4)
+	while (reclen < length)
 	{
-		reclen += recv(Client, (char*)buffer + reclen + 4, length - reclen - 4, 0);
+		state = recv(Client, (char*)buffer + reclen, length - reclen, 0);
+		if (state < 0 && errno != EINTR)
+		{
+			delete[] buffer;
+			return nullptr;
+		}
+		reclen += state;
 	}
 	return buffer;
 }

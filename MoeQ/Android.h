@@ -138,9 +138,9 @@ private:
 	QQ QQ;
 	Device Device;
 	Socket TCP;
-	std::thread MsgLoop{ &Android::Fun_Msg_Loop ,this};
-	::ThreadPool HandleThreads;
-	SenderInfo SendList[64]; //6λ 0x3F
+	ThreadPool HandleThreads;
+	SenderInfo SendList[64]; // 0x3F
+	bool Connected;
 public:
 	Android(const char* IMEI, const char IMSI[16], const byte GUID[16], const byte MAC[6], const char* _device, const char* Brand);
 private:
@@ -206,6 +206,7 @@ public:
 	void QQ_Offline();
 	void QQ_SetOnlineType(const byte Type);
 	void QQ_Heart_Beat();
+	void QQ_SyncCookie();
 	bool QQ_Status();
 	const char* QQ_GetErrorMsg();
 	void QQ_Set_Token(Android::Token* _Token);

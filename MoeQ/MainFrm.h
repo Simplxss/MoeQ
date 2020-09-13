@@ -28,4 +28,5 @@ public:
 	afx_msg void OnEnChangePassword();
 	afx_msg void OnBnClickedLogin();
 	afx_msg void OnBnClickedSignout();
+	afx_msg void OnDestroy();
 };

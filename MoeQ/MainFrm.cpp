@@ -43,6 +43,7 @@ BEGIN_MESSAGE_MAP(MainFrm, CDialog)
 	ON_EN_CHANGE(IDC_PASSWORD, &MainFrm::OnEnChangePassword)
 	ON_BN_CLICKED(IDC_LOGIN, &MainFrm::OnBnClickedLogin)
 	ON_BN_CLICKED(IDC_SIGNOUT, &MainFrm::OnBnClickedSignout)
+	ON_WM_DESTROY()
 END_MESSAGE_MAP()
 
 //Thread function declare
@@ -119,6 +120,13 @@ BOOL MainFrm::OnInitDialog()
 
 	return TRUE;  // return TRUE unless you set the focus to a control
 				  // EXCEPTION: OCX Property Pages should return FALSE
+}
+
+void MainFrm::OnDestroy()
+{
+	CDialog::OnDestroy();
+
+	// TODO: Add your message handler code here
 }
 
 void MainFrm::OnOK()
@@ -253,10 +261,12 @@ online:
 
 	((CButton*)MainFrm->GetDlgItem(IDC_SIGNOUT))->EnableWindow(TRUE);
 	
+	uint time=1;
 	while (true)
 	{
 		Sleep(45000);
 		if (Sdk.QQ_Status()) Sdk.QQ_Heart_Beat();
+		if (!(time % 1919)) Sdk.QQ_SyncCookie(); //提前45s防止plugin用了失效的cookie
+		++time;
 	}
-	return;
 }
