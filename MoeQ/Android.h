@@ -217,6 +217,7 @@ public:
 	bool QQ_DrawGroupMsg(const uint Group, const uint MsgId, const uint MsgRand);
 	bool QQ_SendPrivateMsg(const uint QQ, const Message::Msg* Msg);
 	bool QQ_DrawPrivateMsg(const uint Group, const uint MsgId, const uint MsgRand);
+	bool QQ_SendDisscussMsg(const uint Disscuss, const Message::Msg* Msg);
 	bool QQ_KickGroupMember(const uint Group, const uint QQ, const bool Forever);
 	bool QQ_SetGroupAdmin(const uint Group, const uint QQ, const bool Set);
 	bool QQ_SetGroupMemberTitle(const uint Group, const uint QQ, const char* Title);

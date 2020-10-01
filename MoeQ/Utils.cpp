@@ -473,3 +473,9 @@ bool BigInteger::AddOne(byte* BigInteger, int len)
 	}
 	return false;
 }
+
+char* SildVerification::Load(const HWND Parent, const char* Url)
+{
+	PostMessage(,)
+	return 0;
+};

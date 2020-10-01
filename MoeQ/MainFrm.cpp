@@ -1,6 +1,3 @@
-// MainFrm.cpp : implementation file
-//
-
 #include "pch.h"
 #include "MoeQ.h"
 #include "MainFrm.h"
@@ -8,6 +5,7 @@
 
 #include "ExportFunction.h"
 
+#define CreateWkeWindows 1999
 
 wchar_t DataPath[MAX_PATH + 1];
 bool DevMode = true;
@@ -39,11 +37,11 @@ void MainFrm::DoDataExchange(CDataExchange* pDX)
 
 // Msg Loop
 BEGIN_MESSAGE_MAP(MainFrm, CDialog)
+	ON_WM_DESTROY()
 	ON_EN_CHANGE(IDC_ACCOUNT, &MainFrm::OnEnChangeAccount)
 	ON_EN_CHANGE(IDC_PASSWORD, &MainFrm::OnEnChangePassword)
 	ON_BN_CLICKED(IDC_LOGIN, &MainFrm::OnBnClickedLogin)
 	ON_BN_CLICKED(IDC_SIGNOUT, &MainFrm::OnBnClickedSignout)
-	ON_WM_DESTROY()
 END_MESSAGE_MAP()
 
 //Thread function declare
@@ -55,7 +53,18 @@ BOOL MainFrm::OnInitDialog()
 {
 	CDialog::OnInitDialog();
 
-	TCHAR szFilePath[MAX_PATH + 1] = { 0 };
+	((CComboBox*)GetDlgItem(IDC_LOG_TYPE))->SetCurSel(1);
+
+	CListCtrl* Log = (CListCtrl*)GetDlgItem(IDC_LOG);
+	Log->SetExtendedStyle(LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES);
+	Log->InsertColumn(0, L"LogType", LVCFMT_CENTER, 64);
+	Log->InsertColumn(1, L"MsgType", LVCFMT_CENTER, 82);
+	Log->InsertColumn(2, L"Type", LVCFMT_CENTER, 74);
+	Log->InsertColumn(3, L"Msg", LVCFMT_CENTER, 315);
+
+	Log::Init((HANDLE)this);
+
+	wchar_t szFilePath[MAX_PATH + 1], DataFilePath[MAX_PATH + 1], DllFilePath[MAX_PATH + 1] = { 0 };
 	GetModuleFileName(NULL, szFilePath, MAX_PATH);
 	(_tcsrchr(szFilePath, _T('\\')))[1] = 0; // delete the file name
 	wcscpy(DataPath, szFilePath);
@@ -63,7 +72,6 @@ BOOL MainFrm::OnInitDialog()
 
 	wchar_t _QQ[12];
 	wchar_t str[256];
-	wchar_t DataFilePath[256];
 	wcscpy(DataFilePath, DataPath);
 	wcscat(DataFilePath, L"data.ini");
 
@@ -107,16 +115,14 @@ BOOL MainFrm::OnInitDialog()
 
 	Plugin.Load(Iconv::Unicode2Ansi(szFilePath));
 
-	((CComboBox*)GetDlgItem(IDC_LOG_TYPE))->SetCurSel(1);
-
-	CListCtrl* Log = (CListCtrl*)GetDlgItem(IDC_LOG);
-	Log->SetExtendedStyle(LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES);
-	Log->InsertColumn(0, L"LogType", LVCFMT_CENTER, 64);
-	Log->InsertColumn(1, L"MsgType", LVCFMT_CENTER, 82);
-	Log->InsertColumn(2, L"Type", LVCFMT_CENTER, 74);
-	Log->InsertColumn(3, L"Msg", LVCFMT_CENTER, 315);
-
-	Log::Init((HANDLE)this);
+	wcscpy(DllFilePath, szFilePath);
+	wcscat(DllFilePath, L"bin\\miniblink_x64.dll");
+	if (!::PathFileExists(DllFilePath)) {
+		Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, L"Init", L"miniblink_x64.dll is not found");
+		return 0;
+	}
+	wkeSetWkeDllPath(DllFilePath);
+	wkeInitialize();
 
 	return TRUE;  // return TRUE unless you set the focus to a control
 				  // EXCEPTION: OCX Property Pages should return FALSE
@@ -175,6 +181,15 @@ void MainFrm::OnBnClickedSignout()
 	((CButton*)GetDlgItem(IDC_LOGIN))->EnableWindow(TRUE);
 }
 
+afx_msg LRESULT MainFrm::OnCreatewkewindows(WPARAM wParam, LPARAM lParam)
+{
+	wkeWebView wke = wkeCreateWebWindow(WKE_WINDOW_TYPE_POPUP, this->GetSafeHwnd(), 0, 0, 376, 396);
+	wkeMoveToCenter(wke);
+	wkeShowWindow(wke, true);
+	wkeSetUserAgent(wke, (utf8*)u8"Mozilla/5.0 (iPhone; CPU iPhone OS 11_0 like Mac OS X) AppleWebKit/604.1.38 (KHTML, like Gecko) Version/11.0 Mobile/15A372 Safari/604.1");
+	wkeLoadURL(wke, (const utf8*)lParam);
+}
+
 
 void WINAPI Login(MainFrm* MainFrm)
 {
@@ -198,7 +213,7 @@ void WINAPI Login(MainFrm* MainFrm)
 		state = Sdk.QQ_Login(Iconv::Unicode2Ansi(Password));
 		delete[] Password;
 	check:
-		char Ticket[125], SmsCode[7];
+		char *Ticket, SmsCode[7];
 		switch (state)
 		{
 		case LOGIN_SUCCESS:
@@ -206,9 +221,9 @@ void WINAPI Login(MainFrm* MainFrm)
 			goto online;
 		case LOGIN_VERIY:
 			Log::AddLog(Log::LogType::INFORMATION, Log::MsgType::OTHER, L"Login", L"Slider verification code");
-			//std::wcout << Sdk.QQ_Get_Viery_Ticket() << std::endl;
-			//std::cin.getline(Ticket, 125);
+			Ticket = SildVerification::Load(MainFrm->GetSafeHwnd(),Sdk.QQ_Get_Viery_Ticket());
 			state = Sdk.QQ_Viery_Ticket(Ticket);
+			delete Ticket;
 			goto check;
 		case LOGIN_VERIY_SMS:
 			Log::AddLog(Log::LogType::INFORMATION, Log::MsgType::OTHER, L"Login", L"Driver Lock");
@@ -271,3 +286,9 @@ online:
 		++time;
 	}
 }
+
+
+//afx_msg LRESULT MainFrm::OnAa(WPARAM wParam, LPARAM lParam)
+//{
+//	return 0;
+//}

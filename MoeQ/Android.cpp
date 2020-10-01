@@ -2927,6 +2927,11 @@ bool Android::QQ_DrawPrivateMsg(const uint Group, const uint MsgId, const uint M
 	return true;
 }
 
+bool Android::QQ_SendDisscussMsg(const uint Disscuss, const Message::Msg* Msg)
+{
+	return false;
+}
+
 bool Android::QQ_KickGroupMember(const uint Group, const uint QQ, const bool Forever)
 {
 	OidbSvc_0x8a0_0(Group, QQ, Forever);

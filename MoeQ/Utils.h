@@ -1,7 +1,6 @@
 #pragma once
 #include "Defined.h"
 
-#include <Windows.h>
 #include <vector>
 #include <random>
 #include <chrono>
@@ -10,6 +9,7 @@
 #include "..\include\openssl\md5.h"
 #include "..\include\openssl\ecdh.h"
 #include "..\include\openssl\des.h"
+#include "..\include\miniblink\wke.h" //windows.h
 #include "..\include\zlib\zlib.h"
 
 #pragma comment(lib, "crypt32.lib")
@@ -67,4 +67,9 @@ namespace Iconv
 namespace BigInteger
 {
 	bool AddOne(byte* BigInteger, int len);
+}
+
+namespace SildVerification
+{
+	char* Load(const HWND Parent, const char* Url);
 }

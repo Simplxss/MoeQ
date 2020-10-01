@@ -29,4 +29,8 @@ public:
 	afx_msg void OnBnClickedLogin();
 	afx_msg void OnBnClickedSignout();
 	afx_msg void OnDestroy();
+protected:
+//	afx_msg LRESULT OnCreatewkewindows(WPARAM wParam, LPARAM lParam);
+	afx_msg LRESULT OnCreatewkewindows(WPARAM wParam, LPARAM lParam);
+//	afx_msg LRESULT OnAa(WPARAM wParam, LPARAM lParam);
 };

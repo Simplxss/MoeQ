@@ -74,13 +74,13 @@ FUNC(bool, sendGroupMsg, const uint64_t AuthCode, const uint Group, const Messag
 };
 
 FUNC(bool, sendDisscussMsg, const uint64_t AuthCode, const uint Disscuss, const Message::Msg* Msg)
-{/*
-	if (Plugin.VieryAuth(AuthCode, 7)) return Sdk.QQ_SendGroupMsg(Group, Msg);
+{
+	if (Plugin.VieryAuth(AuthCode, 7)) return Sdk.QQ_SendDisscussMsg(Disscuss, Msg);
 	else
 	{
 		Log::AddLog(Log::LogType::WARNING, Log::MsgType::PROGRAM, Iconv::Ansi2Unicode(Plugin.AuthCode2Name(AuthCode)), L"Plugin called sendGroupMsg which it don't have right.");
 		return false;
-	}*/
+	}
 };
 
 FUNC(bool, drawPrivateMsg, const uint64_t AuthCode, const uint QQ, const uint MsgID)
