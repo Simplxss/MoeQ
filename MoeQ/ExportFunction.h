@@ -5,7 +5,9 @@
 extern Android Sdk;
 extern PluginSystem Plugin;
 
-extern "C" __declspec(dllexport) char* __stdcall getCookies(const uint64_t AuthCode, const char* Host)
+#define FUNC(ReturnType, FuncName, ...) extern "C" __declspec(dllexport) ReturnType __stdcall FuncName(__VA_ARGS__)
+
+FUNC(char*, getCookies,const uint64_t AuthCode, const char* Host)
 {
 	if (Plugin.VieryAuth(AuthCode, 1)) return Sdk.QQ_GetCookies(Host);
 	else
@@ -14,7 +16,7 @@ extern "C" __declspec(dllexport) char* __stdcall getCookies(const uint64_t AuthC
 	}
 };
 
-extern "C" __declspec(dllexport) bool __stdcall sendLike(const uint64_t AuthCode, const uint QQ, const int Times)
+FUNC(bool, sendLike, const uint64_t AuthCode, const uint QQ, const int Times)
 {
 	if (Plugin.VieryAuth(AuthCode, 2)) return Sdk.QQ_SendLike(QQ, Times);
 	else
@@ -24,10 +26,10 @@ extern "C" __declspec(dllexport) bool __stdcall sendLike(const uint64_t AuthCode
 	}
 };
 
+FUNC(bool, setGroupLeave, const uint64_t AuthCode, const uint group_code)
 
-extern "C" __declspec(dllexport) bool __stdcall setGroupLeave(const uint64_t AuthCode, const uint group_code)
 {
-	if (Plugin.VieryAuth(AuthCode, 2))
+	if (Plugin.VieryAuth(AuthCode, 3))
 	{
 		return false;
 	}
@@ -38,7 +40,20 @@ extern "C" __declspec(dllexport) bool __stdcall setGroupLeave(const uint64_t Aut
 	}
 };
 
-extern "C" __declspec(dllexport) bool __stdcall sendPrivateMsg(const uint64_t AuthCode, const uint QQ, const Message::Msg * Msg)
+FUNC(bool, setDiscussLeave, const uint64_t AuthCode, const uint group_code)
+{
+	if (Plugin.VieryAuth(AuthCode, 4))
+	{
+		return false;
+	}
+	else
+	{
+		Log::AddLog(Log::LogType::WARNING, Log::MsgType::PROGRAM, Iconv::Ansi2Unicode(Plugin.AuthCode2Name(AuthCode)), L"Plugin called setGroupLeave which it don't have right.");
+		return false;
+	}
+};
+
+FUNC(bool, sendPrivateMsg, const uint64_t AuthCode, const uint QQ, const Message::Msg* Msg)
 {
 	if (Plugin.VieryAuth(AuthCode, 5)) return Sdk.QQ_SendPrivateMsg(QQ, Msg);
 	else
@@ -48,7 +63,7 @@ extern "C" __declspec(dllexport) bool __stdcall sendPrivateMsg(const uint64_t Au
 	}
 };
 
-extern "C" __declspec(dllexport) bool __stdcall sendGroupMsg(const uint64_t AuthCode, const uint Group, const Message::Msg * Msg)
+FUNC(bool, sendGroupMsg, const uint64_t AuthCode, const uint Group, const Message::Msg* Msg)
 {
 	if (Plugin.VieryAuth(AuthCode, 6)) return Sdk.QQ_SendGroupMsg(Group, Msg);
 	else
@@ -58,8 +73,17 @@ extern "C" __declspec(dllexport) bool __stdcall sendGroupMsg(const uint64_t Auth
 	}
 };
 
+FUNC(bool, sendDisscussMsg, const uint64_t AuthCode, const uint Disscuss, const Message::Msg* Msg)
+{/*
+	if (Plugin.VieryAuth(AuthCode, 7)) return Sdk.QQ_SendGroupMsg(Group, Msg);
+	else
+	{
+		Log::AddLog(Log::LogType::WARNING, Log::MsgType::PROGRAM, Iconv::Ansi2Unicode(Plugin.AuthCode2Name(AuthCode)), L"Plugin called sendGroupMsg which it don't have right.");
+		return false;
+	}*/
+};
 
-extern "C" __declspec(dllexport) bool __stdcall drawPrivateMsg(const uint64_t AuthCode, const uint QQ, const uint MsgID)
+FUNC(bool, drawPrivateMsg, const uint64_t AuthCode, const uint QQ, const uint MsgID)
 {
 	if (Plugin.VieryAuth(AuthCode, 8))
 	{
@@ -73,7 +97,7 @@ extern "C" __declspec(dllexport) bool __stdcall drawPrivateMsg(const uint64_t Au
 	}
 };
 
-extern "C" __declspec(dllexport) bool __stdcall drawGroupMsg(const uint64_t AuthCode, const uint Group, const uint MsgID)
+FUNC(bool, drawGroupMsg, const uint64_t AuthCode, const uint Group, const uint MsgID)
 {
 	if (Plugin.VieryAuth(AuthCode, 8))
 	{
@@ -87,7 +111,7 @@ extern "C" __declspec(dllexport) bool __stdcall drawGroupMsg(const uint64_t Auth
 	}
 };
 
-extern "C" __declspec(dllexport) bool __stdcall setGroupBan(const uint64_t AuthCode, const uint Group, const uint QQ, const uint Time)
+FUNC(bool, setGroupBan, const uint64_t AuthCode, const uint Group, const uint QQ, const uint Time)
 {
 	if (Plugin.VieryAuth(AuthCode, 9))
 	{
@@ -101,7 +125,7 @@ extern "C" __declspec(dllexport) bool __stdcall setGroupBan(const uint64_t AuthC
 	}
 };
 
-extern "C" __declspec(dllexport) bool __stdcall setGroupKick(const uint64_t AuthCode, const uint Group, const uint QQ, const bool Forever)
+FUNC(bool, setGroupKick, const uint64_t AuthCode, const uint Group, const uint QQ, const bool Forever)
 {
 	if (Plugin.VieryAuth(AuthCode, 10))	return Sdk.QQ_KickGroupMember(Group,QQ, Forever);
 	else
@@ -111,7 +135,7 @@ extern "C" __declspec(dllexport) bool __stdcall setGroupKick(const uint64_t Auth
 	}
 };
 
-extern "C" __declspec(dllexport) bool __stdcall setGroupAdmin(const uint64_t AuthCode, const uint Group, const uint QQ, const bool Set)
+FUNC(bool, setGroupAdmin, const uint64_t AuthCode, const uint Group, const uint QQ, const bool Set)
 {
 	if (Plugin.VieryAuth(AuthCode, 11))	return Sdk.QQ_SetGroupAdmin(Group, QQ, Set);
 	else
@@ -121,7 +145,7 @@ extern "C" __declspec(dllexport) bool __stdcall setGroupAdmin(const uint64_t Aut
 	}
 };
 
-extern "C" __declspec(dllexport) bool __stdcall setGroupMemberTitle(const uint64_t AuthCode, const uint Group, const uint QQ, const char* Title)
+FUNC(bool, setGroupMemberTitle, const uint64_t AuthCode, const uint Group, const uint QQ, const char* Title)
 {
 	if (Plugin.VieryAuth(AuthCode, 12)) return Sdk.QQ_SetGroupMemberTitle(Group, QQ, Title);
 	else
@@ -131,7 +155,7 @@ extern "C" __declspec(dllexport) bool __stdcall setGroupMemberTitle(const uint64
 	}
 };
 
-extern "C" __declspec(dllexport) bool __stdcall setGroupMemberCard(const uint64_t AuthCode, const uint Group, const uint QQ, const char* Card)
+FUNC(bool, setGroupMemberCard, const uint64_t AuthCode, const uint Group, const uint QQ, const char* Card)
 {
 	if (Plugin.VieryAuth(AuthCode, 13)) Sdk.QQ_SetGroupMemberCard(Group,QQ, Card);
 	else
@@ -141,8 +165,34 @@ extern "C" __declspec(dllexport) bool __stdcall setGroupMemberCard(const uint64_
 	}
 };
 
+FUNC(void, getGroupMemberInfo, const uint64_t AuthCode, const uint Group, const uint QQ)
+{/*
+	if (Plugin.VieryAuth(AuthCode, 14)) Sdk.QQ_GetGroupMemberInfo(Group, QQ);
+	else
+	{
+		Log::AddLog(Log::LogType::WARNING, Log::MsgType::PROGRAM, Iconv::Ansi2Unicode(Plugin.AuthCode2Name(AuthCode)), L"Plugin called setGroupMemberCard which it don't have right.");
+	}*/
+};
 
-extern "C" __declspec(dllexport) LPBYTE __stdcall getFriendList(const uint64_t AuthCode)
+FUNC(void, getStrangerInfo, const uint64_t AuthCode, const uint QQ)
+{/*
+	if (Plugin.VieryAuth(AuthCode, 15)) Sdk.QQ_GetStrangerInfo(QQ);
+	else
+	{
+		Log::AddLog(Log::LogType::WARNING, Log::MsgType::PROGRAM, Iconv::Ansi2Unicode(Plugin.AuthCode2Name(AuthCode)), L"Plugin called setGroupMemberCard which it don't have right.");
+	}*/
+};
+
+FUNC(void, getGroupInfo, const uint64_t AuthCode, const uint Group)
+{/*
+	if (Plugin.VieryAuth(AuthCode, 16)) Sdk.QQ_GetGroupInfo(Group);
+	else
+	{
+		Log::AddLog(Log::LogType::WARNING, Log::MsgType::PROGRAM, Iconv::Ansi2Unicode(Plugin.AuthCode2Name(AuthCode)), L"Plugin called setGroupMemberCard which it don't have right.");
+	}*/
+};
+
+FUNC(LPBYTE, getFriendList, const uint64_t AuthCode)
 {
 	if (Plugin.VieryAuth(AuthCode, 17))
 	{
@@ -174,7 +224,7 @@ extern "C" __declspec(dllexport) LPBYTE __stdcall getFriendList(const uint64_t A
 	}
 };
 
-extern "C" __declspec(dllexport) LPBYTE __stdcall getGroupList(const uint64_t AuthCode)
+FUNC(LPBYTE, getGroupList, const uint64_t AuthCode)
 {
 	if (Plugin.VieryAuth(AuthCode, 18))
 	{
@@ -203,7 +253,7 @@ extern "C" __declspec(dllexport) LPBYTE __stdcall getGroupList(const uint64_t Au
 	}
 };
 
-extern "C" __declspec(dllexport) LPBYTE __stdcall getGroupMemberList(const uint64_t AuthCode, const uint group_code)
+FUNC(LPBYTE, getGroupMemberList, const uint64_t AuthCode, uint group_code)
 {
 	if (Plugin.VieryAuth(AuthCode, 19))
 	{
@@ -226,7 +276,7 @@ extern "C" __declspec(dllexport) LPBYTE __stdcall getGroupMemberList(const uint6
 	}
 };
 
-extern "C" __declspec(dllexport) LPBYTE __stdcall getGroupAdminList(const uint64_t AuthCode, const uint group_code)
+FUNC(LPBYTE, getGroupAdminList, const uint64_t AuthCode, uint group_code)
 {
 	if (Plugin.VieryAuth(AuthCode, 20))
 	{
@@ -248,7 +298,7 @@ extern "C" __declspec(dllexport) LPBYTE __stdcall getGroupAdminList(const uint64
 };
 
 
-extern "C" __declspec(dllexport) void __stdcall addLog(const uint64_t AuthCode, const Log::LogType LogType, const Log::MsgType MsgType, const wchar_t* Type, const wchar_t* Msg)
+FUNC(void, addLog, const uint64_t AuthCode, const Log::LogType LogType, const Log::MsgType MsgType, const wchar_t* Type, const wchar_t* Msg)
 {
 	Log::AddLog(LogType, MsgType, Type, Msg);
 };
