@@ -155,8 +155,14 @@ bool Android::Fun_Connect(const char* IP, const unsigned short Port)
 {
 	if (IP == nullptr || Port == 0)
 	{
-		wchar_t* IP = nullptr;
-		TCP.DomainGetIP(L"msfwifi.3g.qq.com", IP);
+		wchar_t* IP;
+		try {
+			TCP.DomainGetIP(L"msfwifi.3g.qq.com", IP);
+		}
+		catch (std::exception e)
+		{
+			IP = new wchar_t[] {L"1l3.96.l3.79"};
+		}
 		if (Connected) TCP.Close();
 		if (!TCP.Connect(Iconv::Unicode2Ansi(IP), 8080)) {
 			delete[] IP;
@@ -2675,7 +2681,6 @@ void Android::Un_Pack_ConfigPushSvc_PushReq(const LPBYTE BodyBin, const uint sso
 			int type;
 			UnJce.Read(type, 1);
 
-			/*
 			if (type == 1) //need redirect
 			{
 				Log::AddLog(Log::LogType::NOTICE, Log::MsgType::OTHER, L"Online", L"Need Redirect");
@@ -2699,7 +2704,6 @@ void Android::Un_Pack_ConfigPushSvc_PushReq(const LPBYTE BodyBin, const uint sso
 				delete[] IP;
 				delete[] ips;
 			}
-			*/
 
 			delete[] Map[i].Value[j].Key;
 			delete[] Map[i].Value[j].Value;

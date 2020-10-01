@@ -127,6 +127,7 @@ void MainFrm::OnDestroy()
 	CDialog::OnDestroy();
 
 	// TODO: Add your message handler code here
+	Sdk.QQ_Offline();
 }
 
 void MainFrm::OnOK()
@@ -192,7 +193,7 @@ void WINAPI Login(MainFrm* MainFrm)
 	{
 		byte state;
 		wchar_t* Password = new wchar_t[MainFrm->GetDlgItem(IDC_PASSWORD)->GetWindowTextLengthW() + 1];
-		MainFrm->GetDlgItem(IDC_PASSWORD)->GetWindowTextW(Password, MainFrm->GetDlgItem(IDC_PASSWORD)->GetWindowTextLengthW()+1);
+		MainFrm->GetDlgItem(IDC_PASSWORD)->GetWindowTextW(Password, MainFrm->GetDlgItem(IDC_PASSWORD)->GetWindowTextLengthW() + 1);
 		Sdk.QQ_Init(Iconv::Unicode2Ansi(QQ));
 		state = Sdk.QQ_Login(Iconv::Unicode2Ansi(Password));
 		delete[] Password;
@@ -260,8 +261,8 @@ online:
 	Sdk.QQ_Online();
 
 	((CButton*)MainFrm->GetDlgItem(IDC_SIGNOUT))->EnableWindow(TRUE);
-	
-	uint time=1;
+
+	uint time = 1;
 	while (true)
 	{
 		Sleep(45000);
