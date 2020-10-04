@@ -5,8 +5,6 @@
 
 #include "ExportFunction.h"
 
-#define CreateWkeWindows 1999
-
 wchar_t DataPath[MAX_PATH + 1];
 bool DevMode = true;
 
@@ -15,6 +13,8 @@ PluginSystem Plugin;
 Android::Token Token;
 Android Sdk("861891778567", "460013521635791", (const byte*)"\x86\xA4\x45\xBF\x44\xA2\xC2\x87\x59\x76\x18\xF6\xF3\x6E\xB6\x8C", (const byte*)"\0\0\0\0\0\2", "XiaoMi", "MIX Alpha");
 
+std::condition_variable Slider;
+const char* ticket;
 
 // MainFrm dialog
 
@@ -42,6 +42,7 @@ BEGIN_MESSAGE_MAP(MainFrm, CDialog)
 	ON_EN_CHANGE(IDC_PASSWORD, &MainFrm::OnEnChangePassword)
 	ON_BN_CLICKED(IDC_LOGIN, &MainFrm::OnBnClickedLogin)
 	ON_BN_CLICKED(IDC_SIGNOUT, &MainFrm::OnBnClickedSignout)
+	ON_REGISTERED_MESSAGE((WM_CREATE_WKE_WINDOWS), &MainFrm::OnCreatewkewindows)
 END_MESSAGE_MAP()
 
 //Thread function declare
@@ -123,7 +124,6 @@ BOOL MainFrm::OnInitDialog()
 	}
 	wkeSetWkeDllPath(DllFilePath);
 	wkeInitialize();
-
 	return TRUE;  // return TRUE unless you set the focus to a control
 				  // EXCEPTION: OCX Property Pages should return FALSE
 }
@@ -181,6 +181,19 @@ void MainFrm::OnBnClickedSignout()
 	((CButton*)GetDlgItem(IDC_LOGIN))->EnableWindow(TRUE);
 }
 
+bool OnNavigation(wkeWebView webView, void* param, wkeNavigationType navigationType, wkeString url)
+{
+	if (!memcmp(url, "jsbridge://CAPTCHA/onVerifyCAPTCHA", 34))
+	{
+		const utf8* date = wkeUtilDecodeURLEscape((utf8*)url);
+		rapidjson::Document Document;
+		Document.Parse(date + 37);
+		ticket = Document["ticket"].GetString();
+		Slider.notify_one();
+	}
+	return true;
+}
+
 afx_msg LRESULT MainFrm::OnCreatewkewindows(WPARAM wParam, LPARAM lParam)
 {
 	wkeWebView wke = wkeCreateWebWindow(WKE_WINDOW_TYPE_POPUP, this->GetSafeHwnd(), 0, 0, 376, 396);
@@ -188,8 +201,14 @@ afx_msg LRESULT MainFrm::OnCreatewkewindows(WPARAM wParam, LPARAM lParam)
 	wkeShowWindow(wke, true);
 	wkeSetUserAgent(wke, (utf8*)u8"Mozilla/5.0 (iPhone; CPU iPhone OS 11_0 like Mac OS X) AppleWebKit/604.1.38 (KHTML, like Gecko) Version/11.0 Mobile/15A372 Safari/604.1");
 	wkeLoadURL(wke, (const utf8*)lParam);
-}
+	wkeOnNavigation(wke, OnNavigation, nullptr);
+	
+	std::mutex lock;
+	std::unique_lock<std::mutex> ulock(lock);
+	Slider.wait(ulock);
 
+	return (LRESULT)ticket;
+}
 
 void WINAPI Login(MainFrm* MainFrm)
 {
@@ -223,7 +242,6 @@ void WINAPI Login(MainFrm* MainFrm)
 			Log::AddLog(Log::LogType::INFORMATION, Log::MsgType::OTHER, L"Login", L"Slider verification code");
 			Ticket = SildVerification::Load(MainFrm->GetSafeHwnd(),Sdk.QQ_Get_Viery_Ticket());
 			state = Sdk.QQ_Viery_Ticket(Ticket);
-			delete Ticket;
 			goto check;
 		case LOGIN_VERIY_SMS:
 			Log::AddLog(Log::LogType::INFORMATION, Log::MsgType::OTHER, L"Login", L"Driver Lock");
@@ -286,9 +304,3 @@ online:
 		++time;
 	}
 }
-
-
-//afx_msg LRESULT MainFrm::OnAa(WPARAM wParam, LPARAM lParam)
-//{
-//	return 0;
-//}

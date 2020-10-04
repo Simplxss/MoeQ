@@ -80,7 +80,7 @@ void Socket::DomainGetIP(const wchar_t* Domain, wchar_t*& szHostaddress) {
 	ADDRINFOW* result = NULL;
 	ADDRINFOW* ptr = NULL;
 	dwRetval = GetAddrInfoW(Domain, L"", &hints, &result);
-	if (dwRetval != 0) throw "Get ERROR";
+	if (dwRetval != 0) throw "Get ip error";
 	szHostaddress = new wchar_t[46];
 	for (ptr = result; ptr != NULL; ptr = ptr->ai_next) {
 		switch (ptr->ai_family) {

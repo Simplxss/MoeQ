@@ -17,6 +17,8 @@
 #pragma comment(lib, "..\\lib\\zlib_lib_windows\\x64\\zlibstat.lib")
 
 
+static UINT NEAR WM_CREATE_WKE_WINDOWS = RegisterWindowMessage(_T("CREATE_WKE_WINDOWS"));
+
 namespace Utils
 {
 	struct ECDHKEY

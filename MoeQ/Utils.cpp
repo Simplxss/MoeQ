@@ -476,6 +476,5 @@ bool BigInteger::AddOne(byte* BigInteger, int len)
 
 char* SildVerification::Load(const HWND Parent, const char* Url)
 {
-	PostMessage(,)
-	return 0;
+	return (char*)SendMessage(Parent, WM_CREATE_WKE_WINDOWS, NULL, (LPARAM)Url);
 };
