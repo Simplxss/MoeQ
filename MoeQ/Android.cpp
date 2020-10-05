@@ -159,7 +159,7 @@ bool Android::Fun_Connect(const char* IP, const unsigned short Port)
 		try {
 			TCP.DomainGetIP(L"msfwifi.3g.qq.com", IP);
 		}
-		catch (std::exception e)
+		catch (...)
 		{
 			IP = new wchar_t[] {L"1l3.96.l3.79"};
 		}
@@ -658,12 +658,12 @@ void Android::wtlogin_login_Viery_Ticket(const char* Ticket)
 {
 	::Pack Pack(900);
 	Pack.SetBin((byte*)"\x00\x02", 2);
-	Pack.SetShort(5);
+	Pack.SetShort(4);
 	Pack.Skip(Tlv::Tlv193(Pack.GetCurrentPoint(), Pack.GetLeftSpace(), Ticket));
 	Pack.Skip(Tlv::Tlv008(Pack.GetCurrentPoint(), Pack.GetLeftSpace()));
 	Pack.Skip(Tlv::Tlv104(Pack.GetCurrentPoint(), Pack.GetLeftSpace(), QQ.Login->VieryToken2));
 	Pack.Skip(Tlv::Tlv116(Pack.GetCurrentPoint(), Pack.GetLeftSpace()));
-	Pack.Skip(Tlv::Tlv547(Pack.GetCurrentPoint(), Pack.GetLeftSpace(), QQ.Login->ClientPow));
+	//Pack.Skip(Tlv::Tlv547(Pack.GetCurrentPoint(), Pack.GetLeftSpace(), QQ.Login->ClientPow));
 	Un_Pack_wtlogin_login(Fun_Send_Sync(10, 2, "wtlogin.login", Make_Body_PC(Pack.GetAll(), Pack.Length(), false)));
 }
 
@@ -2070,7 +2070,13 @@ void Android::Un_Tlv_Get(const unsigned short cmd, const byte* bin, const uint l
 	case 0x146:
 		UnPack.GetInt();
 		UnPack.GetBin(UnPack.GetShort());
-		UnPack.GetBin(UnPack.GetShort());
+		{
+			if (QQ.ErrorMsg != nullptr) delete[] QQ.ErrorMsg;
+			int length = UnPack.GetShort();
+			QQ.ErrorMsg = new char[length + 1];
+			memcpy(QQ.ErrorMsg, UnPack.GetBin(length), length);
+			QQ.ErrorMsg[length] = 0;
+		}
 		break;
 	case 0x161:
 		UnPack.GetShort();
@@ -2680,6 +2686,8 @@ void Android::Un_Pack_ConfigPushSvc_PushReq(const LPBYTE BodyBin, const uint sso
 
 			int type;
 			UnJce.Read(type, 1);
+
+			type = 0;//Todo,暂时懒得高重定向
 
 			if (type == 1) //need redirect
 			{

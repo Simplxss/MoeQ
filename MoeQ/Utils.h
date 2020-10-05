@@ -1,21 +1,4 @@
 #pragma once
-#include "Defined.h"
-
-#include <vector>
-#include <random>
-#include <chrono>
-
-#include "..\include\openssl\sha.h"
-#include "..\include\openssl\md5.h"
-#include "..\include\openssl\ecdh.h"
-#include "..\include\openssl\des.h"
-#include "..\include\miniblink\wke.h" //windows.h
-#include "..\include\zlib\zlib.h"
-
-#pragma comment(lib, "crypt32.lib")
-#pragma comment(lib, "..\\lib\\openssl_lib_windows\\x64\\libcrypto.lib")
-#pragma comment(lib, "..\\lib\\zlib_lib_windows\\x64\\zlibstat.lib")
-
 
 static UINT NEAR WM_CREATE_WKE_WINDOWS = RegisterWindowMessage(_T("CREATE_WKE_WINDOWS"));
 
