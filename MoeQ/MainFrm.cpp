@@ -5,6 +5,8 @@
 
 #include "ExportFunction.h"
 
+#define CreateWkeWindows 1999
+
 wchar_t DataPath[MAX_PATH + 1];
 bool DevMode = true;
 
@@ -13,8 +15,6 @@ PluginSystem Plugin;
 Android::Token Token;
 Android Sdk("861891778567", "460013521635791", (const byte*)"\x86\xA4\x45\xBF\x44\xA2\xC2\x87\x59\x76\x18\xF6\xF3\x6E\xB6\x8C", (const byte*)"\0\0\0\0\0\2", "XiaoMi", "MIX Alpha");
 
-std::condition_variable Slider;
-char* Ticket = nullptr;
 
 // MainFrm dialog
 
@@ -42,7 +42,6 @@ BEGIN_MESSAGE_MAP(MainFrm, CDialog)
 	ON_EN_CHANGE(IDC_PASSWORD, &MainFrm::OnEnChangePassword)
 	ON_BN_CLICKED(IDC_LOGIN, &MainFrm::OnBnClickedLogin)
 	ON_BN_CLICKED(IDC_SIGNOUT, &MainFrm::OnBnClickedSignout)
-	ON_REGISTERED_MESSAGE((WM_CREATE_WKE_WINDOWS), &MainFrm::OnCreatewkewindows)
 END_MESSAGE_MAP()
 
 //Thread function declare
@@ -117,13 +116,14 @@ BOOL MainFrm::OnInitDialog()
 	Plugin.Load(Iconv::Unicode2Ansi(szFilePath));
 
 	wcscpy(DllFilePath, szFilePath);
-	wcscat(DllFilePath, L"bin\\miniblink.dll");
+	wcscat(DllFilePath, L"bin\\miniblink_x64.dll");
 	if (!::PathFileExists(DllFilePath)) {
-		Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, L"Init", L"miniblink.dll is not found");
+		Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, L"Init", L"miniblink_x64.dll is not found");
 		return 0;
 	}
 	wkeSetWkeDllPath(DllFilePath);
 	wkeInitialize();
+
 	return TRUE;  // return TRUE unless you set the focus to a control
 				  // EXCEPTION: OCX Property Pages should return FALSE
 }
@@ -138,7 +138,7 @@ void MainFrm::OnDestroy()
 
 void MainFrm::OnOK()
 {
-	// 防止按Enter销毁了了
+	// 防止按Enter销毁了
 	//CDialog::OnOK();
 }
 
@@ -150,16 +150,28 @@ void MainFrm::OnCancel()
 
 void MainFrm::OnEnChangeAccount()
 {
-	if (GetDlgItem(IDC_ACCOUNT)->GetWindowTextLengthW() >= 12)
+	if (((CButton*)GetDlgItem(IDC_SECOND_LOGIN))->GetCheck())
 	{
-		wchar_t str[13];
-		GetDlgItem(IDC_ACCOUNT)->GetWindowTextW(str, 11);
-		GetDlgItem(IDC_ACCOUNT)->SetWindowTextW(str);
-	};
+		GetDlgItem(IDC_PASSWORD)->SetWindowTextW(L"");
+		((CButton*)GetDlgItem(IDC_SECOND_LOGIN))->SetCheck(BST_UNCHECKED);
+	}
+	wchar_t str[13];
+	GetDlgItem(IDC_ACCOUNT)->GetWindowTextW(str, 11);
+	//if (str==) TODO
+	{
+
+	}
+	if (GetDlgItem(IDC_ACCOUNT)->GetWindowTextLengthW() >= 12) GetDlgItem(IDC_ACCOUNT)->SetWindowTextW(str);
 }
 
 void MainFrm::OnEnChangePassword()
 {
+	if (((CButton*)GetDlgItem(IDC_SECOND_LOGIN))->GetCheck())
+	{
+		GetDlgItem(IDC_PASSWORD)->SetWindowTextW(L"");
+		((CButton*)GetDlgItem(IDC_SECOND_LOGIN))->SetCheck(BST_UNCHECKED);
+		((CButton*)GetDlgItem(IDC_SECOND_LOGIN))->EnableWindow(FALSE);
+	}
 	if (GetDlgItem(IDC_PASSWORD)->GetWindowTextLengthW() >= 36)
 	{
 		wchar_t str[37];
@@ -181,26 +193,6 @@ void MainFrm::OnBnClickedSignout()
 	((CButton*)GetDlgItem(IDC_LOGIN))->EnableWindow(TRUE);
 }
 
-void OnWindowDestroy(wkeWebView webWindow, void* param)
-{
-	Slider.notify_one();
-}
-
-bool OnNavigation(wkeWebView webView, void* param, wkeNavigationType navigationType, wkeString url)
-{
-	if (!memcmp(wkeGetString(url), "jsbridge://CAPTCHA/onVerifyCAPTCHA", 34))
-	{
-		const utf8* date = wkeUtilDecodeURLEscape(wkeGetString(url));
-		rapidjson::Document Document;
-		Document.Parse(date + 37, strlen(date + 37) - 2);
-		Ticket = new char[Document["ticket"].GetStringLength() + 1];
-		memcpy(Ticket, Document["ticket"].GetString(), Document["ticket"].GetStringLength() + 1);
-		wkeDestroyWebView(webView);
-		Slider.notify_one();
-	}
-	return true;
-}
-
 afx_msg LRESULT MainFrm::OnCreatewkewindows(WPARAM wParam, LPARAM lParam)
 {
 	wkeWebView wke = wkeCreateWebWindow(WKE_WINDOW_TYPE_POPUP, this->GetSafeHwnd(), 0, 0, 376, 396);
@@ -208,10 +200,8 @@ afx_msg LRESULT MainFrm::OnCreatewkewindows(WPARAM wParam, LPARAM lParam)
 	wkeShowWindow(wke, true);
 	wkeSetUserAgent(wke, (utf8*)u8"Mozilla/5.0 (iPhone; CPU iPhone OS 11_0 like Mac OS X) AppleWebKit/604.1.38 (KHTML, like Gecko) Version/11.0 Mobile/15A372 Safari/604.1");
 	wkeLoadURL(wke, (const utf8*)lParam);
-	wkeOnNavigation(wke, OnNavigation, NULL);
-	wkeOnWindowDestroy(wke, OnWindowDestroy, NULL);
-	return NULL;
 }
+
 
 void WINAPI Login(MainFrm* MainFrm)
 {
@@ -235,33 +225,19 @@ void WINAPI Login(MainFrm* MainFrm)
 		state = Sdk.QQ_Login(Iconv::Unicode2Ansi(Password));
 		delete[] Password;
 	check:
-		char SmsCode[7];
+		char* Ticket, SmsCode[7];
 		switch (state)
 		{
 		case LOGIN_SUCCESS:
+			((CButton*)MainFrm->GetDlgItem(IDC_SECOND_LOGIN))->SetCheck(BST_CHECKED);
 			Log::AddLog(Log::LogType::INFORMATION, Log::MsgType::OTHER, L"Login", L"Login Successfully!");
 			goto online;
 		case LOGIN_VERIY:
 			Log::AddLog(Log::LogType::INFORMATION, Log::MsgType::OTHER, L"Login", L"Slider verification code");
-			PostMessage(MainFrm->GetSafeHwnd(), WM_CREATE_WKE_WINDOWS, NULL, (LPARAM)Sdk.QQ_Get_Viery_Ticket());
-			{
-				std::mutex lock;
-				std::unique_lock<std::mutex> ulock(lock);
-				Slider.wait(ulock);
-			}
-			if (Ticket == nullptr)
-			{
-				Log::AddLog(Log::LogType::INFORMATION, Log::MsgType::OTHER, L"Login", L"Cancel Login");
-				((CButton*)MainFrm->GetDlgItem(IDC_LOGIN))->EnableWindow(TRUE);
-				return;
-			}
-			else
-			{
-				state = Sdk.QQ_Viery_Ticket(Ticket);
-				delete[] Ticket;
-				Ticket = nullptr;
-				goto check;
-			}
+			Ticket = SildVerification::Load(MainFrm->GetSafeHwnd(), Sdk.QQ_Get_Viery_Ticket());
+			state = Sdk.QQ_Viery_Ticket(Ticket);
+			delete Ticket;
+			goto check;
 		case LOGIN_VERIY_SMS:
 			Log::AddLog(Log::LogType::INFORMATION, Log::MsgType::OTHER, L"Login", L"Driver Lock");
 			char notice[200];
@@ -281,8 +257,7 @@ void WINAPI Login(MainFrm* MainFrm)
 				return;
 			}
 		case LOGIN_ERROR:
-			Log::AddLog(Log::LogType::INFORMATION, Log::MsgType::OTHER, L"Login", L"Login failed");
-			Log::AddLog(Log::LogType::INFORMATION, Log::MsgType::OTHER, L"Login", Iconv::Utf82Unicode(Sdk.QQ_GetErrorMsg()));
+			//std::wcout << (int)state << std::endl;
 			((CButton*)MainFrm->GetDlgItem(IDC_LOGIN))->EnableWindow(TRUE);
 			return;
 		default:
