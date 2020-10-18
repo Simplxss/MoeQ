@@ -4,6 +4,10 @@
 #include "MoeQ.h"
 
 #include <sstream>
+#include <thread>
+#include <queue>
+#include <condition_variable>
+
 
 namespace Log
 {
@@ -23,7 +27,14 @@ namespace Log
 		_GROUP = 3,
 		OTHER = 4
 	};
+	struct Log {
+		LogType LogType;
+		MsgType MsgType;
+		const wchar_t* Type;
+		const wchar_t* Msg;
+	};
 
+	void DesplayThread();
 	void Init(HANDLE Handle);
 	void AddLog(const LogType LogType, const MsgType MsgType, const wchar_t* Type, const wchar_t* Msg);
 	void AddLog(const LogType LogType, const MsgType MsgType, const wchar_t* Type, const Message::Msg* Msg);

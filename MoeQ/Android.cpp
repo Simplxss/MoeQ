@@ -522,6 +522,18 @@ void Android::Fun_Handle(char* serviceCmd, const LPBYTE BodyBin, const uint sso_
 	}
 }
 
+void Android::Fun_Life_Event()
+{
+	uint time = 1;
+	do
+	{
+		Sleep(45000);
+		StatSvc_Register();
+		if (!(time % 1919)) QQ_SyncCookie(); //提前45s防止plugin用了失效的cookie
+		++time;
+	} while (QQ_Status());
+}
+
 /// <summary>
 /// 
 /// </summary>
@@ -2767,7 +2779,7 @@ byte Android::QQ_Login_Second()
 	memcpy(QQ.Token.md52, Utils::MD5(tmp, 24), 16);
 	QQ.Login = new Login;
 	Fun_Connect();
-	//wtlogin_exchange_emp();
+	wtlogin_exchange_emp();
 	return QQ.Login->state;
 }
 
@@ -2819,6 +2831,8 @@ void Android::QQ_Online()
 {
 	QQ.Status = 11;
 	StatSvc_Register(11);
+	std::thread Thread(std::bind(&Android::Fun_Life_Event, this));
+	Thread.detach();
 	//friendlist_getFriendGroupList(0);
 	//friendlist_GetTroopListReqV2();
 }
@@ -2826,6 +2840,7 @@ void Android::QQ_Online()
 void Android::QQ_Offline()
 {
 	StatSvc_Register(21);
+	QQ.Status = 21;
 }
 
 /// <summary>

@@ -15,6 +15,8 @@ PluginSystem Plugin;
 Android::Token Token;
 Android Sdk("861891778567", "460013521635791", (const byte*)"\x86\xA4\x45\xBF\x44\xA2\xC2\x87\x59\x76\x18\xF6\xF3\x6E\xB6\x8C", (const byte*)"\0\0\0\0\0\2", "XiaoMi", "MIX Alpha");
 
+std::condition_variable Slider;
+char* Ticket = nullptr;
 
 // MainFrm dialog
 
@@ -42,6 +44,7 @@ BEGIN_MESSAGE_MAP(MainFrm, CDialog)
 	ON_EN_CHANGE(IDC_PASSWORD, &MainFrm::OnEnChangePassword)
 	ON_BN_CLICKED(IDC_LOGIN, &MainFrm::OnBnClickedLogin)
 	ON_BN_CLICKED(IDC_SIGNOUT, &MainFrm::OnBnClickedSignout)
+	ON_REGISTERED_MESSAGE((WM_CREATE_WKE_WINDOWS), &MainFrm::OnCreatewkewindows)
 END_MESSAGE_MAP()
 
 //Thread function declare
@@ -116,9 +119,9 @@ BOOL MainFrm::OnInitDialog()
 	Plugin.Load(Iconv::Unicode2Ansi(szFilePath));
 
 	wcscpy(DllFilePath, szFilePath);
-	wcscat(DllFilePath, L"bin\\miniblink_x64.dll");
+	wcscat(DllFilePath, L"bin\\miniblink.dll");
 	if (!::PathFileExists(DllFilePath)) {
-		Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, L"Init", L"miniblink_x64.dll is not found");
+		Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, L"Init", L"miniblink.dll is not found");
 		return 0;
 	}
 	wkeSetWkeDllPath(DllFilePath);
@@ -193,6 +196,26 @@ void MainFrm::OnBnClickedSignout()
 	((CButton*)GetDlgItem(IDC_LOGIN))->EnableWindow(TRUE);
 }
 
+void OnWindowDestroy(wkeWebView webWindow, void* param)
+{
+	Slider.notify_one();
+}
+
+bool OnNavigation(wkeWebView webView, void* param, wkeNavigationType navigationType, wkeString url)
+{
+	if (!memcmp(wkeGetString(url), "jsbridge://CAPTCHA/onVerifyCAPTCHA", 34))
+	{
+		const utf8* date = wkeUtilDecodeURLEscape(wkeGetString(url));
+		rapidjson::Document Document;
+		Document.Parse(date + 37, strlen(date + 37) - 2);
+		Ticket = new char[Document["ticket"].GetStringLength() + 1];
+		memcpy(Ticket, Document["ticket"].GetString(), Document["ticket"].GetStringLength() + 1);
+		wkeDestroyWebView(webView);
+		Slider.notify_one();
+	}
+	return true;
+}
+
 afx_msg LRESULT MainFrm::OnCreatewkewindows(WPARAM wParam, LPARAM lParam)
 {
 	wkeWebView wke = wkeCreateWebWindow(WKE_WINDOW_TYPE_POPUP, this->GetSafeHwnd(), 0, 0, 376, 396);
@@ -200,6 +223,9 @@ afx_msg LRESULT MainFrm::OnCreatewkewindows(WPARAM wParam, LPARAM lParam)
 	wkeShowWindow(wke, true);
 	wkeSetUserAgent(wke, (utf8*)u8"Mozilla/5.0 (iPhone; CPU iPhone OS 11_0 like Mac OS X) AppleWebKit/604.1.38 (KHTML, like Gecko) Version/11.0 Mobile/15A372 Safari/604.1");
 	wkeLoadURL(wke, (const utf8*)lParam);
+	wkeOnNavigation(wke, OnNavigation, NULL);
+	wkeOnWindowDestroy(wke, OnWindowDestroy, NULL);
+	return NULL;
 }
 
 
@@ -225,19 +251,33 @@ void WINAPI Login(MainFrm* MainFrm)
 		state = Sdk.QQ_Login(Iconv::Unicode2Ansi(Password));
 		delete[] Password;
 	check:
-		char* Ticket, SmsCode[7];
+		char SmsCode[7];
 		switch (state)
 		{
 		case LOGIN_SUCCESS:
-			((CButton*)MainFrm->GetDlgItem(IDC_SECOND_LOGIN))->SetCheck(BST_CHECKED);
 			Log::AddLog(Log::LogType::INFORMATION, Log::MsgType::OTHER, L"Login", L"Login Successfully!");
 			goto online;
 		case LOGIN_VERIY:
 			Log::AddLog(Log::LogType::INFORMATION, Log::MsgType::OTHER, L"Login", L"Slider verification code");
-			Ticket = SildVerification::Load(MainFrm->GetSafeHwnd(), Sdk.QQ_Get_Viery_Ticket());
-			state = Sdk.QQ_Viery_Ticket(Ticket);
-			delete Ticket;
-			goto check;
+			PostMessage(MainFrm->GetSafeHwnd(), WM_CREATE_WKE_WINDOWS, NULL, (LPARAM)Sdk.QQ_Get_Viery_Ticket());
+			{
+				std::mutex lock;
+				std::unique_lock<std::mutex> ulock(lock);
+				Slider.wait(ulock);
+			}
+			if (Ticket == nullptr)
+			{
+				Log::AddLog(Log::LogType::INFORMATION, Log::MsgType::OTHER, L"Login", L"Cancel Login");
+				((CButton*)MainFrm->GetDlgItem(IDC_LOGIN))->EnableWindow(TRUE);
+				return;
+			}
+			else
+			{
+				state = Sdk.QQ_Viery_Ticket(Ticket);
+				delete[] Ticket;
+				Ticket = nullptr;
+				goto check;
+			}
 		case LOGIN_VERIY_SMS:
 			Log::AddLog(Log::LogType::INFORMATION, Log::MsgType::OTHER, L"Login", L"Driver Lock");
 			char notice[200];
@@ -249,7 +289,7 @@ void WINAPI Login(MainFrm* MainFrm)
 			{
 			case IDOK:
 				Sdk.QQ_Send_Sms();
-
+				//Todo
 				state = Sdk.QQ_Viery_Sms(SmsCode);
 				break;
 			case IDCANCEL:
@@ -257,7 +297,8 @@ void WINAPI Login(MainFrm* MainFrm)
 				return;
 			}
 		case LOGIN_ERROR:
-			//std::wcout << (int)state << std::endl;
+			Log::AddLog(Log::LogType::INFORMATION, Log::MsgType::OTHER, L"Login", L"Login failed");
+			Log::AddLog(Log::LogType::INFORMATION, Log::MsgType::OTHER, L"Login", Iconv::Utf82Unicode(Sdk.QQ_GetErrorMsg()));
 			((CButton*)MainFrm->GetDlgItem(IDC_LOGIN))->EnableWindow(TRUE);
 			return;
 		default:
@@ -289,13 +330,4 @@ online:
 	Sdk.QQ_Online();
 
 	((CButton*)MainFrm->GetDlgItem(IDC_SIGNOUT))->EnableWindow(TRUE);
-
-	uint time = 1;
-	while (true)
-	{
-		Sleep(45000);
-		if (Sdk.QQ_Status()) Sdk.QQ_Heart_Beat();
-		if (!(time % 1919)) Sdk.QQ_SyncCookie(); //提前45s防止plugin用了失效的cookie
-		++time;
-	}
 }

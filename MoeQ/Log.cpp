@@ -2,103 +2,91 @@
 #include "Log.h"
 
 HANDLE hwnd;
+std::atomic_int Semaphore = 0;
+std::condition_variable cv;
+std::queue<Log::Log> LogQueue;
+
+void Log::DesplayThread()
+{
+	std::mutex lock;
+	std::unique_lock<std::mutex> ulock(lock);
+	while (true)
+	{
+		cv.wait(ulock);
+		while (Semaphore > 0)
+		{
+			CListCtrl* LogList = (CListCtrl*)((CDialog*)hwnd)->GetDlgItem(IDC_LOG);
+			int Index = LogList->InsertItem(0, L"");
+			if (Index < 0)	return;
+			Log Log_ = LogQueue.front();
+			LogQueue.pop();
+			switch (Log_.LogType) {
+			case LogType::__DEBUG:
+				LogList->SetItemText(Index, 0, L"Debug");
+				break;
+			case LogType::INFORMATION:
+				LogList->SetItemText(Index, 0, L"Information");
+				break;
+			case LogType::NOTICE:
+				LogList->SetItemText(Index, 0, L"Notice");
+				break;
+			case LogType::WARNING:
+				LogList->SetItemText(Index, 0, L"Warning");
+				break;
+			case LogType::_ERROR:
+				LogList->SetItemText(Index, 0, L"Error");
+				break;
+			}
+			switch (Log_.MsgType)
+			{
+			case MsgType::OTHER:
+				LogList->SetItemText(Index, 1, L"Other");
+				break;
+			case MsgType::_GROUP:
+				LogList->SetItemText(Index, 1, L"Group");
+				break;
+			case MsgType::PRIVATE:
+				LogList->SetItemText(Index, 1, L"Private");
+				break;
+			case MsgType::PROGRAM:
+				LogList->SetItemText(Index, 1, L"Program");
+				break;
+			case MsgType::SERVER:
+				LogList->SetItemText(Index, 1, L"Server");
+				break;
+			default:
+				throw "Known MsgType";
+				break;
+			}
+			LogList->SetItemText(Index, 2, Log_.Type);
+			LogList->SetItemText(Index, 3, Log_.Msg);
+			--Semaphore;
+		}
+	}
+}
 
 void Log::Init(HANDLE Handle)
 {
 	hwnd = Handle;
+	std::thread Thread(DesplayThread);
+	Thread.detach();
 }
 
 void Log::AddLog(const LogType LogType, const MsgType MsgType, const wchar_t* Type, const wchar_t* Msg)
 {
-	CListCtrl* LogList = (CListCtrl*)((CDialog*)hwnd)->GetDlgItem(IDC_LOG);
-	int Index = LogList->InsertItem(0, L"");
-	if (Index < 0)	return;
-	switch (LogType) {
-	case LogType::__DEBUG:
-		LogList->SetItemText(Index, 0, L"Debug");
-		break;
-	case LogType::INFORMATION:
-		LogList->SetItemText(Index, 0, L"Information");
-		break;
-	case LogType::NOTICE:
-		LogList->SetItemText(Index, 0, L"Notice");
-		break;
-	case LogType::WARNING:
-		LogList->SetItemText(Index, 0, L"Warning");
-		break;
-	case LogType::_ERROR:
-		LogList->SetItemText(Index, 0, L"Error");
-		break;
-	}
-	switch (MsgType)
-	{
-	case MsgType::OTHER:
-		LogList->SetItemText(Index, 1, L"Other");
-		break;
-	case MsgType::_GROUP:
-		LogList->SetItemText(Index, 1, L"Group");
-		break;
-	case MsgType::PRIVATE:
-		LogList->SetItemText(Index, 1, L"Private");
-		break;
-	case MsgType::PROGRAM:
-		LogList->SetItemText(Index, 1, L"Program");
-		break;
-	case MsgType::SERVER:
-		LogList->SetItemText(Index, 1, L"Server");
-		break;
-	default:
-		throw "Known MsgType";
-		break;
-	}
-	LogList->SetItemText(Index, 2, Type);
-	LogList->SetItemText(Index, 3, Msg);
+	Log Log_;
+	Log_.LogType = LogType;
+	Log_.MsgType = MsgType;
+	Log_.Type = Type;
+	Log_.Msg = Msg;
+
+	LogQueue.push(Log_);
+	++Semaphore;
+	cv.notify_one();
 }
 
 void Log::AddLog(const LogType LogType, const MsgType MsgType, const wchar_t* Type, const Message::Msg* Msg)
 {
-	CListCtrl* LogList = (CListCtrl*)((CDialog*)hwnd)->GetDlgItem(IDC_LOG);
-	int Index = LogList->InsertItem(0, L"");
-	if (Index < 0)	return;
-	switch (LogType) {
-	case LogType::__DEBUG:
-		LogList->SetItemText(Index, 0, L"Debug");
-		break;
-	case LogType::INFORMATION:
-		LogList->SetItemText(Index, 0, L"Information");
-		break;
-	case LogType::NOTICE:
-		LogList->SetItemText(Index, 0, L"Notice");
-		break;
-	case LogType::WARNING:
-		LogList->SetItemText(Index, 0, L"Warning");
-		break;
-	case LogType::_ERROR:
-		LogList->SetItemText(Index, 0, L"Error");
-		break;
-	}
-	switch (MsgType)
-	{
-	case MsgType::OTHER:
-		LogList->SetItemText(Index, 1, L"Other");
-		break;
-	case MsgType::_GROUP:
-		LogList->SetItemText(Index, 1, L"Group");
-		break;
-	case MsgType::PRIVATE:
-		LogList->SetItemText(Index, 1, L"Private");
-		break;
-	case MsgType::PROGRAM:
-		LogList->SetItemText(Index, 1, L"Program");
-		break;
-	case MsgType::SERVER:
-		LogList->SetItemText(Index, 1, L"Server");
-		break;
-	default:
-		throw "Known MsgType";
-		break;
-	}
-	LogList->SetItemText(Index, 2, Type);
 	std::wstringstream MsgSteam;
 	do
 	{
@@ -177,137 +165,82 @@ void Log::AddLog(const LogType LogType, const MsgType MsgType, const wchar_t* Ty
 		default:
 			break;
 		}
-	}while ((Msg = Msg->NextPoint) != nullptr);
-	LogList->SetItemText(Index, 3, MsgSteam.str().c_str());
+	} while ((Msg = Msg->NextPoint) != nullptr);
+
+	Log Log_;
+	Log_.LogType = LogType;
+	Log_.MsgType = MsgType;
+	Log_.Type = Type;
+	std::wstring wstr = MsgSteam.str();
+	Log_.Msg = new wchar_t[wstr.size()+1];
+	memcpy((wchar_t*)Log_.Msg, wstr.c_str(), wstr.size() * sizeof(wchar_t));
+	((wchar_t*)Log_.Msg)[wstr.size()] = L'\0';
+
+	LogQueue.push(Log_);
+	++Semaphore;
+	cv.notify_one();
 }
 
 void Log::AddLog(const LogType LogType, const MsgType MsgType, const Event::NoticeEvent::NoticeEvent* NoticeEvent)
 {
-	CListCtrl* LogList = (CListCtrl*)((CDialog*)hwnd)->GetDlgItem(IDC_LOG);
-	int Index = LogList->InsertItem(0, L"");
-	if (Index < 0)	return;
-	switch (LogType) {
-	case LogType::__DEBUG:
-		LogList->SetItemText(Index, 0, L"Debug");
-		break;
-	case LogType::INFORMATION:
-		LogList->SetItemText(Index, 0, L"Information");
-		break;
-	case LogType::NOTICE:
-		LogList->SetItemText(Index, 0, L"Notice");
-		break;
-	case LogType::WARNING:
-		LogList->SetItemText(Index, 0, L"Warning");
-		break;
-	case LogType::_ERROR:
-		LogList->SetItemText(Index, 0, L"Error");
-		break;
-	}
-	switch (MsgType)
-	{
-	case MsgType::OTHER:
-		LogList->SetItemText(Index, 1, L"Other");
-		break;
-	case MsgType::_GROUP:
-		LogList->SetItemText(Index, 1, L"Group");
-		break;
-	case MsgType::PRIVATE:
-		LogList->SetItemText(Index, 1, L"Private");
-		break;
-	case MsgType::PROGRAM:
-		LogList->SetItemText(Index, 1, L"Program");
-		break;
-	case MsgType::SERVER:
-		LogList->SetItemText(Index, 1, L"Server");
-		break;
-	default:
-		throw "Known MsgType";
-		break;
-	}
+	Log Log_;
+	Log_.LogType = LogType;
+	Log_.MsgType = MsgType;
+
 	std::wstringstream MsgSteam;
 	switch (NoticeEvent->NoticeEventType)
 	{
 	case Event::NoticeEvent::NoticeEventType::group_fileupload:
-		LogList->SetItemText(Index, 0, L"group_fileupload");
+		Log_.Type = L"group_fileupload";
 		break;
 	case Event::NoticeEvent::NoticeEventType::group_adminchange:
-		LogList->SetItemText(Index, 0, L"group_adminchange");
+		Log_.Type = L"group_adminchange";
 		MsgSteam << ((Event::NoticeEvent::group_adminchange*)NoticeEvent->Information)->FromGroup << " ";
 		MsgSteam << ((Event::NoticeEvent::group_adminchange*)NoticeEvent->Information)->FromQQ << " ";
-		MsgSteam << (((Event::NoticeEvent::group_adminchange*)NoticeEvent->Information)->Type ? "Set":"UnSet");
+		MsgSteam << (((Event::NoticeEvent::group_adminchange*)NoticeEvent->Information)->Type ? "Set" : "UnSet");
 		break;
 	case Event::NoticeEvent::NoticeEventType::group_memberchange:
-		LogList->SetItemText(Index, 0, L"group_memberchange");
+		Log_.Type = L"group_memberchange";
 		MsgSteam << ((Event::NoticeEvent::group_memberchange*)NoticeEvent->Information)->FromGroup << " ";
 		MsgSteam << ((Event::NoticeEvent::group_memberchange*)NoticeEvent->Information)->FromQQ << " ";
 		MsgSteam << ((Event::NoticeEvent::group_memberchange*)NoticeEvent->Information)->OperateQQ << " ";
 		MsgSteam << ((Event::NoticeEvent::group_memberchange*)NoticeEvent->Information)->Type;
 		break;
 	case Event::NoticeEvent::NoticeEventType::group_mute:
-		LogList->SetItemText(Index, 0, L"group_mute");
+		Log_.Type = L"group_mute";
 		break;
 	case Event::NoticeEvent::NoticeEventType::friend_added:
-		LogList->SetItemText(Index, 0, L"friend_added");
+		Log_.Type = L"friend_added";
 		break;
 	default:
 		break;
 	}
-	LogList->SetItemText(Index, 3, MsgSteam.str().c_str());
+	std::wstring wstr = MsgSteam.str();
+	Log_.Msg = new wchar_t[wstr.size() + 1];
+	memcpy((wchar_t*)Log_.Msg, wstr.c_str(), wstr.size() * sizeof(wchar_t));
+	((wchar_t*)Log_.Msg)[wstr.size()] = L'\0';
+
+	LogQueue.push(Log_);
+	++Semaphore;
+	cv.notify_one();
 }
 
 void Log::AddLog(const LogType LogType, const MsgType MsgType, const Event::RequestEvent::RequestEvent* RequestEvent)
 {
-	CListCtrl* LogList = (CListCtrl*)((CDialog*)hwnd)->GetDlgItem(IDC_LOG);
-	int Index = LogList->InsertItem(0, L"");
-	if (Index < 0)	return;
-	switch (LogType) {
-	case LogType::__DEBUG:
-		LogList->SetItemText(Index, 0, L"Debug");
-		break;
-	case LogType::INFORMATION:
-		LogList->SetItemText(Index, 0, L"Information");
-		break;
-	case LogType::NOTICE:
-		LogList->SetItemText(Index, 0, L"Notice");
-		break;
-	case LogType::WARNING:
-		LogList->SetItemText(Index, 0, L"Warning");
-		break;
-	case LogType::_ERROR:
-		LogList->SetItemText(Index, 0, L"Error");
-		break;
-	}
-	switch (MsgType)
-	{
-	case MsgType::OTHER:
-		LogList->SetItemText(Index, 1, L"Other");
-		break;
-	case MsgType::_GROUP:
-		LogList->SetItemText(Index, 1, L"Group");
-		break;
-	case MsgType::PRIVATE:
-		LogList->SetItemText(Index, 1, L"Private");
-		break;
-	case MsgType::PROGRAM:
-		LogList->SetItemText(Index, 1, L"Program");
-		break;
-	case MsgType::SERVER:
-		LogList->SetItemText(Index, 1, L"Server");
-		break;
-	default:
-		throw "Known MsgType";
-		break;
-	}
+	Log Log_;
+	Log_.LogType = LogType;
+	Log_.MsgType = MsgType;
+
 	std::wstringstream MsgSteam;
 	switch (RequestEvent->RequestEventType)
 	{
 	case Event::RequestEvent::RequestEventType::add_friend:
-		LogList->SetItemText(Index, 0, L"add_friend");
+		Log_.Type = L"add_friend";
 		MsgSteam << ((Event::RequestEvent::add_friend*)RequestEvent->Information)->FromQQ << " ";
 		MsgSteam << ((Event::RequestEvent::add_friend*)RequestEvent->Information)->msg << " ";
 		break;
 	case Event::RequestEvent::RequestEventType::add_group:
-		LogList->SetItemText(Index, 0, L"add_group");
+		Log_.Type = L"add_group";
 		MsgSteam << ((Event::RequestEvent::add_group*)RequestEvent->Information)->FromGroup << " ";
 		MsgSteam << ((Event::RequestEvent::add_group*)RequestEvent->Information)->FromQQ << " ";
 		MsgSteam << ((Event::RequestEvent::add_group*)RequestEvent->Information)->Type;
@@ -316,5 +249,14 @@ void Log::AddLog(const LogType LogType, const MsgType MsgType, const Event::Requ
 	default:
 		break;
 	}
-	LogList->SetItemText(Index, 3, MsgSteam.str().c_str());
+
+	std::wstring wstr = MsgSteam.str();
+	Log_.Msg = new wchar_t[wstr.size() + 1];
+	memcpy((wchar_t*)Log_.Msg, wstr.c_str(), wstr.size() * sizeof(wchar_t));
+	((wchar_t*)Log_.Msg)[wstr.size()] = L'\0';
+
+	LogQueue.push(Log_);
+	++Semaphore;
+	cv.notify_one();
+
 }

@@ -10,7 +10,6 @@
 #include "Log.h"
 
 #include <ctime>
-#include <atomic>
 
 #define QQ_APPID 537064985
 #define QQ_VERSION "8.4.1"
@@ -150,6 +149,7 @@ private:
 	void Fun_Msg_Loop();
 	void Fun_Receice(LPBYTE bin);
 	void Fun_Handle(char* serviceCmd, const LPBYTE BodyBin, const uint sso_seq);
+	void Fun_Life_Event();
 private:
 	LPBYTE Make_Body_Request_Packet(const byte iVersion, const int iRequestId, const char* sServantName, const char* sFuncName, byte* sBuffer, uint Bufferlen);
 	LPBYTE Make_Body_PC(byte* Buffer, const uint BufferLen, const bool emp);
