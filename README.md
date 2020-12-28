@@ -2,7 +2,7 @@
 
 It is a QQ robot based on Android QQ 8.4.1.
 
-Because of busy school,I can't continue updata this project on my own,so I public it.
+Because of busy school, I can't continue updata this project on my own, so I public it.
 
 
 **Wish you can make it better!**
@@ -11,7 +11,7 @@ Because of busy school,I can't continue updata this project on my own,so I publi
 # Achieved
 
 
-##Protocol
+## Protocol
 
 1.Log in and sign out.
 
@@ -28,7 +28,7 @@ Because of busy school,I can't continue updata this project on my own,so I publi
 ...
 
 
-##Plugin System
+## Plugin System
 
 1.Enadle and Disable.
 
@@ -39,7 +39,7 @@ Because of busy school,I can't continue updata this project on my own,so I publi
 ...
 
 
-#Todo List
+# Todo List
 
 1.Some memory leak.
 
@@ -51,16 +51,16 @@ Because of busy school,I can't continue updata this project on my own,so I publi
 
 6.Plugin Management.
 
-//7.Plugin store.
+7.Plugin store.
 
 ...
 
 
-#Program Life cycle
+# Program Life cycle
 
 ```flow
 st=>start: Program Start
-op1=>operation: Initialization(Load Configure and Plugins,Draw UI)
+op1=>operation: Initialization(Load Configure and Plugins, Draw UI)
 op2=>operation: Log in
 sub1=>subroutine: Connect Tencent Service
 sub2=>subroutine: Send wtlogin.login
@@ -69,5 +69,8 @@ sub3=>subroutine: Send StatSvc.Register
 op4=>operation: sign out
 op5=>operation: Unload Plugin
 e=>end: Program Exit
-st->op1->op2->sub1(right)->sub2(right)->op3->sub3(right)->op4->sub3(right)->op5>e
+st->op1->op2->sub1(right)->sub2(right)->op3->sub3(right)->op4->sub3(right)->op5->e
 ```
+
+# Protocal Example
+
