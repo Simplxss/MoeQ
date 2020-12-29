@@ -53,8 +53,3 @@ namespace BigInteger
 {
 	bool AddOne(byte* BigInteger, int len);
 }
-
-namespace SildVerification
-{
-	char* Load(const HWND Parent, const char* Url);
-}

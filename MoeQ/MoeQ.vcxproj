@@ -234,6 +234,10 @@
   <ItemGroup>
     <Image Include="MoeQ.ico" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="..\README.md" />
+    <None Include="..\README_ZH.md" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

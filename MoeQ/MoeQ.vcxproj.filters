@@ -132,4 +132,12 @@
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="..\README.md">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\README_ZH.md">
+      <Filter>Resource Files</Filter>
+    </None>
+  </ItemGroup>
 </Project>

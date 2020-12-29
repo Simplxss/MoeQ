@@ -1,9 +1,10 @@
-# MoeQ
+Language: **`English`** [`简体中文`](https://github.com/YuFanXing/MoeQ/README_ZH.md)
 
-It is a QQ robot based on Android QQ 8.4.1.
+# Brief Introduction
 
-Because of busy school, I can't continue updata this project on my own, so I public it.
+***MoeQ*** is a QQ robot based on Android QQ 8.4.1.
 
+Because of busy school, I can't continue update this project on my own, so I public it.
 
 **Wish you can make it better!**
 
@@ -13,64 +14,79 @@ Because of busy school, I can't continue updata this project on my own, so I pub
 
 ## Protocol
 
-1.Log in and sign out.
+1. Log in and sign out.
 
-2.Get friends and groups list.
+2. Get friends and groups list.
 
-2.Receive some group messages and private messages.
+2. Receive some group messages and private messages.
 
-3.Send part of group messages and private messages.
+3. Send part of group messages and private messages.
 
-4.Draw group message.
+4. Draw group message.
 
-5.Do some friend and group actions
+5. Do some friend and group actions.
 
-...
+6. ...
 
 
 ## Plugin System
 
-1.Enadle and Disable.
+1. Enable and Disable.
 
-2.Right control.
+2. Right control.
 
-3.[C++ sdk](https://github.com/YuFanXing/mqcppsdk).
+3. [C++ sdk](https://github.com/YuFanXing/mqcppsdk).
 
-...
+4. ...
 
 
 # Todo List
 
-1.Some memory leak.
+1. Some memory leak.
+2. Support image message and voice message.
+3. Fix bugs.
+4. Update protocol version.
+5. Plugin Management.
+6. Plugin store.
+8. ...
 
-2.Support image message and voice message.
+# Files Usage
 
-3.Fix bugs.
+`./MoeQ` Include source code of this project.
 
-4.Upadta protocol version.
+`./include` Include the head files of dependencies.
 
-6.Plugin Management.
-
-7.Plugin store.
-
-...
+`./lib` Include the static link library of dependencies.
 
 
-# Program Life cycle
 
-```flow
-st=>start: Program Start
-op1=>operation: Initialization(Load Configure and Plugins, Draw UI)
-op2=>operation: Log in
-sub1=>subroutine: Connect Tencent Service
-sub2=>subroutine: Send wtlogin.login
-op3=>operation: Heat beat
-sub3=>subroutine: Send StatSvc.Register
-op4=>operation: sign out
-op5=>operation: Unload Plugin
-e=>end: Program Exit
-st->op1->op2->sub1(right)->sub2(right)->op3->sub3(right)->op4->sub3(right)->op5->e
-```
+`./MoeQ/MoeQ.cpp` The entrance of the program.
 
-# Protocal Example
+`./MoeQ/MainFrm.cpp` The main window.
 
+`./MoeQ/Android.cpp` The protocol of Android QQ.
+
+`./MoeQ/PluginSystem.cpp` The plugins control system.
+
+`./MoeQ/Utils.cpp` Include encode, compress, algorithm and some tools.
+
+
+
+# Protocol Example
+
+*Android QQ 8.4.1*
+
+
+
+# Dependency
+
+Thanks to the following projects for making this project greater!
+
+1. *rapidjson*
+
+2. *miniblink*
+3. *openssl*
+4. *zlib*
+5. *curl*
+
+**If it is not necessary,  please don't add more dependencies.**
