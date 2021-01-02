@@ -144,7 +144,7 @@ public:
 	Android(const char* IMEI, const char IMSI[16], const byte GUID[16], const byte MAC[6], const char* _device, const char* Brand);
 private:
 	bool Fun_Connect(const char* IP = nullptr, const unsigned short Port = 0);
-	void Fun_Send(const uint PacketType, const byte EncodeType, const char* ServiceCmd, LPBYTE Buffer);
+	int Fun_Send(const uint PacketType, const byte EncodeType, const char* ServiceCmd, LPBYTE Buffer);
 	LPBYTE Fun_Send_Sync(const uint PacketType, const byte EncodeType, const char* ServiceCmd, LPBYTE Buffer);
 	void Fun_Msg_Loop();
 	void Fun_Receice(LPBYTE bin);
@@ -182,16 +182,16 @@ private:
 	void OidbSvc_0x8fc_2(const uint Group, const  uint QQ, const  char* Title);
 private:
 	void Un_Tlv_Get(const unsigned short cmd, const byte* bin, const uint len);
-	void Un_Pack_Body_Request_Packet(const LPBYTE BodyBin, LPBYTE& sBuffer);
-	void Un_Pack_wtlogin_login(const LPBYTE BodyBin);
-	void Un_Pack_OnlinePush_PbPushGroupMsg(const LPBYTE BodyBin, const uint sso_seq);
-	void Un_Pack_OnlinePush_PbC2CMsgSync(const LPBYTE BodyBin, const uint sso_seq);
-	void Un_Pack_OnlinePush_ReqPush(const LPBYTE BodyBin, const uint sso_seq);
-	void Un_Pack_OnlinePush_PbPushTransMsg(const LPBYTE BodyBin, const uint sso_seq);
-	void Un_Pack_MessageSvc_PushNotify(const LPBYTE BodyBin, const uint sso_seq);
-	void Un_Pack_MessageSvc_PushForceOffline(const LPBYTE BodyBin, const uint sso_seq);
-	void Un_Pack_StatSvc_SvcReqMSFLoginNotify(const LPBYTE BodyBin, const uint sso_seq);
-	void Un_Pack_ConfigPushSvc_PushReq(const LPBYTE BodyBin, const uint sso_seq);
+	void Unpack_Body_Request_Packet(const LPBYTE BodyBin, LPBYTE& sBuffer);
+	void Unpack_wtlogin_login(const LPBYTE BodyBin);
+	void Unpack_OnlinePush_PbPushGroupMsg(const LPBYTE BodyBin, const uint sso_seq);
+	void Unpack_OnlinePush_PbC2CMsgSync(const LPBYTE BodyBin, const uint sso_seq);
+	void Unpack_OnlinePush_ReqPush(const LPBYTE BodyBin, const uint sso_seq);
+	void Unpack_OnlinePush_PbPushTransMsg(const LPBYTE BodyBin, const uint sso_seq);
+	void Unpack_MessageSvc_PushNotify(const LPBYTE BodyBin, const uint sso_seq);
+	void Unpack_MessageSvc_PushForceOffline(const LPBYTE BodyBin, const uint sso_seq);
+	void Unpack_StatSvc_SvcReqMSFLoginNotify(const LPBYTE BodyBin, const uint sso_seq);
+	void Unpack_ConfigPushSvc_PushReq(const LPBYTE BodyBin, const uint sso_seq);
 public:
 	void QQ_Init(const char* Account);
 	byte QQ_Login(const char* Password);

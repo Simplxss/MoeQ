@@ -205,6 +205,7 @@
     <ClInclude Include="targetver.h" />
     <ClInclude Include="Tea.h" />
     <ClInclude Include="ThreadPool.h" />
+    <ClInclude Include="Tim.h" />
     <ClInclude Include="Tlv.h" />
     <ClInclude Include="Utils.h" />
   </ItemGroup>
@@ -225,6 +226,7 @@
     <ClCompile Include="Socket.cpp" />
     <ClCompile Include="Tea.cpp" />
     <ClCompile Include="ThreadPool.cpp" />
+    <ClCompile Include="Tim.cpp" />
     <ClCompile Include="Tlv.cpp" />
     <ClCompile Include="Utils.cpp" />
   </ItemGroup>

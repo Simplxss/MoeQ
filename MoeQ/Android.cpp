@@ -182,10 +182,11 @@ bool Android::Fun_Connect(const char* IP, const unsigned short Port)
 	return true;
 }
 
-void Android::Fun_Send(const uint PacketType, const byte EncodeType, const char* ServiceCmd, LPBYTE Buffer)
+int Android::Fun_Send(const uint PacketType, const byte EncodeType, const char* ServiceCmd, LPBYTE Buffer)
 {
 	::Pack Pack(XBin::Bin2Int(Buffer) + 100, true);
 	::Pack _Pack(XBin::Bin2Int(Buffer) + 100, true);
+	int SsoSeq = QQ.SsoSeq.fetch_add(1);
 	Pack.SetInt(PacketType);
 	Pack.SetByte(EncodeType);
 	switch (PacketType)
@@ -286,98 +287,7 @@ void Android::Fun_Send(const uint PacketType, const byte EncodeType, const char*
 /// <returns>会自动销毁</returns>
 LPBYTE Android::Fun_Send_Sync(const uint PacketType, const byte EncodeType, const char* ServiceCmd, LPBYTE Buffer)
 {
-	::Pack Pack(XBin::Bin2Int(Buffer) + 100, true);
-	::Pack _Pack(XBin::Bin2Int(Buffer) + 100, true);
-	int SsoSeq = QQ.SsoSeq.fetch_add(1);
-	Pack.SetInt(PacketType);
-	Pack.SetByte(EncodeType);
-	switch (PacketType)
-	{
-	case 10:
-		if (EncodeType == 1)
-		{
-			Pack.SetInt(68);
-			Pack.SetBin(QQ.Token.A2, 64);
-		}
-		else
-		{
-			Pack.SetInt(4);
-		}
-		break;
-	case 11:
-		Pack.SetInt(SsoSeq);
-		break;
-	}
-	Pack.SetByte(0);
-	Pack.SetInt(strlen(QQ.QQ_Str) + 4);
-	Pack.SetStr(QQ.QQ_Str);
-	switch (PacketType)
-	{
-	case 10:
-		_Pack.SetInt(SsoSeq);
-		_Pack.SetInt(QQ_APPID);
-		_Pack.SetInt(QQ_APPID);
-		_Pack.SetBin((byte*)"\1\0\0\0\0\0\0\0\0\0\0\0", 12);
-		if (EncodeType == 1)
-		{
-			_Pack.SetInt(76);
-			_Pack.SetBin(QQ.Token.TGT, 72);
-		}
-		else
-		{
-			_Pack.SetInt(4);
-		}
-		_Pack.SetInt(strlen(ServiceCmd) + 4);
-		_Pack.SetStr(ServiceCmd);
-		_Pack.SetInt(8); //MsgCookie len + 4
-		_Pack.SetBin(QQ.MsgCookie, 4);
-		_Pack.SetInt(strlen(Device.IMEI) + 4); //IMEI len + 4
-		_Pack.SetStr(Device.IMEI);
-		_Pack.SetInt(4);
-		_Pack.SetShort(34); //Version len + 2
-		_Pack.SetStr(QQ.Version);
-		_Pack.SetInt(4);
-		break;
-	case 11:
-		_Pack.SetInt(strlen(ServiceCmd) + 4);
-		_Pack.SetStr(ServiceCmd);
-		_Pack.SetInt(8);
-		_Pack.SetBin(QQ.MsgCookie, 4);
-		_Pack.SetInt(4);
-		break;
-	}
-	_Pack.SetLength();
-	_Pack.SetBin_(_Pack.GetAll_(false));
-	_Pack.SetBin_(Buffer);
-	{
-		byte* bin;
-		uint bin_len = _Pack.GetAll(bin);
-		switch (EncodeType)
-		{
-		case 0:
-			Pack.SetBin(bin, bin_len);
-			break;
-		case 1:
-		{
-			std::vector<byte> data;
-			Tea::encrypt(QQ.Token.D2Key, bin, bin_len, data);
-			Pack.SetBin(&data);
-		}
-		break;
-		case 2:
-		{
-			std::vector<byte> data;
-			Tea::encrypt((byte*)"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0", bin, bin_len, data);
-			Pack.SetBin(&data);
-		}
-		break;
-		}
-		delete[] bin;
-	}
-	Pack.SetLength();
-
-	TCP.Send(Pack.GetAll());
-	delete[] Pack.GetAll();
+	int SsoSeq = Fun_Send(PacketType, EncodeType, ServiceCmd, Buffer);
 
 	std::mutex lock;
 	std::unique_lock<std::mutex> ulock(lock);
@@ -484,7 +394,7 @@ void Android::Fun_Receice(const LPBYTE bin)
 	{
 		SendList[sso_seq & 0x3F].BodyBin = BodyBin;
 		SendList[sso_seq & 0x3F].cv.notify_one();
-		Sleep(60000);
+		Sleep(60000);  //Todo 
 	}
 	else
 	{
@@ -502,23 +412,23 @@ void Android::Fun_Handle(char* serviceCmd, const LPBYTE BodyBin, const uint sso_
 	char* second = strtok_s(NULL, ".", &buf);
 	if (!strcmp(first, "OnlinePush"))
 	{
-		if (!strcmp(second, "PbPushGroupMsg")) Un_Pack_OnlinePush_PbPushGroupMsg(BodyBin, sso_seq);
-		if (!strcmp(second, "PbC2CMsgSync")) Un_Pack_OnlinePush_PbC2CMsgSync(BodyBin, sso_seq);
-		if (!strcmp(second, "ReqPush")) Un_Pack_OnlinePush_ReqPush(BodyBin, sso_seq);
-		if (!strcmp(second, "PbPushTransMsg")) Un_Pack_OnlinePush_PbPushTransMsg(BodyBin, sso_seq);
+		if (!strcmp(second, "PbPushGroupMsg")) Unpack_OnlinePush_PbPushGroupMsg(BodyBin, sso_seq);
+		if (!strcmp(second, "PbC2CMsgSync")) Unpack_OnlinePush_PbC2CMsgSync(BodyBin, sso_seq);
+		if (!strcmp(second, "ReqPush")) Unpack_OnlinePush_ReqPush(BodyBin, sso_seq);
+		if (!strcmp(second, "PbPushTransMsg")) Unpack_OnlinePush_PbPushTransMsg(BodyBin, sso_seq);
 	}
 	if (!strcmp(first, "MessageSvc"))
 	{
-		if (!strcmp(second, "PushNotify")) Un_Pack_MessageSvc_PushNotify(BodyBin, sso_seq);
-		if (!strcmp(second, "PushForceOffline")) Un_Pack_MessageSvc_PushForceOffline(BodyBin, sso_seq);
+		if (!strcmp(second, "PushNotify")) Unpack_MessageSvc_PushNotify(BodyBin, sso_seq);
+		if (!strcmp(second, "PushForceOffline")) Unpack_MessageSvc_PushForceOffline(BodyBin, sso_seq);
 	}
 	if (!strcmp(first, "StatSvc"))
 	{
-		if (!strcmp(second, "SvcReqMSFLoginNotify")) Un_Pack_StatSvc_SvcReqMSFLoginNotify(BodyBin, sso_seq);
+		if (!strcmp(second, "SvcReqMSFLoginNotify")) Unpack_StatSvc_SvcReqMSFLoginNotify(BodyBin, sso_seq);
 	}
 	if (!strcmp(first, "ConfigPushSvc"))
 	{
-		if (!strcmp(second, "PushReq")) Un_Pack_ConfigPushSvc_PushReq(BodyBin, sso_seq);
+		if (!strcmp(second, "PushReq")) Unpack_ConfigPushSvc_PushReq(BodyBin, sso_seq);
 	}
 }
 
@@ -649,7 +559,7 @@ void Android::wtlogin_login()
 	Pack.Skip(Tlv::Tlv521(Pack.GetCurrentPoint(), Pack.GetLeftSpace()));
 	Pack.Skip(Tlv::Tlv525(Pack.GetCurrentPoint(), Pack.GetLeftSpace()));
 	Pack.Skip(Tlv::Tlv544(Pack.GetCurrentPoint(), Pack.GetLeftSpace(), QQ_APKID, QQ_ASIG));
-	Un_Pack_wtlogin_login(Fun_Send_Sync(10, 2, "wtlogin.login", Make_Body_PC(Pack.GetAll(), Pack.Length(), false)));
+	Unpack_wtlogin_login(Fun_Send_Sync(10, 2, "wtlogin.login", Make_Body_PC(Pack.GetAll(), Pack.Length(), false)));
 }
 
 void Android::wtlogin_login_Send_Sms()
@@ -663,7 +573,7 @@ void Android::wtlogin_login_Send_Sms()
 	Pack.Skip(Tlv::Tlv174(Pack.GetCurrentPoint(), Pack.GetLeftSpace(), QQ.Login->SmsToken));
 	Pack.Skip(Tlv::Tlv17A(Pack.GetCurrentPoint(), Pack.GetLeftSpace()));
 	Pack.Skip(Tlv::Tlv197(Pack.GetCurrentPoint(), Pack.GetLeftSpace()));
-	Un_Pack_wtlogin_login(Fun_Send_Sync(10, 2, "wtlogin.login", Make_Body_PC(Pack.GetAll(), Pack.Length(), false)));
+	Unpack_wtlogin_login(Fun_Send_Sync(10, 2, "wtlogin.login", Make_Body_PC(Pack.GetAll(), Pack.Length(), false)));
 }
 
 void Android::wtlogin_login_Viery_Ticket(const char* Ticket)
@@ -676,7 +586,7 @@ void Android::wtlogin_login_Viery_Ticket(const char* Ticket)
 	Pack.Skip(Tlv::Tlv104(Pack.GetCurrentPoint(), Pack.GetLeftSpace(), QQ.Login->VieryToken2));
 	Pack.Skip(Tlv::Tlv116(Pack.GetCurrentPoint(), Pack.GetLeftSpace()));
 	//Pack.Skip(Tlv::Tlv547(Pack.GetCurrentPoint(), Pack.GetLeftSpace(), QQ.Login->ClientPow));
-	Un_Pack_wtlogin_login(Fun_Send_Sync(10, 2, "wtlogin.login", Make_Body_PC(Pack.GetAll(), Pack.Length(), false)));
+	Unpack_wtlogin_login(Fun_Send_Sync(10, 2, "wtlogin.login", Make_Body_PC(Pack.GetAll(), Pack.Length(), false)));
 }
 
 void Android::wtlogin_login_Viery_Sms(const char* SmsCode)
@@ -691,7 +601,7 @@ void Android::wtlogin_login_Viery_Sms(const char* SmsCode)
 	Pack.Skip(Tlv::Tlv17C(Pack.GetCurrentPoint(), Pack.GetLeftSpace(), SmsCode));
 	Pack.Skip(Tlv::Tlv401(Pack.GetCurrentPoint(), Pack.GetLeftSpace(), Device.GUID, QQ.Login->token_402));
 	Pack.Skip(Tlv::Tlv198(Pack.GetCurrentPoint(), Pack.GetLeftSpace()));
-	Un_Pack_wtlogin_login(Fun_Send_Sync(10, 2, "wtlogin.login", Make_Body_PC(Pack.GetAll(), Pack.Length(), false)));
+	Unpack_wtlogin_login(Fun_Send_Sync(10, 2, "wtlogin.login", Make_Body_PC(Pack.GetAll(), Pack.Length(), false)));
 }
 
 void Android::wtlogin_login_Viery_204()
@@ -705,7 +615,7 @@ void Android::wtlogin_login_Viery_204()
 	Pack.Skip(Tlv::Tlv401(Pack.GetCurrentPoint(), Pack.GetLeftSpace(), Device.GUID, QQ.Login->token_402));
 	//Pack.Skip(Tlv::Tlv402(Pack.GetCurrentPoint(), Pack.GetLeftSpace()));
 	//Pack.Skip(Tlv::Tlv403(Pack.GetCurrentPoint(), Pack.GetLeftSpace()));
-	Un_Pack_wtlogin_login(Fun_Send_Sync(10, 2, "wtlogin.login", Make_Body_PC(Pack.GetAll(), Pack.Length(), false)));
+	Unpack_wtlogin_login(Fun_Send_Sync(10, 2, "wtlogin.login", Make_Body_PC(Pack.GetAll(), Pack.Length(), false)));
 }
 
 void Android::wtlogin_exchange_emp()
@@ -831,7 +741,7 @@ void Android::StatSvc_Register(const byte state)
 	uint len = Jce.GetAll(bin);
 
 	LPBYTE sBuffer;
-	Un_Pack_Body_Request_Packet(Fun_Send_Sync(10, 1, "StatSvc.register", Make_Body_Request_Packet(3, 0, "PushService", "SvcReqRegister", bin, len)), sBuffer);
+	Unpack_Body_Request_Packet(Fun_Send_Sync(10, 1, "StatSvc.register", Make_Body_Request_Packet(3, 0, "PushService", "SvcReqRegister", bin, len)), sBuffer);
 
 	UnJce UnJce(sBuffer);
 	std::vector<JceStruct::Map<char*, std::vector<JceStruct::Map<char*, LPBYTE>>>> Map;
@@ -906,7 +816,7 @@ void Android::StatSvc_SetStatusFromClient(const byte state)
 	uint len = Jce.GetAll(bin);
 
 	LPBYTE sBuffer;
-	Un_Pack_Body_Request_Packet(Fun_Send_Sync(10, 1, "StatSvc.SetStatusFromClient", Make_Body_Request_Packet(3, 0, "PushService", "SvcReqRegister", bin, len)), sBuffer);
+	Unpack_Body_Request_Packet(Fun_Send_Sync(10, 1, "StatSvc.SetStatusFromClient", Make_Body_Request_Packet(3, 0, "PushService", "SvcReqRegister", bin, len)), sBuffer);
 
 	UnJce UnJce(sBuffer);
 	std::vector<JceStruct::Map<char*, std::vector<JceStruct::Map<char*, LPBYTE>>>> Map;
@@ -956,7 +866,7 @@ void Android::friendlist_getFriendGroupList(const int StartIndex)
 	uint len = Jce.GetAll_(bin);
 
 	LPBYTE sBuffer;
-	Un_Pack_Body_Request_Packet(Fun_Send_Sync(11, 1, "friendlist.getFriendGroupList", Make_Body_Request_Packet(3, 0, "mqq.IMService.FriendListServiceServantObj", "GetFriendListReq", bin, len)), sBuffer);
+	Unpack_Body_Request_Packet(Fun_Send_Sync(11, 1, "friendlist.getFriendGroupList", Make_Body_Request_Packet(3, 0, "mqq.IMService.FriendListServiceServantObj", "GetFriendListReq", bin, len)), sBuffer);
 
 	UnJce UnJce(sBuffer);
 	std::vector<JceStruct::Map<char*, LPBYTE>> Map;
@@ -1008,7 +918,7 @@ void Android::friendlist_GetTroopListReqV2()
 	uint len = Jce.GetAll_(bin);
 
 	LPBYTE sBuffer;
-	Un_Pack_Body_Request_Packet(Fun_Send_Sync(11, 1, "friendlist.GetTroopListReqV2", Make_Body_Request_Packet(3, 0, "mqq.IMService.FriendListServiceServantObj", "GetTroopListReqV2Simplify", bin, len)), sBuffer);
+	Unpack_Body_Request_Packet(Fun_Send_Sync(11, 1, "friendlist.GetTroopListReqV2", Make_Body_Request_Packet(3, 0, "mqq.IMService.FriendListServiceServantObj", "GetTroopListReqV2Simplify", bin, len)), sBuffer);
 
 	UnJce UnJce(sBuffer);
 	std::vector<JceStruct::Map<char*, LPBYTE>> Map;
@@ -1060,7 +970,7 @@ void Android::friendlist_getTroopMemberList(const uint Group)
 	uint len = Jce.GetAll(bin);
 
 	LPBYTE sBuffer;
-	Un_Pack_Body_Request_Packet(Fun_Send_Sync(11, 1, "friendlist.getTroopMemberList", Make_Body_Request_Packet(3, 0, "mqq.IMService.FriendListServiceServantObj", "GetFriendListReq", bin, len)), sBuffer);
+	Unpack_Body_Request_Packet(Fun_Send_Sync(11, 1, "friendlist.getTroopMemberList", Make_Body_Request_Packet(3, 0, "mqq.IMService.FriendListServiceServantObj", "GetFriendListReq", bin, len)), sBuffer);
 
 	UnJce UnJce(sBuffer);
 	std::vector<JceStruct::Map<char*, LPBYTE>> Map;
@@ -1156,6 +1066,7 @@ void Android::SQQzoneSvc_getUndealCount()
 
 	]
 	*/
+	//Todo
 	Fun_Send_Sync(10, 1, "SQQzoneSvc.getUndealCount", Jce.GetAll());
 }
 
@@ -1218,7 +1129,7 @@ bool Android::VisitorSvc_ReqFavorite(const uint QQ, const int Times)
 	uint len = _Jce.GetAll(bin);
 
 	LPBYTE sBuffer;
-	Un_Pack_Body_Request_Packet(Fun_Send_Sync(11, 1, "VisitorSvc.ReqFavorite", Make_Body_Request_Packet(3, 0, "VisitorSvc", "ReqFavorite", bin, len)), sBuffer);
+	Unpack_Body_Request_Packet(Fun_Send_Sync(11, 1, "VisitorSvc.ReqFavorite", Make_Body_Request_Packet(3, 0, "VisitorSvc", "ReqFavorite", bin, len)), sBuffer);
 
 	UnJce UnJce(sBuffer);
 	std::vector<JceStruct::Map<char*, std::vector<JceStruct::Map<char*, LPBYTE>>>> Map;
@@ -2227,13 +2138,13 @@ void Android::Un_Tlv_Get(const unsigned short cmd, const byte* bin, const uint l
 	}
 }
 
-void Android::Un_Pack_Body_Request_Packet(const LPBYTE BodyBin, LPBYTE& sBuffer)
+void Android::Unpack_Body_Request_Packet(const LPBYTE BodyBin, LPBYTE& sBuffer)
 {
 	UnJce UnJce(BodyBin);
 	UnJce.Read(sBuffer, 7);
 }
 
-void Android::Un_Pack_wtlogin_login(const LPBYTE BodyBin)
+void Android::Unpack_wtlogin_login(const LPBYTE BodyBin)
 {
 	::UnPack UnPack(BodyBin);
 	UnPack.GetByte();
@@ -2314,7 +2225,7 @@ void Android::Un_Pack_wtlogin_login(const LPBYTE BodyBin)
 	}
 }
 
-void Android::Un_Pack_OnlinePush_PbPushGroupMsg(const LPBYTE BodyBin, const uint sso_seq)
+void Android::Unpack_OnlinePush_PbPushGroupMsg(const LPBYTE BodyBin, const uint sso_seq)
 {
 	Event::GroupMsg GroupMsg;
 	::UnProtobuf UnPB(BodyBin);
@@ -2568,7 +2479,7 @@ void Android::Un_Pack_OnlinePush_PbPushGroupMsg(const LPBYTE BodyBin, const uint
 	Message::DestoryMsg(GroupMsg.Msg);
 }
 
-void Android::Un_Pack_OnlinePush_PbPushTransMsg(const LPBYTE BodyBin, const uint sso_seq)
+void Android::Unpack_OnlinePush_PbPushTransMsg(const LPBYTE BodyBin, const uint sso_seq)
 {
 	::UnProtobuf UnPB(BodyBin);
 	uint Type = UnPB.GetVarint(3);
@@ -2615,14 +2526,14 @@ void Android::Un_Pack_OnlinePush_PbPushTransMsg(const LPBYTE BodyBin, const uint
 
 }
 
-void Android::Un_Pack_OnlinePush_PbC2CMsgSync(const LPBYTE BodyBin, const uint sso_seq)
+void Android::Unpack_OnlinePush_PbC2CMsgSync(const LPBYTE BodyBin, const uint sso_seq)
 {
 }
 
-void Android::Un_Pack_OnlinePush_ReqPush(const LPBYTE BodyBin, const uint sso_seq)
+void Android::Unpack_OnlinePush_ReqPush(const LPBYTE BodyBin, const uint sso_seq)
 {
 	LPBYTE sBuffer;
-	Un_Pack_Body_Request_Packet(BodyBin, sBuffer);
+	Unpack_Body_Request_Packet(BodyBin, sBuffer);
 
 	UnJce UnJce(sBuffer);
 	std::vector<JceStruct::Map<char*, LPBYTE>> Map;
@@ -2645,20 +2556,20 @@ void Android::Un_Pack_OnlinePush_ReqPush(const LPBYTE BodyBin, const uint sso_se
 	OnlinePush_RespPush(sso_seq, protobuf, a);
 }
 
-void Android::Un_Pack_MessageSvc_PushNotify(const LPBYTE BodyBin, const uint sso_seq)
+void Android::Unpack_MessageSvc_PushNotify(const LPBYTE BodyBin, const uint sso_seq)
 {
 	MessageSvc_PbGetMsg();
 }
 
-void Android::Un_Pack_MessageSvc_PushForceOffline(const LPBYTE BodyBin, const uint sso_seq)
+void Android::Unpack_MessageSvc_PushForceOffline(const LPBYTE BodyBin, const uint sso_seq)
 {
 	QQ_Offline();
 }
 
-void Android::Un_Pack_StatSvc_SvcReqMSFLoginNotify(const LPBYTE BodyBin, const uint sso_seq)
+void Android::Unpack_StatSvc_SvcReqMSFLoginNotify(const LPBYTE BodyBin, const uint sso_seq)
 {
 	LPBYTE sBuffer;
-	Un_Pack_Body_Request_Packet(BodyBin, sBuffer);
+	Unpack_Body_Request_Packet(BodyBin, sBuffer);
 
 	UnJce UnJce(sBuffer);
 	std::vector<JceStruct::Map<char*, std::vector<JceStruct::Map<char*, LPBYTE>>>> Map;
@@ -2680,10 +2591,10 @@ void Android::Un_Pack_StatSvc_SvcReqMSFLoginNotify(const LPBYTE BodyBin, const u
 	delete[] sBuffer;
 }
 
-void Android::Un_Pack_ConfigPushSvc_PushReq(const LPBYTE BodyBin, const uint sso_seq)
+void Android::Unpack_ConfigPushSvc_PushReq(const LPBYTE BodyBin, const uint sso_seq)
 {
 	LPBYTE sBuffer;
-	Un_Pack_Body_Request_Packet(BodyBin + 4, sBuffer);
+	Unpack_Body_Request_Packet(BodyBin + 4, sBuffer);
 
 	UnJce UnJce(sBuffer);
 	std::vector<JceStruct::Map<char*, std::vector<JceStruct::Map<char*, LPBYTE>>>> Map;
@@ -2699,7 +2610,7 @@ void Android::Un_Pack_ConfigPushSvc_PushReq(const LPBYTE BodyBin, const uint sso
 			int type;
 			UnJce.Read(type, 1);
 
-			type = 0;//Todo,暂时懒得高重定向
+			type = 0;//Todo,暂时懒得搞重定向
 
 			if (type == 1) //need redirect
 			{
@@ -2742,6 +2653,11 @@ void Android::QQ_Init(const char* Account)
 	memcpy(QQ.QQ_Str, Account, strlen(Account) + 1);
 }
 
+/// <summary>
+/// 登录
+/// </summary>
+/// <param name="Password">密码</param>
+/// <returns>LOGIN_</returns>
 byte Android::QQ_Login(const char* Password)
 {
 	QQ.Token.md5 = new byte[16];

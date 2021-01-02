@@ -1,4 +1,4 @@
-语言: [`English`](https://github.com/YuFanXing/MoeQ/README.md) **`简体中文`**
+语言: [`English`](https://github.com/YuFanXing/MoeQ/blob/master/README.md) **`简体中文`**
 
 # 简介
 
