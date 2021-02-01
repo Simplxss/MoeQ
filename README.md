@@ -10,9 +10,7 @@ Because of busy school, I can't spare time to continue updating this project on 
 
 **Wish you can make it better!**
 
-
 # Achieved
-
 
 ## Protocol
 
@@ -30,7 +28,6 @@ Because of busy school, I can't spare time to continue updating this project on 
 
 6. ...
 
-
 ## Plugin System
 
 1. Enable and disable.
@@ -41,15 +38,20 @@ Because of busy school, I can't spare time to continue updating this project on 
 
 4. ...
 
-
 # Features Under Way
 
 1. Some memory leak.
+
 2. Support image message and voice message.
+
 3. Fix bugs.
+
 4. Update protocol version.
+
 5. Plugin management.
+
 6. Plugin store.
+
 8. ...
 
 # Files Usage
@@ -59,7 +61,6 @@ Because of busy school, I can't spare time to continue updating this project on 
 `./lib` Include the static link library of dependencies.
 
 `./MoeQ` Include source code of this project.
-
 
 
 `./MoeQ/MoeQ.cpp` The entrance of the program.
@@ -115,7 +116,12 @@ If you just want to use the protocol,  following is the simplest way of using th
 ```c++
 #include "Android.h"
 
-Android Sdk("861891778567", "460013521635791", (const byte*)"\x86\xA4\x45\xBF\x44\xA2\xC2\x87\x59\x76\x18\xF6\xF3\x6E\xB6\x8C", (const byte*)"\0\0\0\0\0\2", "XiaoMi", "MIX Alpha");
+Android Sdk("861891778567", 
+            "460013521635791", 
+            (const byte*)"\x86\xA4\x45\xBF\x44\xA2\xC2\x87\x59\x76\x18\xF6\xF3\x6E\xB6\x8C", 
+            (const byte*)"\0\0\0\0\0\2", 
+            "XiaoMi", 
+            "MIX Alpha");
 Sdk.QQ_Init("10001");
 int state = Sdk.QQ_Login("Password");
 if (state == LOGIN_SUCCESS)
@@ -128,9 +134,9 @@ Thanks to the following projects for making this project greater!
 
 1. ***[rapidjson](https://github.com/Tencent/rapidjson)***
 
-2. ***miniblink***
+2. ***[miniblink](https://github.com/weolar/miniblink49)***
 3. ***[openssl](https://github.com/openssl/openssl)***
-4. ***zlib***
+4. ***[zlib](https://github.com/madler/zlib)***
 5. ***[curl](https://github.com/curl/curl)***
 
 **If it is not necessary,  please don't add more dependencies.**
