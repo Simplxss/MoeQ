@@ -73,6 +73,8 @@ BOOL MainFrm::OnInitDialog()
 	wcscpy(DataPath, szFilePath);
 	wcscat(DataPath, L"data\\");
 
+	Database::Init();
+
 	wchar_t _QQ[12];
 	wchar_t str[256];
 	wcscpy(DataFilePath, DataPath);

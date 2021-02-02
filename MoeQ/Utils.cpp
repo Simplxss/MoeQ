@@ -274,6 +274,7 @@ LPBYTE Utils::ZlibUnCompress(const LPBYTE source)
 	}
 }
 
+
 byte* XBin::Int2Bin(const uint i)
 {
 	byte* bin = new byte[4];
@@ -385,6 +386,7 @@ uint XBin::Hex2Bin(char* hex, byte*& bin)
 	}
 }
 
+
 /// <summary>
 /// Ansi×Ö·û´®×ªUtf8
 /// </summary>
@@ -456,6 +458,7 @@ char* Iconv::Unicode2Utf8(const wchar_t* szU16)
 	u8String[u8Len] = '\0';
 	return u8String;
 }
+
 
 bool BigInteger::AddOne(byte* BigInteger, int len)
 {

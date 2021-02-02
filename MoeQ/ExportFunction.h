@@ -101,8 +101,8 @@ FUNC(bool, drawGroupMsg, const uint64_t AuthCode, const uint Group, const uint M
 {
 	if (Plugin.VieryAuth(AuthCode, 8))
 	{
-		//
-		//return Sdk.QQ_DrawGroupMsg(Group, Msg);
+		
+		return Sdk.QQ_DrawGroupMsg(Group, Msg);
 	}
 	else
 	{

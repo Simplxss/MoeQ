@@ -1,6 +1,6 @@
 #include "pch.h"
 #include "Tim.h"
-
+/*
 namespace Message
 {
 	LPBYTE Pack1(const char* Text, const uint AtQQ)
@@ -527,3 +527,4 @@ LPBYTE Tim::Make_Body_PC(byte* Buffer, const uint BufferLen, const bool emp)
 	Pack.SetLength();
 	return Pack.GetAll();
 }
+*/

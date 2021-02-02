@@ -237,3 +237,18 @@ namespace Event
 	void OnNoticeMsg(const NoticeEvent::NoticeEvent* NoticeEvent);
 	void OnRequestMsg(const RequestEvent::RequestEvent* RequestEvent);
 }
+
+namespace Database
+{
+	void Init();
+	void UnInit();
+	uint AddPrivateMsg(const Event::PrivateMsg* PrivateMsg);
+	uint AddGroupMsg(const Event::GroupMsg* GroupMsg);
+	void AddPicture(const char MD5[16], const char* Url, const unsigned short Length, const unsigned short Width, const unsigned short Height);
+	void AddVoice(const char MD5[16], const char* Url);
+	void AddLog(const Log::LogType LogType, const Log::MsgType MsgType, const wchar_t* Type, const wchar_t* Msg);
+	Event::PrivateMsg* GetPrivateMsg(const uint MsgID);
+	Event::GroupMsg* GetGroupMsg(const uint MsgID);
+	std::string GetPictureUrl(const char MD5[16]);
+	std::string GetVoiceUrl(const char MD5[16]);
+}

@@ -1,6 +1,6 @@
 #pragma once
 #define _CRT_SECURE_NO_WARNINGS 1
-
+/*
 #include "Socket.h"
 #include "JceStruct.h"
 #include "Protobuf.h"
@@ -154,3 +154,4 @@ private:
 	LPBYTE Make_Body_Request_Packet(const byte iVersion, const int iRequestId, const char* sServantName, const char* sFuncName, byte* sBuffer, uint Bufferlen);
 	LPBYTE Make_Body_PC(byte* Buffer, const uint BufferLen, const bool emp);
 };
+*/

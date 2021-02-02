@@ -17,7 +17,7 @@ namespace Message
 			{
 				memcpy(B, "\0\0\0\x11\0\1\0\0\0\5\0\0\0\0\0\0\0", 17);
 				memcpy(B + 11, XBin::Int2Bin(AtQQ), 4);
-				Text = (const char*)u8"@猪";
+				Text = (const char*)u8"@";
 				//Todo
 				//strcat(Text,)
 			}
@@ -203,7 +203,7 @@ int Android::Fun_Send(const uint PacketType, const byte EncodeType, const char* 
 		}
 		break;
 	case 11:
-		Pack.SetInt(QQ.SsoSeq);
+		Pack.SetInt(SsoSeq);
 		break;
 	}
 	Pack.SetByte(0);
@@ -212,7 +212,7 @@ int Android::Fun_Send(const uint PacketType, const byte EncodeType, const char* 
 	switch (PacketType)
 	{
 	case 10:
-		_Pack.SetInt(QQ.SsoSeq);
+		_Pack.SetInt(SsoSeq);
 		_Pack.SetInt(QQ_APPID);
 		_Pack.SetInt(QQ_APPID);
 		_Pack.SetBin((byte*)"\1\0\0\0\0\0\0\0\0\0\0\0", 12);
@@ -275,6 +275,8 @@ int Android::Fun_Send(const uint PacketType, const byte EncodeType, const char* 
 	Pack.SetLength();
 	TCP.Send(Pack.GetAll());
 	delete[] Pack.GetAll();
+
+	return SsoSeq;
 }
 
 /// <summary>
@@ -1527,6 +1529,7 @@ bool Android::MessageSvc_PbSendMsg(const uint ToNumber, const byte ToType, const
 
 			break;
 		case Message::MsgType::picture:
+
 			break;
 		case Message::MsgType::xml:
 			break;
@@ -1680,6 +1683,23 @@ void Android::ImgStore_GroupPicUp(const uint Group, const byte ImageMD5[16], con
 
 	Protobuf PB;
 	UnProtobuf UnPB(Fun_Send_Sync(11, 1, "ImgStore.GroupPicUp", PB.Pack(&Node1)));
+
+	/*
+	.版本 2
+
+		.局部变量 Type, 长整数型
+		.局部变量 IP, 字节集, , "0"
+		.局部变量 Port, 字节集, , "0"
+		.局部变量 sig, 字节集
+	*/
+
+	byte *IP, *sig = nullptr;
+	UnPB.StepIn(3);
+	//数组
+	UnPB.GetBin(IP, 6);
+	uint Port = UnPB.GetVarint(7);
+
+	sig = UnPB.GetBin(8);
 
 }
 

@@ -36,6 +36,7 @@ namespace Log
 
 	void DesplayThread();
 	void Init(HANDLE Handle);
+	void AddLog(const LogType LogType, const MsgType MsgType, const wchar_t* Type, const char* Msg);
 	void AddLog(const LogType LogType, const MsgType MsgType, const wchar_t* Type, const wchar_t* Msg);
 	void AddLog(const LogType LogType, const MsgType MsgType, const wchar_t* Type, const Message::Msg* Msg);
 	void AddLog(const LogType LogType, const MsgType MsgType, const Event::NoticeEvent::NoticeEvent* NoticeEvent);

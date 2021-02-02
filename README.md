@@ -133,11 +133,11 @@ if (state == LOGIN_SUCCESS)
 Thanks to the following projects for making this project greater!
 
 1. ***[rapidjson](https://github.com/Tencent/rapidjson)***
-
-2. ***[miniblink](https://github.com/weolar/miniblink49)***
+2. ***[miniblink](https://miniblink.net/)***
 3. ***[openssl](https://github.com/openssl/openssl)***
-4. ***[zlib](https://github.com/madler/zlib)***
-5. ***[curl](https://github.com/curl/curl)***
+4. ***[sqlite3](https://sqlite.org/)***
+5. ***[zlib](https://github.com/madler/zlib)***
+6. ***[curl](https://github.com/curl/curl)***
 
 **If it is not necessary,  please don't add more dependencies.**
 

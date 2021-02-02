@@ -18,6 +18,7 @@
 
 #include "Defined.h"
 
+#include "..\include\sqlite3\sqlite3.h"
 #include "..\include\openssl\sha.h"
 #include "..\include\openssl\md5.h"
 #include "..\include\openssl\ecdh.h"
@@ -30,6 +31,8 @@
 #ifdef _WIN32
 #pragma comment(lib, "..\\lib\\openssl_lib_windows\\x64\\libcrypto.lib")
 #pragma comment(lib, "..\\lib\\zlib_lib_windows\\x64\\zlibstat.lib")
+#pragma comment(lib, "..\\lib\\sqlite3_lib_windows\\x64\\sqlite3.lib")
+
 #elif _MAC
 #pragma comment(lib, "..\\lib\\openssl_lib_mac\\libcrypto.a")
 #pragma comment(lib, "..\\lib\\zlib_lib_mac\\zlibstat.a")

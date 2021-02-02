@@ -60,6 +60,7 @@ void Log::DesplayThread()
 			}
 			LogList->SetItemText(Index, 2, Log_.Type);
 			LogList->SetItemText(Index, 3, Log_.Msg);
+			Database::AddLog(Log_->LogType, Log_->MsgType, Log_->Type, Log_->Msg);
 			--Semaphore;
 		}
 	}
@@ -70,6 +71,19 @@ void Log::Init(HANDLE Handle)
 	hwnd = Handle;
 	std::thread Thread(DesplayThread);
 	Thread.detach();
+}
+
+void Log::AddLog(const LogType LogType, const MsgType MsgType, const wchar_t* Type, const char* Msg)
+{
+	Log Log_;
+	Log_.LogType = LogType;
+	Log_.MsgType = MsgType;
+	Log_.Type = Type;
+	Log_.Msg = Iconv::Ansi2Unicode(Msg);
+
+	LogQueue.push(Log_);
+	++Semaphore;
+	cv.notify_one();
 }
 
 void Log::AddLog(const LogType LogType, const MsgType MsgType, const wchar_t* Type, const wchar_t* Msg)
