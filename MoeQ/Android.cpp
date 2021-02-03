@@ -59,32 +59,31 @@ namespace Message
 		Protobuf PB;
 		return PB.Pack(&Node2);
 	}
-	LPBYTE Pack8()//Todo
+	LPBYTE Pack8(const LPBYTE ImageName, const LPBYTE ImageMD5, const uint ImageID, const uint ImageLength, const uint ImageWidth, const uint ImageHeight)
 	{
 		ProtobufStruct::TreeNode Node8_34_15{ nullptr,nullptr,15,ProtobufStruct::ProtobufStructType::VARINT,(void*)5 };
 		ProtobufStruct::TreeNode Node8_34_10{ nullptr,&Node8_34_15,10,ProtobufStruct::ProtobufStructType::VARINT,(void*)0 };
-		ProtobufStruct::TreeNode Node8_34_9{ nullptr,&Node8_34_10,9,ProtobufStruct::ProtobufStructType::LENGTH, };
-		ProtobufStruct::TreeNode Node8_34_6{ nullptr,&Node8_34_9,6,ProtobufStruct::ProtobufStructType::LENGTH, };
+		ProtobufStruct::TreeNode Node8_34_6{ nullptr,&Node8_34_10,6,ProtobufStruct::ProtobufStructType::LENGTH, "\0\0\0\4" };
 		ProtobufStruct::TreeNode Node8_34_2{ nullptr,&Node8_34_6,2,ProtobufStruct::ProtobufStructType::VARINT,(void*)0 };
 		ProtobufStruct::TreeNode Node8_34_1{ nullptr,&Node8_34_2,1,ProtobufStruct::ProtobufStructType::VARINT,(void*)1 };
 		ProtobufStruct::TreeNode Node8_34{ &Node8_34_1,nullptr,34,ProtobufStruct::ProtobufStructType::LENGTH, };
 		ProtobufStruct::TreeNode Node8_30{ nullptr,&Node8_34,30,ProtobufStruct::ProtobufStructType::VARINT,(void*)0 };
 		ProtobufStruct::TreeNode Node8_29{ nullptr,&Node8_30,29,ProtobufStruct::ProtobufStructType::VARINT,(void*)0 };
 		ProtobufStruct::TreeNode Node8_26{ nullptr,&Node8_29,26,ProtobufStruct::ProtobufStructType::VARINT,(void*)0 };
-		ProtobufStruct::TreeNode Node8_25{ nullptr,&Node8_26,25,ProtobufStruct::ProtobufStructType::VARINT,(void*)14321 };
+		ProtobufStruct::TreeNode Node8_25{ nullptr,&Node8_26,25,ProtobufStruct::ProtobufStructType::VARINT,(void*)ImageLength };
 		ProtobufStruct::TreeNode Node8_24{ nullptr,&Node8_25,24,ProtobufStruct::ProtobufStructType::VARINT,(void*)103 };
-		ProtobufStruct::TreeNode Node8_23{ nullptr,&Node8_24,23,ProtobufStruct::ProtobufStructType::VARINT,(void*)267 };
-		ProtobufStruct::TreeNode Node8_22{ nullptr,&Node8_23,22,ProtobufStruct::ProtobufStructType::VARINT,(void*)224 };
+		ProtobufStruct::TreeNode Node8_23{ nullptr,&Node8_24,23,ProtobufStruct::ProtobufStructType::VARINT,(void*)ImageHeight };
+		ProtobufStruct::TreeNode Node8_22{ nullptr,&Node8_23,22,ProtobufStruct::ProtobufStructType::VARINT,(void*)ImageWidth };
 		ProtobufStruct::TreeNode Node8_20{ nullptr,&Node8_22,20,ProtobufStruct::ProtobufStructType::VARINT,(void*)1000 };
 		ProtobufStruct::TreeNode Node8_17{ nullptr,&Node8_20,17,ProtobufStruct::ProtobufStructType::VARINT,(void*)5 };
-		ProtobufStruct::TreeNode Node8_13{ nullptr,&Node8_17,13,ProtobufStruct::ProtobufStructType::LENGTH, };
+		ProtobufStruct::TreeNode Node8_13{ nullptr,&Node8_17,13,ProtobufStruct::ProtobufStructType::LENGTH,ImageMD5 };
 		ProtobufStruct::TreeNode Node8_12{ nullptr,&Node8_13,12,ProtobufStruct::ProtobufStructType::VARINT,(void*)1 };
 		ProtobufStruct::TreeNode Node8_11{ nullptr,&Node8_12,11,ProtobufStruct::ProtobufStructType::LENGTH, };
 		ProtobufStruct::TreeNode Node8_10{ nullptr,&Node8_11,10,ProtobufStruct::ProtobufStructType::VARINT,(void*)66 };
 		ProtobufStruct::TreeNode Node8_9{ nullptr,&Node8_10,9,ProtobufStruct::ProtobufStructType::VARINT,(void*)80 };
 		ProtobufStruct::TreeNode Node8_8{ nullptr,&Node8_9,8,ProtobufStruct::ProtobufStructType::VARINT,(void*)2073511832 };
-		ProtobufStruct::TreeNode Node8_7{ nullptr,&Node8_8,7,ProtobufStruct::ProtobufStructType::VARINT,(void*)2893030503 };
-		ProtobufStruct::TreeNode Node8_2{ nullptr,&Node8_7,2,ProtobufStruct::ProtobufStructType::LENGTH, };
+		ProtobufStruct::TreeNode Node8_7{ nullptr,&Node8_8,7,ProtobufStruct::ProtobufStructType::VARINT,(void*)ImageID };
+		ProtobufStruct::TreeNode Node8_2{ nullptr,&Node8_7,2,ProtobufStruct::ProtobufStructType::LENGTH, ImageName};
 		ProtobufStruct::TreeNode Node8{ &Node8_2,nullptr,8,ProtobufStruct::ProtobufStructType::LENGTH, };
 
 		Protobuf PB;
@@ -1271,9 +1270,9 @@ void Android::MessageSvc_PbGetMsg()
 						UnPB.StepIn(4);
 						if (ThisMsg != nullptr)	ThisMsg = ThisMsg->NextPoint = new Message::Msg{ Message::MsgType::picture,nullptr,new Message::picture };
 						else PrivateMsg.Msg = ThisMsg = new Message::Msg{ Message::MsgType::picture,nullptr,new Message::picture };
-						((Message::picture*)ThisMsg->Message)->Length = UnPB.GetVarint(2);
+						((Message::picture*)ThisMsg->Message)->Data.Length = UnPB.GetVarint(2);
 						UnPB.GetBin(((Message::picture*)ThisMsg->Message)->MD5, 7);
-						((Message::picture*)ThisMsg->Message)->URL = UnPB.GetStr(15);
+						((Message::picture*)ThisMsg->Message)->Data.URL = UnPB.GetStr(15);
 						((Message::picture*)ThisMsg->Message)->Width = UnPB.GetVarint(21);
 						((Message::picture*)ThisMsg->Message)->Height = UnPB.GetVarint(22);
 						UnPB.StepOut();
@@ -1293,10 +1292,10 @@ void Android::MessageSvc_PbGetMsg()
 						if (ThisMsg != nullptr)	ThisMsg = ThisMsg->NextPoint = new Message::Msg{ Message::MsgType::picture,nullptr,new Message::picture };
 						else PrivateMsg.Msg = ThisMsg = new Message::Msg{ Message::MsgType::picture,nullptr,new Message::picture };
 						UnPB.GetBin(((Message::picture*)ThisMsg->Message)->MD5, 13);
-						((Message::picture*)ThisMsg->Message)->URL = UnPB.GetStr(16);
+						((Message::picture*)ThisMsg->Message)->Data.URL = UnPB.GetStr(16);
 						((Message::picture*)ThisMsg->Message)->Width = UnPB.GetVarint(22);
 						((Message::picture*)ThisMsg->Message)->Height = UnPB.GetVarint(23);
-						((Message::picture*)ThisMsg->Message)->Length = UnPB.GetVarint(25);
+						((Message::picture*)ThisMsg->Message)->Data.Length = UnPB.GetVarint(25);
 						UnPB.StepOut();
 						break;
 					case 9://气泡消息
@@ -1529,7 +1528,26 @@ bool Android::MessageSvc_PbSendMsg(const uint ToNumber, const byte ToType, const
 
 			break;
 		case Message::MsgType::picture:
+		{
+			LPBYTE B = new byte[20];
+			memcpy(B, XBin::Int2Bin(20), 4);
+			memcpy(B + 4, ((Message::picture*)Msg->Message)->MD5, 16);
 
+			LPBYTE T = new byte[40];
+			memcpy(T, XBin::Int2Bin(36), 4);
+			memcpy(T + 4, XBin::Bin2Hex(((Message::picture*)Msg->Message)->MD5, 16), 32);
+			memcpy(T + 36, ".gif", 4);
+
+			auto [ImageID, IP, Port, sig] = ImgStore_GroupPicUp(ToType == 1 ? ToNumber : NULL, T, B, ((Message::picture*)Msg->Message)->Data.Length, ((Message::picture*)Msg->Message)->Width, ((Message::picture*)Msg->Message)->Height);
+			if (IP != NULL && Port != NULL && sig != nullptr)
+			{
+				PicUp_DataUp(ToType == 1 ? ToNumber : NULL, ((Message::picture*)Msg->Message)->Data.Contain, ((Message::picture*)Msg->Message)->Data.Length, ((Message::picture*)Msg->Message)->MD5, 2, IP, Port, sig);
+			}
+			uint ImageID;
+
+			Node3_1_2 = new ProtobufStruct::TreeNode{ nullptr,Node3_1_2,2,ProtobufStruct::ProtobufStructType::LENGTH,Message::Pack8(T, B,ImageID,((Message::picture*)Msg->Message)->Data.Length, ((Message::picture*)Msg->Message)->Width, ((Message::picture*)Msg->Message)->Height) };
+			delete T, B;
+		}
 			break;
 		case Message::MsgType::xml:
 			break;
@@ -1650,18 +1668,12 @@ void Android::ProfileService_Pb_ReqSystemMsgNew_Group()
 	UnProtobuf UnPB(Fun_Send_Sync(11, 1, "ProfileService.Pb.ReqSystemMsgNew.Group", PB.Pack(&Node1)));
 }
 
-void Android::ImgStore_GroupPicUp(const uint Group, const byte ImageMD5[16], const uint ImageLength, const uint ImageWidth, const uint ImageHeight)
+std::tuple <uint, uint, uint, LPBYTE> Android::ImgStore_GroupPicUp(const uint Group, const LPBYTE ImageName, const LPBYTE ImageMD5, const uint ImageLength, const uint ImageWidth, const uint ImageHeight)
 {
-	LPBYTE B = new byte[20];
-	memcpy(B, XBin::Int2Bin(20), 4);
-	memcpy(B + 4, ImageMD5, 16);
-	LPBYTE T = new byte[36];
-	memcpy(T, XBin::Int2Bin(36), 4);
-	memcpy(T + 4, XBin::Bin2Hex(ImageMD5, 16), 32);
-	uint len = strlen(QQ_VERSION);
-	LPBYTE V = new byte[len + 4];
-	memcpy(V, XBin::Int2Bin(len + 4), 4);
-	memcpy(V + 4, QQ_VERSION, len);
+	LPBYTE V = new byte[strlen(QQ_VERSION) + 4];
+	memcpy(V, XBin::Int2Bin(strlen(QQ_VERSION) + 4), 4);
+	memcpy(V + 4, QQ_VERSION, strlen(QQ_VERSION));
+
 	ProtobufStruct::TreeNode Node3_19{ nullptr,nullptr,19,ProtobufStruct::ProtobufStructType::VARINT,(void*)0 };
 	ProtobufStruct::TreeNode Node3_15{ nullptr,&Node3_19,15,ProtobufStruct::ProtobufStructType::VARINT,(void*)1006 };
 	ProtobufStruct::TreeNode Node3_13{ nullptr,&Node3_15,13,ProtobufStruct::ProtobufStructType::LENGTH, V };
@@ -1671,9 +1683,9 @@ void Android::ImgStore_GroupPicUp(const uint Group, const byte ImageMD5[16], con
 	ProtobufStruct::TreeNode Node3_9{ nullptr,&Node3_10,9,ProtobufStruct::ProtobufStructType::VARINT,(void*)1 };
 	ProtobufStruct::TreeNode Node3_8{ nullptr,&Node3_9,8,ProtobufStruct::ProtobufStructType::VARINT,(void*)9 };
 	ProtobufStruct::TreeNode Node3_7{ nullptr,&Node3_8,7,ProtobufStruct::ProtobufStructType::VARINT,(void*)5 };
-	ProtobufStruct::TreeNode Node3_6{ nullptr,&Node3_7,6,ProtobufStruct::ProtobufStructType::LENGTH, T };
+	ProtobufStruct::TreeNode Node3_6{ nullptr,&Node3_7,6,ProtobufStruct::ProtobufStructType::LENGTH, ImageName };
 	ProtobufStruct::TreeNode Node3_5{ nullptr,&Node3_6,5,ProtobufStruct::ProtobufStructType::VARINT,(void*)ImageLength };
-	ProtobufStruct::TreeNode Node3_4{ nullptr,&Node3_5,4,ProtobufStruct::ProtobufStructType::LENGTH,B };
+	ProtobufStruct::TreeNode Node3_4{ nullptr,&Node3_5,4,ProtobufStruct::ProtobufStructType::LENGTH,ImageMD5 };
 	ProtobufStruct::TreeNode Node3_3{ nullptr,&Node3_4,3,ProtobufStruct::ProtobufStructType::VARINT,(void*)0 };
 	ProtobufStruct::TreeNode Node3_2{ nullptr,&Node3_3,2,ProtobufStruct::ProtobufStructType::VARINT,(void*)QQ.QQ };
 	ProtobufStruct::TreeNode Node3_1{ nullptr,&Node3_2,1,ProtobufStruct::ProtobufStructType::VARINT,(void*)Group };
@@ -1681,57 +1693,99 @@ void Android::ImgStore_GroupPicUp(const uint Group, const byte ImageMD5[16], con
 	ProtobufStruct::TreeNode Node2{ nullptr,&Node3,2,ProtobufStruct::ProtobufStructType::VARINT,(void*)1 };
 	ProtobufStruct::TreeNode Node1{ nullptr,&Node2,1,ProtobufStruct::ProtobufStructType::VARINT,(void*)3 };
 
+	delete V;
+
 	Protobuf PB;
 	UnProtobuf UnPB(Fun_Send_Sync(11, 1, "ImgStore.GroupPicUp", PB.Pack(&Node1)));
 
-	/*
-	.版本 2
-
-		.局部变量 Type, 长整数型
-		.局部变量 IP, 字节集, , "0"
-		.局部变量 Port, 字节集, , "0"
-		.局部变量 sig, 字节集
-	*/
-
-	byte *IP, *sig = nullptr;
+	LPBYTE sig;
+	uint IP, Port, ImageID;
 	UnPB.StepIn(3);
-	//数组
-	UnPB.GetBin(IP, 6);
-	uint Port = UnPB.GetVarint(7);
-
-	sig = UnPB.GetBin(8);
-
+	switch (UnPB.GetVarint(4))
+	{
+	case 0://需要上传
+		//IP PORT为数组,这里就取第一组
+		IP = UnPB.GetVarint(6);
+		Port = UnPB.GetVarint(7);
+		sig = UnPB.GetBin(8);
+		return { ImageID,IP,Port,sig };
+	case 1:
+		ImageID = UnPB.GetVarint(9);
+		return { ImageID,NULL,NULL,nullptr };
+	}
 }
 
 /// <summary>
-/// 
+/// 上传文件
 /// </summary>
-/// <param name="Group"></param>
-/// <param name="Data"></param>
-/// <param name="DataLength"></param>
+/// <param name="Group">如不是群聊,此参数填NULL</param>
+/// <param name="TotalData"></param>
 /// <param name="TotalDataLength"></param>
 /// <param name="TotalDataMD5"></param>
 /// <param name="DataType">Image 2, Voice 29</param>
+/// <param name="IP"></param>
+/// <param name="Port"></param>
 /// <param name="sig"></param>
-void Android::PicUp_DataUp(const uint Group, const byte Data, const uint DataLength, const uint TotalDataLength, const byte TotalDataMD5[16], const int DataType, const LPBYTE sig)
+/// <returns></returns>
+bool Android::PicUp_DataUp(const uint Group, const byte* TotalData, const uint TotalDataLength, const LPBYTE TotalDataMD5, const int DataType, const uint IP, const uint Port, const LPBYTE sig)
 {
-	ProtobufStruct::TreeNode Node2_9{ nullptr,nullptr,9,ProtobufStruct::ProtobufStructType::LENGTH, };
-	ProtobufStruct::TreeNode Node2_8{ nullptr,&Node2_9,8,ProtobufStruct::ProtobufStructType::LENGTH, };
-	ProtobufStruct::TreeNode Node2_6{ nullptr,&Node2_8,6,ProtobufStruct::ProtobufStructType::LENGTH,sig };
-	ProtobufStruct::TreeNode Node2_4{ nullptr,&Node2_6,4,ProtobufStruct::ProtobufStructType::VARINT,(void*)DataLength };
-	ProtobufStruct::TreeNode Node2_3{ nullptr,&Node2_4,3,ProtobufStruct::ProtobufStructType::VARINT,(void*)0 };
-	ProtobufStruct::TreeNode Node2_2{ nullptr,&Node2_3,2,ProtobufStruct::ProtobufStructType::VARINT,(void*)TotalDataLength };
-	ProtobufStruct::TreeNode Node2{ &Node2_2,nullptr,2,ProtobufStruct::ProtobufStructType::LENGTH, };
-	ProtobufStruct::TreeNode Node1_10{ nullptr,nullptr,10,ProtobufStruct::ProtobufStructType::VARINT,(void*)2052 };
-	ProtobufStruct::TreeNode Node1_8{ nullptr,&Node1_10,8,ProtobufStruct::ProtobufStructType::VARINT,(void*)DataType };
-	ProtobufStruct::TreeNode Node1_7{ nullptr,&Node1_8,7,ProtobufStruct::ProtobufStructType::VARINT,(void*)4096 };
-	ProtobufStruct::TreeNode Node1_6{ nullptr,&Node1_7,6,ProtobufStruct::ProtobufStructType::VARINT,(void*)QQ_APPID };
-	ProtobufStruct::TreeNode Node1_5{ nullptr,&Node1_6,5,ProtobufStruct::ProtobufStructType::VARINT,(void*)0 };
-	ProtobufStruct::TreeNode Node1_4{ nullptr,&Node1_5,4,ProtobufStruct::ProtobufStructType::VARINT,(void*)83048 };
-	ProtobufStruct::TreeNode Node1_3{ nullptr,&Node1_4,3,ProtobufStruct::ProtobufStructType::LENGTH,(void*)"\0\0\0\x10PicUp.DataUp" };
-	ProtobufStruct::TreeNode Node1_2{ nullptr,&Node1_3,2,ProtobufStruct::ProtobufStructType::LENGTH, QQ.QQ_Str };
-	ProtobufStruct::TreeNode Node1_1{ nullptr,&Node1_2,1,ProtobufStruct::ProtobufStructType::VARINT,(void*)1 };
-	ProtobufStruct::TreeNode Node1{ &Node1_1,&Node2,1,ProtobufStruct::ProtobufStructType::LENGTH, };
+	Socket TCP;
+
+	if (!TCP.Connect(XBin::Int2IP(IP), Port))
+	{
+		Log::AddLog(Log::LogType::NOTICE, Log::MsgType::OTHER, "Upload", "Connect upload server false");
+		return false;
+	};
+
+	//文件分片发送
+	uint Offset = 0, DataLength, Length;
+	Protobuf PB;
+	LPBYTE Bin;
+	Pack Pack(8500, false);
+	while ((DataLength = TotalDataLength - Offset) > 0)
+	{
+		if (DataLength > 0x2000) DataLength = 0x2000;
+
+		ProtobufStruct::TreeNode Node2_9{ nullptr,nullptr,9,ProtobufStruct::ProtobufStructType::LENGTH, TotalDataMD5 };
+		ProtobufStruct::TreeNode Node2_8{ nullptr,&Node2_9,8,ProtobufStruct::ProtobufStructType::LENGTH, Utils::MD5EX(TotalData + Offset, DataLength) };
+		ProtobufStruct::TreeNode Node2_6{ nullptr,&Node2_8,6,ProtobufStruct::ProtobufStructType::LENGTH,sig };
+		ProtobufStruct::TreeNode Node2_4{ nullptr,&Node2_6,4,ProtobufStruct::ProtobufStructType::VARINT,(void*)DataLength };
+		ProtobufStruct::TreeNode Node2_3{ nullptr,&Node2_4,3,ProtobufStruct::ProtobufStructType::VARINT,(void*)0 };
+		ProtobufStruct::TreeNode Node2_2{ nullptr,&Node2_3,2,ProtobufStruct::ProtobufStructType::VARINT,(void*)TotalDataLength };
+		ProtobufStruct::TreeNode Node2{ &Node2_2,nullptr,2,ProtobufStruct::ProtobufStructType::LENGTH, };
+		ProtobufStruct::TreeNode Node1_10{ nullptr,nullptr,10,ProtobufStruct::ProtobufStructType::VARINT,(void*)2052 };
+		ProtobufStruct::TreeNode Node1_8{ nullptr,&Node1_10,8,ProtobufStruct::ProtobufStructType::VARINT,(void*)DataType };
+		ProtobufStruct::TreeNode Node1_7{ nullptr,&Node1_8,7,ProtobufStruct::ProtobufStructType::VARINT,(void*)4096 };
+		ProtobufStruct::TreeNode Node1_6{ nullptr,&Node1_7,6,ProtobufStruct::ProtobufStructType::VARINT,(void*)QQ_APPID };
+		ProtobufStruct::TreeNode Node1_5{ nullptr,&Node1_6,5,ProtobufStruct::ProtobufStructType::VARINT,(void*)0 };
+		ProtobufStruct::TreeNode Node1_4{ nullptr,&Node1_5,4,ProtobufStruct::ProtobufStructType::VARINT,(void*)83048 };
+		ProtobufStruct::TreeNode Node1_3{ nullptr,&Node1_4,3,ProtobufStruct::ProtobufStructType::LENGTH,(void*)"\0\0\0\x10PicUp.DataUp" };
+		ProtobufStruct::TreeNode Node1_2{ nullptr,&Node1_3,2,ProtobufStruct::ProtobufStructType::LENGTH, QQ.QQ_Str };
+		ProtobufStruct::TreeNode Node1_1{ nullptr,&Node1_2,1,ProtobufStruct::ProtobufStructType::VARINT,(void*)1 };
+		ProtobufStruct::TreeNode Node1{ &Node1_1,&Node2,1,ProtobufStruct::ProtobufStructType::LENGTH, };
+		Bin = PB.Pack(&Node1);
+		Length = XBin::Bin2Int(Bin) - 4;
+
+		Pack.SetByte(0x28);
+		Pack.SetInt(Length);
+		Pack.SetInt(DataLength);
+		Pack.SetBin(Bin + 4, Length);
+		Pack.SetBin(TotalData + Offset, DataLength);
+		Pack.SetByte(0x29);
+
+		TCP.Send(Pack.GetAll(), Pack.Length());
+
+		delete Bin;
+		Offset += DataLength;
+	}
+	delete Pack.GetAll();
+
+	UnPack UnPack(TCP.Receive());
+	UnPack.GetByte();
+	Length = UnPack.GetInt();
+	UnPack.GetInt();
+	UnProtobuf UnPB(UnPack.GetBin(), Length);
+
 }
 
 /// <summary>
@@ -2340,10 +2394,10 @@ void Android::Unpack_OnlinePush_PbPushGroupMsg(const LPBYTE BodyBin, const uint 
 			if (ThisMsg != nullptr)	ThisMsg = ThisMsg->NextPoint = new Message::Msg{ Message::MsgType::picture,nullptr,new Message::picture };
 			else GroupMsg.Msg = ThisMsg = new Message::Msg{ Message::MsgType::picture,nullptr,new Message::picture };
 			UnPB.GetBin(((Message::picture*)ThisMsg->Message)->MD5, 13);
-			((Message::picture*)ThisMsg->Message)->URL = UnPB.GetStr(16);
+			((Message::picture*)ThisMsg->Message)->Data.URL = UnPB.GetStr(16);
 			((Message::picture*)ThisMsg->Message)->Width = UnPB.GetVarint(22);
 			((Message::picture*)ThisMsg->Message)->Height = UnPB.GetVarint(23);
-			((Message::picture*)ThisMsg->Message)->Length = UnPB.GetVarint(25);
+			((Message::picture*)ThisMsg->Message)->Data.Length = UnPB.GetVarint(25);
 			UnPB.StepOut();
 			break;
 		case 9://气泡消息
@@ -2524,7 +2578,14 @@ void Android::Unpack_OnlinePush_PbPushGroupMsg(const LPBYTE BodyBin, const uint 
 		Message::DestoryMsg(GroupMsg.Msg);
 		return;
 	}
-	//QQ_SendGroupMsg(GroupMsg.FromGroup, GroupMsg.Msg);
+
+#ifdef DEBUG
+	if (GroupMsg.FromGroup == 635275515)
+	{
+		QQ_SendGroupMsg(GroupMsg.FromGroup, GroupMsg.Msg);
+	}
+#endif // DEBUG
+
 	Event::OnGroupMsg(&GroupMsg);
 	if (GroupMsg.Msg != nullptr) Log::AddLog(Log::LogType::INFORMATION, Log::MsgType::_GROUP, L"Simple Message", GroupMsg.Msg);
 	Message::DestoryMsg(GroupMsg.Msg);
@@ -2746,7 +2807,7 @@ byte Android::QQ_Login_Second()
 	memcpy(QQ.Token.md52, Utils::MD5(tmp, 24), 16);
 	QQ.Login = new Login;
 	Fun_Connect();
-	wtlogin_exchange_emp();
+	//wtlogin_exchange_emp();
 	return QQ.Login->state;
 }
 

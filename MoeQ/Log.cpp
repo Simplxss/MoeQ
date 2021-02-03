@@ -16,15 +16,21 @@ void Database::Init()
 
 	wcscpy(DatabaseFilePath, DataPath);
 	wcscat(DatabaseFilePath, L"data.db");
-	sqlite3_open_v2(Iconv::Unicode2Utf8(DatabaseFilePath), &Database_Data, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, "");
+	if (sqlite3_open_v2(Iconv::Unicode2Utf8(DatabaseFilePath), &Database_Data, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, NULL) != SQLITE_OK)
+	{
+		//error
+	}
 	wcscpy(DatabaseLogPath, DataPath);
 	wcscat(DatabaseLogPath, L"log.db");
-	sqlite3_open_v2(Iconv::Unicode2Utf8(DatabaseLogPath), &Database_Log, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, "");
+	if (sqlite3_open_v2(Iconv::Unicode2Utf8(DatabaseLogPath), &Database_Log, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, NULL) != SQLITE_OK)
+	{
+		//error
+	};
 
 	char* zErrMsg = nullptr;
 	if (sqlite3_exec(Database_Data,
 		"CREATE TABLE IF NOT EXISTS GroupMsg("  \
-		"ID         INTEGER  KEY ," \
+		"ID         INTEGER  PRIMARY KEY ," \
 		"FromGroup  INTEGER     ," \
 		"FromQQ     INTEGER     ," \
 		"SendTime   DATETIME    ," \
@@ -32,7 +38,7 @@ void Database::Init()
 		"MsgType    INTEGER     ," \
 		"MsgID      INTEGER     ," \
 		"MsgRand    INTEGER     ," \
-		"Msg        TEXT        ,);"
+		"Msg        TEXT        );"
 		, 0, 0, &zErrMsg) != SQLITE_OK)
 	{
 		Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, L"Create table 'GroupMsg' error", zErrMsg);
@@ -41,14 +47,14 @@ void Database::Init()
 
 	if (sqlite3_exec(Database_Data,
 		"CREATE TABLE IF NOT EXISTS PrivateMsg("  \
-		"ID         INTEGER KEY ," \
+		"ID         INTEGER PRIMARY KEY ," \
 		"FromQQ     INTEGER     ," \
 		"SendTime   DATETIME    ," \
 		"State      INTEGER     ," \
 		"MsgType    INTEGER     ," \
 		"MsgID      INTEGER     ," \
 		"MsgRand    INTEGER     ," \
-		"Msg        TEXT        ,);"
+		"Msg        TEXT        );"
 		, 0, 0, &zErrMsg) != SQLITE_OK)
 	{
 		Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, L"Create table 'PrivateMsg' error", zErrMsg);
@@ -57,11 +63,11 @@ void Database::Init()
 
 	if (sqlite3_exec(Database_Data,
 		"CREATE TABLE IF NOT EXISTS Picture("  \
-		"MD5        CHAR(16) KEY ," \
+		"MD5        CHAR(16) PRIMARY KEY ," \
 		"Url        TEXT         ," \
 		"Length     INTEGER      ," \
 		"Width      INTEGER      ," \
-		"Height     INTEGER      ,);"
+		"Height     INTEGER      );"
 		, 0, 0, &zErrMsg) != SQLITE_OK)
 	{
 		Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, L"Create table 'Picture' error", zErrMsg);
@@ -70,8 +76,8 @@ void Database::Init()
 
 	if (sqlite3_exec(Database_Data,
 		"CREATE TABLE IF NOT EXISTS Voice("  \
-		"MD5        CHAR(16) KEY ," \
-		"Url        TEXT         ,);"
+		"MD5        CHAR(16) PRIMARY KEY ," \
+		"Url        TEXT         );"
 		, 0, 0, &zErrMsg) != SQLITE_OK)
 	{
 		Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, L"Create table 'Voice' error", zErrMsg);
@@ -83,7 +89,7 @@ void Database::Init()
 		"LogType    INTEGER ," \
 		"MsgType    INTEGER ," \
 		"Type       TEXT    ," \
-		"Msg        TEXT    ,);"
+		"Msg        TEXT    );"
 		, 0, 0, &zErrMsg) != SQLITE_OK)
 	{
 		Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, L"Create table 'Log' error", zErrMsg);

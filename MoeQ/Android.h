@@ -173,8 +173,8 @@ private:
 	bool MessageSvc_PbSendMsg(const uint ToNumber, const byte ToType, const Message::Msg* Msg);
 	bool PbMessageSvc_PbMsgWithDraw(const uint Group, const uint MsgId, const uint MsgId_);
 	void ProfileService_Pb_ReqSystemMsgNew_Group();
-	void ImgStore_GroupPicUp(const uint Group, const byte ImageMD5[16], const uint ImageLength, const uint ImageWidth, const uint ImageHeight);
-	void PicUp_DataUp(const uint Group, const byte Data, const uint DataLength, const uint TotalDataLength, const byte TotalDataMD5[16], const int DataType, const LPBYTE sig);
+	std::tuple <uint, uint, uint, LPBYTE> ImgStore_GroupPicUp(const uint Group, const LPBYTE ImageName, const LPBYTE ImageMD5, const uint ImageLength, const uint ImageWidth, const uint ImageHeight);
+	bool PicUp_DataUp(const uint Group, const byte* TotalData, const uint TotalDataLength, const LPBYTE TotalDataMD5, const int DataType, const uint IP, const uint Port, const LPBYTE sig);
 	void OidbSvc_0x55c_1(const uint Group, const  uint QQ, const  bool Set);
 	void OidbSvc_0x570_8(const uint Group, const  uint QQ, const  uint Time);
 	std::vector<uint>* OidbSvc_0x899_0(const uint Group);

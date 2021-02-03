@@ -20,7 +20,7 @@ char* Ticket = nullptr;
 
 void Debug()
 {
-	Utils::MD5EX({ 0 }, 4);
+
 }
 
 // MainFrm dialog

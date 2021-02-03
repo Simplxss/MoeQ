@@ -33,6 +33,11 @@ void Socket::Close()
 	closesocket(Client);
 }
 
+void Socket::Send(const byte* data, const uint length)
+{
+	send(Client, (const char*)data,length, 0);
+}
+
 void Socket::Send(const LPBYTE data)
 {
 	send(Client, (const char*)data, XBin::Bin2Int(data), 0);

@@ -36,6 +36,7 @@ namespace XBin
 {
 	byte* Int2Bin(const uint i);
 	void Int2Bin(const uint i, byte* bin);
+	char* Int2IP(const uint i);
 	uint Bin2Short(const byte* bin);
 	uint Bin2Int(const byte* bin);
 	char* Bin2Hex(const byte* bin, const uint len);

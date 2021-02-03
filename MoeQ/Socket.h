@@ -14,7 +14,8 @@ public:
 public:
 	bool Connect(const char* IP, const unsigned short Port);
 	void Close();
-	void Send(LPBYTE buffer);
+	void Send(const byte* data, const uint length);
+	void Send(const LPBYTE buffer);
 	LPBYTE Receive();
 	void DomainGetIP(const wchar_t* Domain, wchar_t*& szHostaddress);
 };

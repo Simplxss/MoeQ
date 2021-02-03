@@ -19,6 +19,14 @@ namespace Message
 		red_packet = 56,
 	};
 
+	struct Data
+	{
+		uint Length = NULL;
+		byte* Contain = nullptr;
+		char* URL = nullptr;
+		char* Location = nullptr;
+	};
+
 	struct Msg
 	{
 		MsgType MsgType;
@@ -47,9 +55,14 @@ namespace Message
 	{
 		uint Width = NULL;
 		uint Height = NULL;
-		uint Length = NULL;
 		byte* MD5 = nullptr;
-		char* URL = nullptr;
+		Data Data;
+	};
+
+	struct voice
+	{
+		byte* MD5 = nullptr;
+		Data Data;
 	};
 
 	struct xml

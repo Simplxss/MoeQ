@@ -51,7 +51,7 @@ byte* Utils::MD5(const byte* bin, const size_t length)
 LPBYTE Utils::MD5EX(const byte* bin, const size_t length)
 {
 	MD5_CTX ctx;
-	byte md5[20] = { 0,0,0,16 };
+	byte md5[20] = { 0,0,0,20 };
 
 	MD5_Init(&ctx);
 	MD5_Update(&ctx, bin, length);
@@ -302,6 +302,13 @@ void XBin::Int2Bin(const uint i, byte* bin)
 	bin[1] = i >> 16;
 	bin[2] = i >> 8;
 	bin[3] = (byte)i;
+}
+
+char* XBin::Int2IP(const uint i)
+{
+	char IP[16] = {};
+	sprintf(IP, "%d.%d.%d.%d", ((i & 0xff000000) >> 24), ((i & 0xff0000) >> 16), ((i & 0xff00) >> 8), (i & 0xff));
+	return IP;
 }
 
 uint XBin::Bin2Short(const byte* bin)

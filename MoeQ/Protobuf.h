@@ -52,6 +52,10 @@ public:
 	{
 		List = new LinkList{ bin };
 	};
+	UnProtobuf(const byte* bin,const uint Length)
+	{
+		List = new LinkList{ UnPack(bin,Length) };
+	};
 	~UnProtobuf()
 	{
 		delete List;
