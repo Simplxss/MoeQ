@@ -1,6 +1,5 @@
 #pragma once
 #include "Android.h"
-#include "PluginSystem.h"
 
 extern Android Sdk;
 extern PluginSystem Plugin;
@@ -12,7 +11,7 @@ FUNC(char*, getCookies,const uint64_t AuthCode, const char* Host)
 	if (Plugin.VieryAuth(AuthCode, 1)) return Sdk.QQ_GetCookies(Host);
 	else
 	{
-		Log::AddLog(Log::LogType::WARNING, Log::MsgType::PROGRAM, Iconv::Ansi2Unicode(Plugin.AuthCode2Name(AuthCode)), L"Plugin called getCookies which it don't have right.");
+		Log::AddLog(Log::LogType::WARNING, Log::MsgType::PROGRAM, Plugin.AuthCode2Name(AuthCode), L"Plugin called getCookies which it don't have right.");
 	}
 };
 
@@ -21,7 +20,7 @@ FUNC(bool, sendLike, const uint64_t AuthCode, const uint QQ, const int Times)
 	if (Plugin.VieryAuth(AuthCode, 2)) return Sdk.QQ_SendLike(QQ, Times);
 	else
 	{
-		Log::AddLog(Log::LogType::WARNING, Log::MsgType::PROGRAM, Iconv::Ansi2Unicode(Plugin.AuthCode2Name(AuthCode)), L"Plugin called sendLike which it don't have right.");
+		Log::AddLog(Log::LogType::WARNING, Log::MsgType::PROGRAM, Plugin.AuthCode2Name(AuthCode), L"Plugin called sendLike which it don't have right.");
 		return false;
 	}
 };
@@ -35,7 +34,7 @@ FUNC(bool, setGroupLeave, const uint64_t AuthCode, const uint group_code)
 	}
 	else
 	{
-		Log::AddLog(Log::LogType::WARNING, Log::MsgType::PROGRAM, Iconv::Ansi2Unicode(Plugin.AuthCode2Name(AuthCode)), L"Plugin called setGroupLeave which it don't have right.");
+		Log::AddLog(Log::LogType::WARNING, Log::MsgType::PROGRAM, Plugin.AuthCode2Name(AuthCode), L"Plugin called setGroupLeave which it don't have right.");
 		return false;
 	}
 };
@@ -48,7 +47,7 @@ FUNC(bool, setDiscussLeave, const uint64_t AuthCode, const uint group_code)
 	}
 	else
 	{
-		Log::AddLog(Log::LogType::WARNING, Log::MsgType::PROGRAM, Iconv::Ansi2Unicode(Plugin.AuthCode2Name(AuthCode)), L"Plugin called setGroupLeave which it don't have right.");
+		Log::AddLog(Log::LogType::WARNING, Log::MsgType::PROGRAM, Plugin.AuthCode2Name(AuthCode), L"Plugin called setGroupLeave which it don't have right.");
 		return false;
 	}
 };
@@ -58,7 +57,7 @@ FUNC(bool, sendPrivateMsg, const uint64_t AuthCode, const uint QQ, const Message
 	if (Plugin.VieryAuth(AuthCode, 5)) return Sdk.QQ_SendPrivateMsg(QQ, Msg);
 	else
 	{
-		Log::AddLog(Log::LogType::WARNING, Log::MsgType::PROGRAM, Iconv::Ansi2Unicode(Plugin.AuthCode2Name(AuthCode)), L"Plugin called sendPrivateMsg which it don't have right.");
+		Log::AddLog(Log::LogType::WARNING, Log::MsgType::PROGRAM, Plugin.AuthCode2Name(AuthCode), L"Plugin called sendPrivateMsg which it don't have right.");
 		return false;
 	}
 };
@@ -68,7 +67,7 @@ FUNC(bool, sendGroupMsg, const uint64_t AuthCode, const uint Group, const Messag
 	if (Plugin.VieryAuth(AuthCode, 6)) return Sdk.QQ_SendGroupMsg(Group, Msg);
 	else
 	{
-		Log::AddLog(Log::LogType::WARNING, Log::MsgType::PROGRAM, Iconv::Ansi2Unicode(Plugin.AuthCode2Name(AuthCode)), L"Plugin called sendGroupMsg which it don't have right.");
+		Log::AddLog(Log::LogType::WARNING, Log::MsgType::PROGRAM, Plugin.AuthCode2Name(AuthCode), L"Plugin called sendGroupMsg which it don't have right.");
 		return false;
 	}
 };
@@ -78,7 +77,7 @@ FUNC(bool, sendDisscussMsg, const uint64_t AuthCode, const uint Disscuss, const 
 	if (Plugin.VieryAuth(AuthCode, 7)) return Sdk.QQ_SendDisscussMsg(Disscuss, Msg);
 	else
 	{
-		Log::AddLog(Log::LogType::WARNING, Log::MsgType::PROGRAM, Iconv::Ansi2Unicode(Plugin.AuthCode2Name(AuthCode)), L"Plugin called sendGroupMsg which it don't have right.");
+		Log::AddLog(Log::LogType::WARNING, Log::MsgType::PROGRAM, Plugin.AuthCode2Name(AuthCode), L"Plugin called sendGroupMsg which it don't have right.");
 		return false;
 	}
 };
@@ -92,7 +91,7 @@ FUNC(bool, drawPrivateMsg, const uint64_t AuthCode, const uint QQ, const uint Ms
 	}
 	else
 	{
-		Log::AddLog(Log::LogType::WARNING, Log::MsgType::PROGRAM, Iconv::Ansi2Unicode(Plugin.AuthCode2Name(AuthCode)), L"Plugin called drawPrivateMsg which it don't have right.");
+		Log::AddLog(Log::LogType::WARNING, Log::MsgType::PROGRAM, Plugin.AuthCode2Name(AuthCode), L"Plugin called drawPrivateMsg which it don't have right.");
 		return false;
 	}
 };
@@ -101,12 +100,11 @@ FUNC(bool, drawGroupMsg, const uint64_t AuthCode, const uint Group, const uint M
 {
 	if (Plugin.VieryAuth(AuthCode, 8))
 	{
-		
-		return Sdk.QQ_DrawGroupMsg(Group, Msg);
+		//return Sdk.QQ_DrawGroupMsg(Group, Msg);
 	}
 	else
 	{
-		Log::AddLog(Log::LogType::WARNING, Log::MsgType::PROGRAM, Iconv::Ansi2Unicode(Plugin.AuthCode2Name(AuthCode)), L"Plugin called drawGroupMsg which it don't have right.");
+		Log::AddLog(Log::LogType::WARNING, Log::MsgType::PROGRAM, Plugin.AuthCode2Name(AuthCode), L"Plugin called drawGroupMsg which it don't have right.");
 		return false;
 	}
 };
@@ -120,7 +118,7 @@ FUNC(bool, setGroupBan, const uint64_t AuthCode, const uint Group, const uint QQ
 	}
 	else
 	{
-		Log::AddLog(Log::LogType::WARNING, Log::MsgType::PROGRAM, Iconv::Ansi2Unicode(Plugin.AuthCode2Name(AuthCode)), L"Plugin called setGroupBan which it don't have right.");
+		Log::AddLog(Log::LogType::WARNING, Log::MsgType::PROGRAM, Plugin.AuthCode2Name(AuthCode), L"Plugin called setGroupBan which it don't have right.");
 		return false;
 	}
 };
@@ -130,7 +128,7 @@ FUNC(bool, setGroupKick, const uint64_t AuthCode, const uint Group, const uint Q
 	if (Plugin.VieryAuth(AuthCode, 10))	return Sdk.QQ_KickGroupMember(Group,QQ, Forever);
 	else
 	{
-		Log::AddLog(Log::LogType::WARNING, Log::MsgType::PROGRAM, Iconv::Ansi2Unicode(Plugin.AuthCode2Name(AuthCode)), L"Plugin called setGroupKick which it don't have right.");
+		Log::AddLog(Log::LogType::WARNING, Log::MsgType::PROGRAM, Plugin.AuthCode2Name(AuthCode), L"Plugin called setGroupKick which it don't have right.");
 		return false;
 	}
 };
@@ -140,7 +138,7 @@ FUNC(bool, setGroupAdmin, const uint64_t AuthCode, const uint Group, const uint 
 	if (Plugin.VieryAuth(AuthCode, 11))	return Sdk.QQ_SetGroupAdmin(Group, QQ, Set);
 	else
 	{
-		Log::AddLog(Log::LogType::WARNING, Log::MsgType::PROGRAM, Iconv::Ansi2Unicode(Plugin.AuthCode2Name(AuthCode)), L"Plugin called setGroupAdmin which it don't have right.");
+		Log::AddLog(Log::LogType::WARNING, Log::MsgType::PROGRAM, Plugin.AuthCode2Name(AuthCode), L"Plugin called setGroupAdmin which it don't have right.");
 		return false;
 	}
 };
@@ -150,7 +148,7 @@ FUNC(bool, setGroupMemberTitle, const uint64_t AuthCode, const uint Group, const
 	if (Plugin.VieryAuth(AuthCode, 12)) return Sdk.QQ_SetGroupMemberTitle(Group, QQ, Title);
 	else
 	{
-		Log::AddLog(Log::LogType::WARNING, Log::MsgType::PROGRAM, Iconv::Ansi2Unicode(Plugin.AuthCode2Name(AuthCode)), L"Plugin called setGroupMemberTitle which it don't have right.");
+		Log::AddLog(Log::LogType::WARNING, Log::MsgType::PROGRAM, Plugin.AuthCode2Name(AuthCode), L"Plugin called setGroupMemberTitle which it don't have right.");
 		return false;
 	}
 };
@@ -160,7 +158,7 @@ FUNC(bool, setGroupMemberCard, const uint64_t AuthCode, const uint Group, const 
 	if (Plugin.VieryAuth(AuthCode, 13)) Sdk.QQ_SetGroupMemberCard(Group,QQ, Card);
 	else
 	{
-		Log::AddLog(Log::LogType::WARNING, Log::MsgType::PROGRAM, Iconv::Ansi2Unicode(Plugin.AuthCode2Name(AuthCode)), L"Plugin called setGroupMemberCard which it don't have right.");
+		Log::AddLog(Log::LogType::WARNING, Log::MsgType::PROGRAM, Plugin.AuthCode2Name(AuthCode), L"Plugin called setGroupMemberCard which it don't have right.");
 		return false;
 	}
 };
@@ -170,7 +168,7 @@ FUNC(void, getGroupMemberInfo, const uint64_t AuthCode, const uint Group, const 
 	if (Plugin.VieryAuth(AuthCode, 14)) Sdk.QQ_GetGroupMemberInfo(Group, QQ);
 	else
 	{
-		Log::AddLog(Log::LogType::WARNING, Log::MsgType::PROGRAM, Iconv::Ansi2Unicode(Plugin.AuthCode2Name(AuthCode)), L"Plugin called setGroupMemberCard which it don't have right.");
+		Log::AddLog(Log::LogType::WARNING, Log::MsgType::PROGRAM, Plugin.AuthCode2Name(AuthCode), L"Plugin called setGroupMemberCard which it don't have right.");
 	}*/
 };
 
@@ -179,7 +177,7 @@ FUNC(void, getStrangerInfo, const uint64_t AuthCode, const uint QQ)
 	if (Plugin.VieryAuth(AuthCode, 15)) Sdk.QQ_GetStrangerInfo(QQ);
 	else
 	{
-		Log::AddLog(Log::LogType::WARNING, Log::MsgType::PROGRAM, Iconv::Ansi2Unicode(Plugin.AuthCode2Name(AuthCode)), L"Plugin called setGroupMemberCard which it don't have right.");
+		Log::AddLog(Log::LogType::WARNING, Log::MsgType::PROGRAM, Plugin.AuthCode2Name(AuthCode), L"Plugin called setGroupMemberCard which it don't have right.");
 	}*/
 };
 
@@ -188,7 +186,7 @@ FUNC(void, getGroupInfo, const uint64_t AuthCode, const uint Group)
 	if (Plugin.VieryAuth(AuthCode, 16)) Sdk.QQ_GetGroupInfo(Group);
 	else
 	{
-		Log::AddLog(Log::LogType::WARNING, Log::MsgType::PROGRAM, Iconv::Ansi2Unicode(Plugin.AuthCode2Name(AuthCode)), L"Plugin called setGroupMemberCard which it don't have right.");
+		Log::AddLog(Log::LogType::WARNING, Log::MsgType::PROGRAM, Plugin.AuthCode2Name(AuthCode), L"Plugin called setGroupMemberCard which it don't have right.");
 	}*/
 };
 
@@ -219,7 +217,7 @@ FUNC(LPBYTE, getFriendList, const uint64_t AuthCode)
 	}
 	else
 	{
-		Log::AddLog(Log::LogType::WARNING, Log::MsgType::PROGRAM, Iconv::Ansi2Unicode(Plugin.AuthCode2Name(AuthCode)), L"Plugin called getFriendList which it don't have right.");
+		Log::AddLog(Log::LogType::WARNING, Log::MsgType::PROGRAM, Plugin.AuthCode2Name(AuthCode), L"Plugin called getFriendList which it don't have right.");
 		return (LPBYTE)"\0\0\0\0";
 	}
 };
@@ -248,7 +246,7 @@ FUNC(LPBYTE, getGroupList, const uint64_t AuthCode)
 	}
 	else
 	{
-		Log::AddLog(Log::LogType::WARNING, Log::MsgType::PROGRAM, Iconv::Ansi2Unicode(Plugin.AuthCode2Name(AuthCode)), L"Plugin called getGroupList which it don't have right.");
+		Log::AddLog(Log::LogType::WARNING, Log::MsgType::PROGRAM, Plugin.AuthCode2Name(AuthCode), L"Plugin called getGroupList which it don't have right.");
 		return (LPBYTE)"\0\0\0\0";
 	}
 };
@@ -271,7 +269,7 @@ FUNC(LPBYTE, getGroupMemberList, const uint64_t AuthCode, uint group_code)
 	}
 	else
 	{
-		Log::AddLog(Log::LogType::WARNING, Log::MsgType::PROGRAM, Iconv::Ansi2Unicode(Plugin.AuthCode2Name(AuthCode)), L"Plugin called getGroupMemberList which it don't have right.");
+		Log::AddLog(Log::LogType::WARNING, Log::MsgType::PROGRAM, Plugin.AuthCode2Name(AuthCode), L"Plugin called getGroupMemberList which it don't have right.");
 		return (LPBYTE)"\0\0\0\0";
 	}
 };
@@ -292,7 +290,7 @@ FUNC(LPBYTE, getGroupAdminList, const uint64_t AuthCode, uint group_code)
 	}
 	else
 	{
-		Log::AddLog(Log::LogType::WARNING, Log::MsgType::PROGRAM, Iconv::Ansi2Unicode(Plugin.AuthCode2Name(AuthCode)), L"Plugin called getGroupList which it don't have right.");
+		Log::AddLog(Log::LogType::WARNING, Log::MsgType::PROGRAM, Plugin.AuthCode2Name(AuthCode), L"Plugin called getGroupList which it don't have right.");
 		return (LPBYTE)"\0\0\0\0";
 	}
 };

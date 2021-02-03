@@ -16,6 +16,7 @@ namespace Utils
 	byte* GetRandomBin(const uint length);
 
 	byte* MD5(const byte* bin, const size_t length);
+	LPBYTE MD5EX(const byte* bin, const size_t length);
 	byte* Sha256(const byte* bin, const size_t length);
 
 	bool Ecdh_Crypt(ECDHKEY& ECDHKEY, const byte* pubkey, const byte pubkeylen);

@@ -1,45 +1,35 @@
 #pragma once
 #include "Utils.h"
-#include "Event.h"
-#include "MoeQ.h"
 
 #include <sstream>
 #include <thread>
 #include <queue>
 #include <condition_variable>
 
+namespace Database
+{
+	void Init();
+	void UnInit();
+	uint AddPrivateMsg(const Event::PrivateMsg* PrivateMsg);
+	uint AddGroupMsg(const Event::GroupMsg* GroupMsg);
+	void AddPicture(const char MD5[16], const char* Url, const unsigned short Length, const unsigned short Width, const unsigned short Height);
+	void AddVoice(const char MD5[16], const char* Url);
+	void AddLog(const Log::LogType LogType, const Log::MsgType MsgType, const wchar_t* Type, const wchar_t* Msg);
+	::Event::PrivateMsg* GetPrivateMsg(const uint MsgID);
+	::Event::GroupMsg* GetGroupMsg(const uint MsgID);
+	std::string GetPictureUrl(const char MD5[16]);
+	std::string GetVoiceUrl(const char MD5[16]);
+}
 
 namespace Log
 {
-	enum class LogType
-	{
-		__DEBUG = 0,
-		INFORMATION = 1,
-		NOTICE = 2,
-		WARNING = 3,
-		_ERROR = 4
-	};
-	enum class MsgType
-	{
-		SERVER = 0,
-		PROGRAM = 1,
-		PRIVATE = 2,
-		_GROUP = 3,
-		OTHER = 4
-	};
-	struct Log {
-		LogType LogType;
-		MsgType MsgType;
-		const wchar_t* Type;
-		const wchar_t* Msg;
-	};
-
 	void DesplayThread();
 	void Init(HANDLE Handle);
+	void AddLog(const LogType LogType, const MsgType MsgType, const char* Type, const char* Msg);
+	void AddLog(const LogType LogType, const MsgType MsgType, const char* Type, const wchar_t* Msg);
 	void AddLog(const LogType LogType, const MsgType MsgType, const wchar_t* Type, const char* Msg);
 	void AddLog(const LogType LogType, const MsgType MsgType, const wchar_t* Type, const wchar_t* Msg);
 	void AddLog(const LogType LogType, const MsgType MsgType, const wchar_t* Type, const Message::Msg* Msg);
 	void AddLog(const LogType LogType, const MsgType MsgType, const Event::NoticeEvent::NoticeEvent* NoticeEvent);
 	void AddLog(const LogType LogType, const MsgType MsgType, const Event::RequestEvent::RequestEvent* RequestEvent);
 };
-

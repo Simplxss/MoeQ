@@ -13,10 +13,15 @@ bool DevMode = true;
 PluginSystem Plugin;
 
 Android::Token Token;
-Android Sdk("861891778567", "460013521635791", (const byte*)"\x86\xA4\x45\xBF\x44\xA2\xC2\x87\x59\x76\x18\xF6\xF3\x6E\xB6\x8C", (const byte*)"\0\0\0\0\0\2", "XiaoMi", "MIX Alpha");
+Android Sdk("861891778567", "460013521635791", (const byte*)"\x86\xA4\x45\xBF\x44\xA2\xC2\x87\x59\x76\x18\xF6\xF3\x6E\xB6\x8C", (const byte*)"\0\0\0\0\0\2", "XiaoMi", "Alpha");
 
 std::condition_variable Slider;
 char* Ticket = nullptr;
+
+void Debug()
+{
+	Utils::MD5EX({ 0 }, 4);
+}
 
 // MainFrm dialog
 
@@ -128,6 +133,10 @@ BOOL MainFrm::OnInitDialog()
 	}
 	wkeSetWkeDllPath(DllFilePath);
 	wkeInitialize();
+
+#ifdef DEBUG
+	Debug();
+#endif // DEBUG
 
 	return TRUE;  // return TRUE unless you set the focus to a control
 				  // EXCEPTION: OCX Property Pages should return FALSE

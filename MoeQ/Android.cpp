@@ -1704,6 +1704,37 @@ void Android::ImgStore_GroupPicUp(const uint Group, const byte ImageMD5[16], con
 }
 
 /// <summary>
+/// 
+/// </summary>
+/// <param name="Group"></param>
+/// <param name="Data"></param>
+/// <param name="DataLength"></param>
+/// <param name="TotalDataLength"></param>
+/// <param name="TotalDataMD5"></param>
+/// <param name="DataType">Image 2, Voice 29</param>
+/// <param name="sig"></param>
+void Android::PicUp_DataUp(const uint Group, const byte Data, const uint DataLength, const uint TotalDataLength, const byte TotalDataMD5[16], const int DataType, const LPBYTE sig)
+{
+	ProtobufStruct::TreeNode Node2_9{ nullptr,nullptr,9,ProtobufStruct::ProtobufStructType::LENGTH, };
+	ProtobufStruct::TreeNode Node2_8{ nullptr,&Node2_9,8,ProtobufStruct::ProtobufStructType::LENGTH, };
+	ProtobufStruct::TreeNode Node2_6{ nullptr,&Node2_8,6,ProtobufStruct::ProtobufStructType::LENGTH,sig };
+	ProtobufStruct::TreeNode Node2_4{ nullptr,&Node2_6,4,ProtobufStruct::ProtobufStructType::VARINT,(void*)DataLength };
+	ProtobufStruct::TreeNode Node2_3{ nullptr,&Node2_4,3,ProtobufStruct::ProtobufStructType::VARINT,(void*)0 };
+	ProtobufStruct::TreeNode Node2_2{ nullptr,&Node2_3,2,ProtobufStruct::ProtobufStructType::VARINT,(void*)TotalDataLength };
+	ProtobufStruct::TreeNode Node2{ &Node2_2,nullptr,2,ProtobufStruct::ProtobufStructType::LENGTH, };
+	ProtobufStruct::TreeNode Node1_10{ nullptr,nullptr,10,ProtobufStruct::ProtobufStructType::VARINT,(void*)2052 };
+	ProtobufStruct::TreeNode Node1_8{ nullptr,&Node1_10,8,ProtobufStruct::ProtobufStructType::VARINT,(void*)DataType };
+	ProtobufStruct::TreeNode Node1_7{ nullptr,&Node1_8,7,ProtobufStruct::ProtobufStructType::VARINT,(void*)4096 };
+	ProtobufStruct::TreeNode Node1_6{ nullptr,&Node1_7,6,ProtobufStruct::ProtobufStructType::VARINT,(void*)QQ_APPID };
+	ProtobufStruct::TreeNode Node1_5{ nullptr,&Node1_6,5,ProtobufStruct::ProtobufStructType::VARINT,(void*)0 };
+	ProtobufStruct::TreeNode Node1_4{ nullptr,&Node1_5,4,ProtobufStruct::ProtobufStructType::VARINT,(void*)83048 };
+	ProtobufStruct::TreeNode Node1_3{ nullptr,&Node1_4,3,ProtobufStruct::ProtobufStructType::LENGTH,(void*)"\0\0\0\x10PicUp.DataUp" };
+	ProtobufStruct::TreeNode Node1_2{ nullptr,&Node1_3,2,ProtobufStruct::ProtobufStructType::LENGTH, QQ.QQ_Str };
+	ProtobufStruct::TreeNode Node1_1{ nullptr,&Node1_2,1,ProtobufStruct::ProtobufStructType::VARINT,(void*)1 };
+	ProtobufStruct::TreeNode Node1{ &Node1_1,&Node2,1,ProtobufStruct::ProtobufStructType::LENGTH, };
+}
+
+/// <summary>
 /// 设置管理员
 /// </summary>
 /// <param name="Group"></param>

@@ -112,7 +112,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeader>Create</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_WINDOWS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -189,7 +189,6 @@
   <ItemGroup>
     <ClInclude Include="Android.h" />
     <ClInclude Include="Defined.h" />
-    <ClInclude Include="Event.h" />
     <ClInclude Include="ExportFunction.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="JceStruct.h" />
@@ -211,7 +210,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Android.cpp" />
-    <ClCompile Include="Event.cpp" />
     <ClCompile Include="JceStruct.cpp" />
     <ClCompile Include="Log.cpp" />
     <ClCompile Include="MainFrm.cpp" />

@@ -48,6 +48,17 @@ byte* Utils::MD5(const byte* bin, const size_t length)
 	return md5;
 }
 
+LPBYTE Utils::MD5EX(const byte* bin, const size_t length)
+{
+	MD5_CTX ctx;
+	byte md5[20] = { 0,0,0,16 };
+
+	MD5_Init(&ctx);
+	MD5_Update(&ctx, bin, length);
+	MD5_Final(md5 + 4, &ctx);
+	return md5;
+}
+
 byte* Utils::Sha256(const byte* bin, const size_t length)
 {
 	SHA256_CTX ctx;

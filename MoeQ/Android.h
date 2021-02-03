@@ -7,11 +7,11 @@
 #include "Tlv.h"
 #include "Tea.h"
 #include "ThreadPool.h"
-#include "Log.h"
+#include "PluginSystem.h"
 
 #include <ctime>
 
-#define QQ_APPID 537064985
+#define QQ_APPID 537066978
 #define QQ_VERSION "8.4.1"
 #define QQ_APKID "com.tencent.mobileqq"
 #define QQ_ASIG (const byte*)"\xA6\xB7\x45\xBF\x24\xA2\xC2\x77\x52\x77\x16\xF6\xF3\x6E\xB6\x8D"
@@ -174,6 +174,7 @@ private:
 	bool PbMessageSvc_PbMsgWithDraw(const uint Group, const uint MsgId, const uint MsgId_);
 	void ProfileService_Pb_ReqSystemMsgNew_Group();
 	void ImgStore_GroupPicUp(const uint Group, const byte ImageMD5[16], const uint ImageLength, const uint ImageWidth, const uint ImageHeight);
+	void PicUp_DataUp(const uint Group, const byte Data, const uint DataLength, const uint TotalDataLength, const byte TotalDataMD5[16], const int DataType, const LPBYTE sig);
 	void OidbSvc_0x55c_1(const uint Group, const  uint QQ, const  bool Set);
 	void OidbSvc_0x570_8(const uint Group, const  uint QQ, const  uint Time);
 	std::vector<uint>* OidbSvc_0x899_0(const uint Group);

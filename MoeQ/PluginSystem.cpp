@@ -4,6 +4,87 @@
 extern bool DevMode;
 extern wchar_t DataPath[MAX_PATH + 1];
 
+extern PluginSystem Plugin;
+
+void Message::DestoryMsg(Message::Msg* Msg)
+{
+	while (Msg != nullptr)
+	{
+		switch (Msg->MsgType)
+		{
+		case Message::MsgType::text:
+			if (((Message::text*)Msg->Message)->text != nullptr) delete[]((Message::text*)Msg->Message)->text;
+			break;
+		case Message::MsgType::classcal_face:
+			break;
+		case Message::MsgType::expression:
+			delete[]((Message::expression*)Msg->Message)->MD5;
+			break;
+		case Message::MsgType::picture:
+			delete[]((Message::picture*)Msg->Message)->MD5;
+			delete[]((Message::picture*)Msg->Message)->URL;
+			break;
+		case Message::MsgType::xml:
+			delete[]((Message::xml*)Msg->Message)->text;
+			break;
+		case Message::MsgType::reply:
+		{
+			Message::Msg* ReplyMsg = ((Message::reply*)Msg->Message)->Msg;
+			while (ReplyMsg != nullptr)
+			{
+				switch (ReplyMsg->MsgType)
+				{
+				case Message::MsgType::text:
+					delete[]((Message::text*)ReplyMsg->Message)->text;
+					break;
+				case Message::MsgType::classcal_face:
+					break;
+				}
+				delete ReplyMsg->Message;
+				Message::Msg* tmp = ReplyMsg->NextPoint;
+				delete ReplyMsg;
+				ReplyMsg = tmp;
+			}
+		}
+		break;
+		case Message::MsgType::json:
+			delete[]((Message::json*)Msg->Message)->text;
+			break;
+		default:
+			break;
+		}
+		delete Msg->Message;
+		Message::Msg* tmp = Msg->NextPoint;
+		delete Msg;
+		Msg = tmp;
+	};
+}
+
+void Event::OnGroupMsg(const GroupMsg* GroupMsg)
+{
+	Target::Target Target{ Target::TargetType::group,(void*)new Target::group{GroupMsg->FromGroup,GroupMsg->FromQQ } };
+	uint MsgID = Database::AddGroupMsg(GroupMsg);
+	Plugin.BroadcastMessageEvent(&Target, GroupMsg->Msg, MsgID);
+}
+
+void Event::OnPrivateMsg(const PrivateMsg* PrivateMsg)
+{
+	Target::Target Target{ Target::TargetType::_private,(void*)new Target::_private{PrivateMsg->FromQQ,0 } };//Todo
+	uint MsgID = Database::AddPrivateMsg(PrivateMsg);
+	Plugin.BroadcastMessageEvent(&Target, PrivateMsg->Msg, MsgID);
+}
+
+void Event::OnNoticeMsg(const NoticeEvent::NoticeEvent* NoticeEvent)
+{
+	Plugin.BroadcastNoticeEvent(NoticeEvent);
+}
+
+void Event::OnRequestMsg(const RequestEvent::RequestEvent* RequestEvent)
+{
+	//Todo
+	Plugin.BroadcastRequestEvent(RequestEvent, 0);
+}
+
 void PluginSystem::Load(char* szFilePath)
 {
 	char PluginPath[MAX_PATH + 1];
@@ -396,7 +477,7 @@ void PluginSystem::BroadcastLifeCycleEvent(const ::Event::LifeCycleEvent::LifeCy
 	}
 }
 
-void PluginSystem::BroadcastMessageEvent(const Target::Target* Target, const Message::Msg* Msg, const uint MsgID)
+void PluginSystem::BroadcastMessageEvent(const ::Target::Target* Target, const ::Message::Msg* Msg, const uint MsgID)
 {
 	for (size_t i = 0; i < MessageEventList[static_cast<int>(Target->TargetType)].size(); i++)
 	{
@@ -412,7 +493,7 @@ void PluginSystem::BroadcastNoticeEvent(const ::Event::NoticeEvent::NoticeEvent*
 	}
 }
 
-void PluginSystem::BroadcastRequestEvent(const::Event::RequestEvent::RequestEvent* RequestEvent, const uint responseFlag)
+void PluginSystem::BroadcastRequestEvent(const ::Event::RequestEvent::RequestEvent* RequestEvent, const uint responseFlag)
 {
 	for (size_t i = 0; i < RequestEventList[static_cast<int>(RequestEvent->RequestEventType)].size(); i++)
 	{
