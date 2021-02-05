@@ -22,7 +22,7 @@ void Message::DestoryMsg(Message::Msg* Msg)
 			break;
 		case Message::MsgType::picture:
 			delete[]((Message::picture*)Msg->Message)->MD5;
-			delete[]((Message::picture*)Msg->Message)->URL;
+			delete[]((Message::picture*)Msg->Message)->Data.URL;
 			break;
 		case Message::MsgType::xml:
 			delete[]((Message::xml*)Msg->Message)->text;

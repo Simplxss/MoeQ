@@ -303,7 +303,7 @@ void Log::AddLog(const LogType LogType, const MsgType MsgType, const wchar_t* Ty
 			MsgSteam << ",Height=";
 			MsgSteam << ((Message::picture*)Msg->Message)->Height;
 			MsgSteam << ",Length=";
-			MsgSteam << ((Message::picture*)Msg->Message)->Length;
+			MsgSteam << ((Message::picture*)Msg->Message)->Data.Length;
 			MsgSteam << "]";
 			break;
 		case Message::MsgType::xml:

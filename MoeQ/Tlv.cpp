@@ -46,11 +46,11 @@ unsigned __int16 Tlv::Tlv100(byte* bin, const uint len, const uint APPID, const 
 {
 	::TlvPack Pack(bin, len);
 	Pack.SetShort(1);
-	Pack.SetInt(11);
-	Pack.SetInt(16);
-	Pack.SetInt(IsFreshSkey ? APPID : 2);
+	Pack.SetInt(0xF);
+	Pack.SetInt(0X10);
+	Pack.SetInt(IsFreshSkey ? APPID : 1);
 	Pack.SetInt(0);
-	Pack.SetInt(IsFreshSkey ? 34869472 : 1048768);
+	Pack.SetInt(IsFreshSkey ? 34869472 : 0X001000C0);
 	Pack.Pack(256);
 	return Pack.Length();
 }
@@ -124,10 +124,9 @@ unsigned __int16 Tlv::Tlv116(byte* bin, const uint len)
 {
 	::TlvPack Pack(bin, len);
 	Pack.SetByte(0);//_ver
-	Pack.SetInt(184024956);//mMiscBitmap
-	Pack.SetInt(66560);//mSubSigMap
-	Pack.SetByte(1);//arr length
-	Pack.SetInt(1600000226);
+	Pack.SetInt(0x08F7FF7C);//mMiscBitmap
+	Pack.SetInt(0x00010400);//mSubSigMap
+	Pack.SetByte(0);//arr length
 	Pack.Pack(278);
 	return Pack.Length();
 }
@@ -152,7 +151,7 @@ unsigned __int16 Tlv::Tlv124(byte* bin, const uint len, const char* os_type, con
 unsigned __int16 Tlv::Tlv128(byte* bin, const uint len, const char* _device, const char* Brand, const byte GUID[16])
 {
 	::TlvPack Pack(bin, len);
-	Pack.SetBin((const byte*)"\0\0\0\1\1\1\0\0\0", 9);
+	Pack.SetBin((const byte*)"\0\0\0\1\0\1\0\0\0", 9);
 	Pack.SetShort(strlen(_device));
 	Pack.SetStr(_device);
 	Pack.SetShort(16);
@@ -434,8 +433,20 @@ unsigned __int16 Tlv::Tlv525(byte* bin, const uint len)
 
 unsigned __int16 Tlv::Tlv52D(byte* bin, const uint len)
 {
-	//To do
 	::TlvPack Pack(bin, len);
+	
+	ProtobufStruct::TreeNode Node9{ nullptr,nullptr,9,ProtobufStruct::ProtobufStructType::LENGTH, (void*)"\0\0\0\x20""eng.se.infra.20191230.112159" };
+	ProtobufStruct::TreeNode Node8{ nullptr,&Node9,8,ProtobufStruct::ProtobufStructType::LENGTH, (void*)"\0\0\0\x0E""no message" };
+	ProtobufStruct::TreeNode Node7{ nullptr,&Node8,7,ProtobufStruct::ProtobufStructType::LENGTH, (void*)"\0\0\0\x14""b17313ff4d8d04f9" };
+	ProtobufStruct::TreeNode Node6{ nullptr,&Node7,6,ProtobufStruct::ProtobufStructType::LENGTH, (void*)"\0\0\0\x28""dd049e10-2740-420f-a6e4-6832791fc40e" };
+	ProtobufStruct::TreeNode Node5{ nullptr,&Node6,5,ProtobufStruct::ProtobufStructType::LENGTH, (void*)"\0\0\0\x3F""Xiaomi/Xiaomi/Alphe:5.1.1/20171130.376229:user/release-keys" };
+	ProtobufStruct::TreeNode Node4{ nullptr,&Node5,4,ProtobufStruct::ProtobufStructType::LENGTH, (void*)"\0\0\0\x20""eng.se.infra.20191230.112159" };
+	ProtobufStruct::TreeNode Node3{ nullptr,&Node4,3,ProtobufStruct::ProtobufStructType::LENGTH, (void*)"\0\0\0\x07""REL" };
+	ProtobufStruct::TreeNode Node2{ nullptr,&Node3,2,ProtobufStruct::ProtobufStructType::LENGTH, (void*)"\0\0\0\x6C""Linux version 4.0.9 (dxu@mv-mobl1) (gcc version 4.8 (GCC) ) #27 SMP PREEMPT Mon Dec 30 11:06:57 CST 2019" };
+	ProtobufStruct::TreeNode Node1{ nullptr,&Node2,1,ProtobufStruct::ProtobufStructType::LENGTH, (void*)"\0\0\0\x09""uboot"};
+
+	Protobuf PB;
+	Pack.SetBin_(PB.Pack(&Node1));
 	Pack.Pack(1325);
 	return Pack.Length();
 }

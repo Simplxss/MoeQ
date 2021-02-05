@@ -1,6 +1,10 @@
 ﻿#include "pch.h"
 #include "Android.h"
 
+extern wchar_t DataPath[MAX_PATH + 1];
+
+wchar_t ImageFilePath[MAX_PATH + 1];
+
 namespace Message
 {
 	LPBYTE Pack1(const char* Text, const uint AtQQ)
@@ -63,7 +67,7 @@ namespace Message
 	{
 		ProtobufStruct::TreeNode Node8_34_15{ nullptr,nullptr,15,ProtobufStruct::ProtobufStructType::VARINT,(void*)5 };
 		ProtobufStruct::TreeNode Node8_34_10{ nullptr,&Node8_34_15,10,ProtobufStruct::ProtobufStructType::VARINT,(void*)0 };
-		ProtobufStruct::TreeNode Node8_34_6{ nullptr,&Node8_34_10,6,ProtobufStruct::ProtobufStructType::LENGTH, "\0\0\0\4" };
+		ProtobufStruct::TreeNode Node8_34_6{ nullptr,&Node8_34_10,6,ProtobufStruct::ProtobufStructType::LENGTH, (void*)"\0\0\0\4" };
 		ProtobufStruct::TreeNode Node8_34_2{ nullptr,&Node8_34_6,2,ProtobufStruct::ProtobufStructType::VARINT,(void*)0 };
 		ProtobufStruct::TreeNode Node8_34_1{ nullptr,&Node8_34_2,1,ProtobufStruct::ProtobufStructType::VARINT,(void*)1 };
 		ProtobufStruct::TreeNode Node8_34{ &Node8_34_1,nullptr,34,ProtobufStruct::ProtobufStructType::LENGTH, };
@@ -78,7 +82,7 @@ namespace Message
 		ProtobufStruct::TreeNode Node8_17{ nullptr,&Node8_20,17,ProtobufStruct::ProtobufStructType::VARINT,(void*)5 };
 		ProtobufStruct::TreeNode Node8_13{ nullptr,&Node8_17,13,ProtobufStruct::ProtobufStructType::LENGTH,ImageMD5 };
 		ProtobufStruct::TreeNode Node8_12{ nullptr,&Node8_13,12,ProtobufStruct::ProtobufStructType::VARINT,(void*)1 };
-		ProtobufStruct::TreeNode Node8_11{ nullptr,&Node8_12,11,ProtobufStruct::ProtobufStructType::LENGTH, };
+		ProtobufStruct::TreeNode Node8_11{ nullptr,&Node8_12,11,ProtobufStruct::ProtobufStructType::LENGTH, (void*)"\0\0\0\4" }; //Unknown
 		ProtobufStruct::TreeNode Node8_10{ nullptr,&Node8_11,10,ProtobufStruct::ProtobufStructType::VARINT,(void*)66 };
 		ProtobufStruct::TreeNode Node8_9{ nullptr,&Node8_10,9,ProtobufStruct::ProtobufStructType::VARINT,(void*)80 };
 		ProtobufStruct::TreeNode Node8_8{ nullptr,&Node8_9,8,ProtobufStruct::ProtobufStructType::VARINT,(void*)2073511832 };
@@ -643,7 +647,6 @@ void Android::wtlogin_exchange_emp()
 	Pack.Skip(Tlv::Tlv511(Pack.GetCurrentPoint(), Pack.GetLeftSpace(), domainList, 14));
 	Pack.Skip(Tlv::Tlv147(Pack.GetCurrentPoint(), Pack.GetLeftSpace(), QQ_VERSION, QQ_ASIG));
 	Pack.Skip(Tlv::Tlv177(Pack.GetCurrentPoint(), Pack.GetLeftSpace(), Time - 238, QQ_SDK_VERSION));
-	//Pack.Skip(Tlv::Tlv400(Pack.GetCurrentPoint(), Pack.GetLeftSpace(), QQ.QQ, Device.GUID, Time, QQ.Login->token_403));
 	Pack.Skip(Tlv::Tlv187(Pack.GetCurrentPoint(), Pack.GetLeftSpace()));
 	Pack.Skip(Tlv::Tlv188(Pack.GetCurrentPoint(), Pack.GetLeftSpace()));
 	Pack.Skip(Tlv::Tlv194(Pack.GetCurrentPoint(), Pack.GetLeftSpace()));
@@ -652,7 +655,6 @@ void Android::wtlogin_exchange_emp()
 	Pack.Skip(Tlv::Tlv521(Pack.GetCurrentPoint(), Pack.GetLeftSpace()));
 	Pack.Skip(Tlv::Tlv525(Pack.GetCurrentPoint(), Pack.GetLeftSpace()));
 	Pack.Skip(Tlv::Tlv544(Pack.GetCurrentPoint(), Pack.GetLeftSpace(), QQ_APKID, QQ_ASIG));
-	//Pack.Skip(Tlv::Tlv545(Pack.GetCurrentPoint(), Pack.GetLeftSpace(), Device.QIMEI));
 	::UnPack UnPack(Fun_Send_Sync(10, 2, "wtlogin.exchange_emp", Make_Body_PC(Pack.GetAll(), Pack.Length(), true)));
 	UnPack.GetByte();
 	const uint len = UnPack.GetShort() - 1 - 2 - 2 - 2 - 2 - 4 - 2 - 1 - 1;
@@ -1499,15 +1501,15 @@ bool Android::MessageSvc_PbSendMsg(const uint ToNumber, const byte ToType, const
 	if (ToType == 0)
 	{
 		Node6_14 = ProtobufStruct::TreeNode{ nullptr,nullptr,14,ProtobufStruct::ProtobufStructType::VARINT,(void*)0 };
-		Node6_13 = ProtobufStruct::TreeNode{ &Node6_14,nullptr,13,ProtobufStruct::ProtobufStructType::VARINT,(void*)std::time(0) };
-		Node6_12 = ProtobufStruct::TreeNode{ &Node6_13,nullptr,12,ProtobufStruct::ProtobufStructType::VARINT,(void*)41 };
-		Node6_11 = ProtobufStruct::TreeNode{ &Node6_12,nullptr,11,ProtobufStruct::ProtobufStructType::VARINT,(void*)1885270429 };
-		Node6_9 = ProtobufStruct::TreeNode{ &Node6_11,nullptr,9,ProtobufStruct::ProtobufStructType::VARINT,(void*)2346412847 };
-		Node6_5 = ProtobufStruct::TreeNode{ &Node6_9,nullptr,5,ProtobufStruct::ProtobufStructType::VARINT,(void*)562530569 };
-		Node6_4 = ProtobufStruct::TreeNode{ &Node6_5,nullptr,4,ProtobufStruct::ProtobufStructType::VARINT,(void*)3414434724 };
-		Node6_3 = ProtobufStruct::TreeNode{ &Node6_4,nullptr,3,ProtobufStruct::ProtobufStructType::VARINT,(void*)1787282332 };
-		Node6_2 = ProtobufStruct::TreeNode{ &Node6_3,nullptr,2,ProtobufStruct::ProtobufStructType::VARINT,(void*)std::time(0) };
-		Node6_1 = ProtobufStruct::TreeNode{ &Node6_2,nullptr,1,ProtobufStruct::ProtobufStructType::VARINT,(void*)std::time(0) };
+		Node6_13 = ProtobufStruct::TreeNode{ nullptr,&Node6_14,13,ProtobufStruct::ProtobufStructType::VARINT,(void*)std::time(0) };
+		Node6_12 = ProtobufStruct::TreeNode{ nullptr,&Node6_13,12,ProtobufStruct::ProtobufStructType::VARINT,(void*)41 };
+		Node6_11 = ProtobufStruct::TreeNode{ nullptr,&Node6_12,11,ProtobufStruct::ProtobufStructType::VARINT,(void*)1885270429 };
+		Node6_9 = ProtobufStruct::TreeNode{ nullptr,&Node6_11,9,ProtobufStruct::ProtobufStructType::VARINT,(void*)2346412847 };
+		Node6_5 = ProtobufStruct::TreeNode{ nullptr,&Node6_9,5,ProtobufStruct::ProtobufStructType::VARINT,(void*)562530569 };
+		Node6_4 = ProtobufStruct::TreeNode{ nullptr,&Node6_5,4,ProtobufStruct::ProtobufStructType::VARINT,(void*)3414434724 };
+		Node6_3 = ProtobufStruct::TreeNode{ nullptr,&Node6_4,3,ProtobufStruct::ProtobufStructType::VARINT,(void*)1787282332 };
+		Node6_2 = ProtobufStruct::TreeNode{ nullptr,&Node6_3,2,ProtobufStruct::ProtobufStructType::VARINT,(void*)std::time(0) };
+		Node6_1 = ProtobufStruct::TreeNode{ nullptr,&Node6_2,1,ProtobufStruct::ProtobufStructType::VARINT,(void*)std::time(0) };
 		Node6 = ProtobufStruct::TreeNode{ &Node6_1,&Node8,6,ProtobufStruct::ProtobufStructType::LENGTH, };
 		Node5 = ProtobufStruct::TreeNode{ nullptr,&Node6,5,ProtobufStruct::ProtobufStructType::VARINT,(void*)Utils::GetRandom(0,2147483647) };
 	}
@@ -1518,7 +1520,7 @@ bool Android::MessageSvc_PbSendMsg(const uint ToNumber, const byte ToType, const
 	{
 		switch (Msg->MsgType)
 		{
-		case Message::MsgType::text:
+		case Message::MsgType::text: 
 			Node3_1_2 = new ProtobufStruct::TreeNode{ nullptr,Node3_1_2,2,ProtobufStruct::ProtobufStructType::LENGTH,Message::Pack1(((Message::text*)Msg->Message)->text,((Message::text*)Msg->Message)->AtQQ) };
 			break;
 		case Message::MsgType::classcal_face:
@@ -1543,7 +1545,6 @@ bool Android::MessageSvc_PbSendMsg(const uint ToNumber, const byte ToType, const
 			{
 				PicUp_DataUp(ToType == 1 ? ToNumber : NULL, ((Message::picture*)Msg->Message)->Data.Contain, ((Message::picture*)Msg->Message)->Data.Length, ((Message::picture*)Msg->Message)->MD5, 2, IP, Port, sig);
 			}
-			uint ImageID;
 
 			Node3_1_2 = new ProtobufStruct::TreeNode{ nullptr,Node3_1_2,2,ProtobufStruct::ProtobufStructType::LENGTH,Message::Pack8(T, B,ImageID,((Message::picture*)Msg->Message)->Data.Length, ((Message::picture*)Msg->Message)->Width, ((Message::picture*)Msg->Message)->Height) };
 			delete T, B;
@@ -1693,10 +1694,10 @@ std::tuple <uint, uint, uint, LPBYTE> Android::ImgStore_GroupPicUp(const uint Gr
 	ProtobufStruct::TreeNode Node2{ nullptr,&Node3,2,ProtobufStruct::ProtobufStructType::VARINT,(void*)1 };
 	ProtobufStruct::TreeNode Node1{ nullptr,&Node2,1,ProtobufStruct::ProtobufStructType::VARINT,(void*)3 };
 
-	delete V;
-
 	Protobuf PB;
 	UnProtobuf UnPB(Fun_Send_Sync(11, 1, "ImgStore.GroupPicUp", PB.Pack(&Node1)));
+
+	delete V;
 
 	LPBYTE sig;
 	uint IP, Port, ImageID;
@@ -2573,6 +2574,7 @@ void Android::Unpack_OnlinePush_PbPushGroupMsg(const LPBYTE BodyBin, const uint 
 	UnPB.StepOut();
 	UnPB.StepOut();
 	UnPB.StepOut();
+
 	if (GroupMsg.FromQQ == QQ.QQ)
 	{
 		Message::DestoryMsg(GroupMsg.Msg);

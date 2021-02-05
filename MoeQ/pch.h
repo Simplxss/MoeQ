@@ -29,11 +29,16 @@
 
 #pragma comment(lib, "crypt32.lib")
 
-#ifdef _WIN32
+#ifdef _WINDOWS
+#ifdef _DEBUG
 #pragma comment(lib, "..\\lib\\openssl_lib_windows\\x64\\libcrypto.lib")
 #pragma comment(lib, "..\\lib\\zlib_lib_windows\\x64\\zlibstat.lib")
-#pragma comment(lib, "..\\lib\\sqlite3_lib_windows\\x64\\sqlite3.lib")
-
+#pragma comment(lib, "..\\lib\\sqlite3_lib_windows\\debug\\x64\\sqlite3.lib")
+#else
+#pragma comment(lib, "..\\lib\\openssl_lib_windows\\x64\\libcrypto.lib")
+#pragma comment(lib, "..\\lib\\zlib_lib_windows\\x64\\zlibstat.lib")
+#pragma comment(lib, "..\\lib\\sqlite3_lib_windows\\release\\x64\\sqlite3.lib")
+#endif
 #elif _MAC
 #pragma comment(lib, "..\\lib\\openssl_lib_mac\\libcrypto.a")
 #pragma comment(lib, "..\\lib\\zlib_lib_mac\\zlibstat.a")
