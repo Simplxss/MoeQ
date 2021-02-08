@@ -30,7 +30,7 @@ void Database::Init()
 	char* zErrMsg = nullptr;
 	if (sqlite3_exec(Database_Data,
 		"CREATE TABLE IF NOT EXISTS GroupMsg("  \
-		"ID         INTEGER  PRIMARY KEY ," \
+		"ID         INTEGER  AUTOINCREMENT  PRIMARY KEY ," \
 		"FromGroup  INTEGER     ," \
 		"FromQQ     INTEGER     ," \
 		"SendTime   DATETIME    ," \
@@ -47,7 +47,7 @@ void Database::Init()
 
 	if (sqlite3_exec(Database_Data,
 		"CREATE TABLE IF NOT EXISTS PrivateMsg("  \
-		"ID         INTEGER PRIMARY KEY ," \
+		"ID         INTEGER  AUTOINCREMENT PRIMARY KEY ," \
 		"FromQQ     INTEGER     ," \
 		"SendTime   DATETIME    ," \
 		"State      INTEGER     ," \
@@ -105,6 +105,19 @@ void Database::UnInit()
 
 uint Database::AddPrivateMsg(const Event::PrivateMsg* PrivateMsg)
 {
+	char* zErrMsg = nullptr;
+	sqlite3_stmt* pStmt;
+	if (sqlite3_prepare(Database_Data,
+		"INSERT INTO PrivateMsg(FromQQ,SendTime,State,MsgType,MsgID,MsgRand,Msg) VALUES(?,?,?,?,?,?,?,?);"
+		, 0, &pStmt, &zErrMsg) != SQLITE_OK)
+	{
+		sqlite3_bind_int64(pStmt, 0, PrivateMsg->FromQQ);
+		sqlite3_bind_int64(pStmt, 1, PrivateMsg->FromQQ);
+
+		Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, L"Create table 'Log' error", zErrMsg);
+		sqlite3_free(zErrMsg);
+	}
+
 	return 0;
 }
 
@@ -354,7 +367,7 @@ void Log::AddLog(const LogType LogType, const MsgType MsgType, const wchar_t* Ty
 	Log_.MsgType = MsgType;
 	Log_.Type = Type;
 	std::wstring wstr = MsgSteam.str();
-	Log_.Msg = new wchar_t[wstr.size()+1];
+	Log_.Msg = new wchar_t[wstr.size() + 1];
 	memcpy((wchar_t*)Log_.Msg, wstr.c_str(), wstr.size() * sizeof(wchar_t));
 	((wchar_t*)Log_.Msg)[wstr.size()] = L'\0';
 
