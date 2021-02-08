@@ -109,7 +109,7 @@ uint Database::AddPrivateMsg(const Event::PrivateMsg* PrivateMsg)
 	sqlite3_stmt* pStmt;
 	if (sqlite3_prepare(Database_Data,
 		"INSERT INTO PrivateMsg(FromQQ,SendTime,State,MsgType,MsgID,MsgRand,Msg) VALUES(?,?,?,?,?,?,?,?);"
-		, 0, &pStmt, &zErrMsg) != SQLITE_OK)
+		, 0, &pStmt, 0) != SQLITE_OK)
 	{
 		sqlite3_bind_int64(pStmt, 0, PrivateMsg->FromQQ);
 		sqlite3_bind_int64(pStmt, 1, PrivateMsg->FromQQ);
