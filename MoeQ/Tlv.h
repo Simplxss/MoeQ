@@ -38,12 +38,12 @@ namespace Tlv
 	unsigned __int16 Tlv197(byte* bin, const uint len);
 	unsigned __int16 Tlv198(byte* bin, const uint len);
 	unsigned __int16 Tlv202(byte* bin, const uint len, const char* BSSID, const char* WiFi_name);
-	unsigned __int16 Tlv400(byte* bin, const uint len, const long long QQ, const byte GUID[16], const uint Time, const byte* token_402, const byte* token_403);
+	unsigned __int16 Tlv400(byte* bin, const uint len, const long long QQ, const byte GUID[16], const uint Time, const byte* token_403);
 	unsigned __int16 Tlv401(byte* bin, const uint len, const byte GUID[16], const byte* token_402);
 	unsigned __int16 Tlv511(byte* bin, const uint len, const char** domainList, const byte ListSize);
 	unsigned __int16 Tlv516(byte* bin, const uint len);
 	unsigned __int16 Tlv521(byte* bin, const uint len);
-	unsigned __int16 Tlv525(byte* bin, const uint len);
+	unsigned __int16 Tlv525(byte* bin, const uint len, const uint QQ, const byte IP[3], const uint Time, const uint APPID, const bool IsEmp);
 	unsigned __int16 Tlv52D(byte* bin, const uint len);
 	unsigned __int16 Tlv544(byte* bin, const uint len, const char* QQ_APKID, const byte QQ_ASIG[16]);
 	unsigned __int16 Tlv545(byte* bin, const uint len, const char* qimei);

@@ -68,7 +68,7 @@ unsigned __int16 Tlv::Tlv106(byte* bin, const uint len, const uint QQ, const cha
 	::Pack _Pack;
 	_Pack.SetShort(4);//_TGTGTVer
 	_Pack.SetInt(Utils::GetRandom(129312, 123128723));
-	_Pack.SetInt(11);//_SSoVer 
+	_Pack.SetInt(15);//_SSoVer 
 	_Pack.SetInt(16);
 	_Pack.SetInt(0);
 	_Pack.SetLong(QQ);
@@ -77,7 +77,7 @@ unsigned __int16 Tlv::Tlv106(byte* bin, const uint len, const uint QQ, const cha
 	_Pack.SetByte(1);
 	_Pack.SetBin(md5, 16);
 	_Pack.SetBin(TGTKey, 16);
-	_Pack.SetInt(emp ? 1 : 0);
+	_Pack.SetInt(emp ? 7 : 0);
 	_Pack.SetByte(1);
 	_Pack.SetBin(GUID, 16);
 	_Pack.SetInt(APPID);
@@ -352,7 +352,7 @@ unsigned __int16 Tlv::Tlv202(byte* bin, const uint len, const char* BSSID, const
 	return Pack.Length();
 }
 
-unsigned __int16 Tlv::Tlv400(byte* bin, const uint len, const long long QQ, const byte GUID[16], const uint Time, const byte* token_402, const byte* token_403)
+unsigned __int16 Tlv::Tlv400(byte* bin, const uint len, const long long QQ, const byte GUID[16], const uint Time, const byte* token_403)
 {
 	::Pack _Pack;
 	_Pack.SetShort(1);
@@ -418,15 +418,46 @@ unsigned __int16 Tlv::Tlv521(byte* bin, const uint len)
 	return Pack.Length();
 }
 
-unsigned __int16 Tlv::Tlv525(byte* bin, const uint len)
+unsigned __int16 Tlv::Tlv525(byte* bin, const uint len, const uint QQ,const byte IP[3], const uint Time, const uint APPID, const bool IsEmp)
 {
 	//Î´Öª×é°ü
 	::TlvPack Pack(bin, len);
 	Pack.SetInt(66870);
 	Pack.SetByte(0);
-	Pack.SetByte(2);
-	Pack.SetByte(1);
-	Pack.SetByte(0);
+	if (IsEmp)
+	{
+		Pack.SetByte(0x41);
+		Pack.SetByte(1);
+		Pack.SetByte(3);
+
+		Pack.SetInt(0);
+		Pack.SetInt(QQ);
+		Pack.SetByte(4);
+		Pack.SetBin(IP, 4);
+		Pack.SetInt(Time);
+		Pack.SetInt(APPID);
+
+		Pack.SetInt(0);
+		Pack.SetInt(QQ);
+		Pack.SetByte(4);
+		Pack.SetBin(IP, 4);
+		Pack.SetInt(Time);
+		Pack.SetInt(APPID);
+
+		Pack.SetInt(0);
+		Pack.SetInt(QQ);
+		Pack.SetByte(4);
+		Pack.SetBin(IP, 4);
+		Pack.SetInt(Time);
+		Pack.SetInt(APPID);
+
+	}
+	else
+	{
+		Pack.SetByte(2);
+		Pack.SetByte(1);
+		Pack.SetByte(0);
+	}
 	Pack.Pack(1317);
 	return Pack.Length();
 }

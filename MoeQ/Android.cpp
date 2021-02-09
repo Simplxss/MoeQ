@@ -1,10 +1,6 @@
 ﻿#include "pch.h"
 #include "Android.h"
 
-extern wchar_t DataPath[MAX_PATH + 1];
-
-wchar_t ImageFilePath[MAX_PATH + 1];
-
 namespace Message
 {
 	LPBYTE Pack1(const char8_t* Text, const uint AtQQ)
@@ -685,7 +681,7 @@ void Android::wtlogin_login()
 	Pack.Skip(Tlv::Tlv177(Pack.GetCurrentPoint(), Pack.GetLeftSpace(), QQ_BUILDTIME, QQ_SDK_VERSION));
 	Pack.Skip(Tlv::Tlv516(Pack.GetCurrentPoint(), Pack.GetLeftSpace()));
 	Pack.Skip(Tlv::Tlv521(Pack.GetCurrentPoint(), Pack.GetLeftSpace()));
-	Pack.Skip(Tlv::Tlv525(Pack.GetCurrentPoint(), Pack.GetLeftSpace()));
+	Pack.Skip(Tlv::Tlv525(Pack.GetCurrentPoint(), Pack.GetLeftSpace(), 0, 0, 0, 0, false));
 	Pack.Skip(Tlv::Tlv544(Pack.GetCurrentPoint(), Pack.GetLeftSpace(), QQ_APKID, QQ_ASIG));
 	Unpack_wtlogin_login(Fun_Send_Sync(10, 2, "wtlogin.login", Make_Body_PC(Pack.GetAll(), Pack.Length(), false)));
 }
@@ -769,16 +765,20 @@ void Android::wtlogin_exchange_emp()
 	Pack.Skip(Tlv::Tlv008(Pack.GetCurrentPoint(), Pack.GetLeftSpace()));
 	Pack.Skip(Tlv::Tlv511(Pack.GetCurrentPoint(), Pack.GetLeftSpace(), domainList, 14));
 	Pack.Skip(Tlv::Tlv147(Pack.GetCurrentPoint(), Pack.GetLeftSpace(), QQ_VERSION, QQ_ASIG));
-	Pack.Skip(Tlv::Tlv177(Pack.GetCurrentPoint(), Pack.GetLeftSpace(), Time - 238, QQ_SDK_VERSION));
+	Pack.Skip(Tlv::Tlv177(Pack.GetCurrentPoint(), Pack.GetLeftSpace(), QQ_BUILDTIME, QQ_SDK_VERSION));
+	//Pack.Skip(Tlv::Tlv400(Pack.GetCurrentPoint(), Pack.GetLeftSpace(), QQ.QQ, Device.GUID, Time, (byte*)"\1\2\3\4\5\6\7\x8"));//lazy
 	Pack.Skip(Tlv::Tlv187(Pack.GetCurrentPoint(), Pack.GetLeftSpace()));
 	Pack.Skip(Tlv::Tlv188(Pack.GetCurrentPoint(), Pack.GetLeftSpace()));
 	Pack.Skip(Tlv::Tlv194(Pack.GetCurrentPoint(), Pack.GetLeftSpace()));
 	Pack.Skip(Tlv::Tlv202(Pack.GetCurrentPoint(), Pack.GetLeftSpace(), Device.BSSID, Device.WiFiName));
 	Pack.Skip(Tlv::Tlv516(Pack.GetCurrentPoint(), Pack.GetLeftSpace()));
 	Pack.Skip(Tlv::Tlv521(Pack.GetCurrentPoint(), Pack.GetLeftSpace()));
-	Pack.Skip(Tlv::Tlv525(Pack.GetCurrentPoint(), Pack.GetLeftSpace()));
+	Pack.Skip(Tlv::Tlv525(Pack.GetCurrentPoint(), Pack.GetLeftSpace(), QQ.QQ, XBin::IP2Bin(Device.IP), Time, QQ_APPID, true));
 	Pack.Skip(Tlv::Tlv544(Pack.GetCurrentPoint(), Pack.GetLeftSpace(), QQ_APKID, QQ_ASIG));
+	//Pack.Skip(Tlv::Tlv545(Pack.GetCurrentPoint(), Pack.GetLeftSpace(), Device.QIMEI));
+
 	::UnPack UnPack(Fun_Send_Sync(10, 2, "wtlogin.exchange_emp", Make_Body_PC(Pack.GetAll(), Pack.Length(), true)));
+
 	UnPack.GetByte();
 	const uint len = UnPack.GetShort() - 1 - 2 - 2 - 2 - 2 - 4 - 2 - 1 - 1;
 	UnPack.GetShort();
@@ -887,6 +887,15 @@ void Android::StatSvc_Register(const byte state)
 		delete[] Map[i].Key;
 	}
 	delete[] sBuffer;
+}
+
+void Android::StatSvc_SimpleGet()
+{
+	Pack Pack(4, true);
+	Pack.SetLength();
+	UnProtobuf UnPB(Fun_Send_Sync(10, 1, "StatSvc.SimpleGet", Pack.GetAll()));
+
+	Device.IP = (char*)UnPB.GetStr(4);
 }
 
 void Android::StatSvc_SetStatusFromClient(const byte state)
@@ -2760,7 +2769,9 @@ byte Android::QQ_Login_Second()
 	memcpy(QQ.Token.md52, Utils::MD5(tmp, 24), 16);
 	QQ.Login = new Login;
 	Fun_Connect();
-	//wtlogin_exchange_emp();
+	
+	StatSvc_SimpleGet();
+	wtlogin_exchange_emp();
 	return QQ.Login->state;
 }
 

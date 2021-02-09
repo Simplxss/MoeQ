@@ -12,11 +12,11 @@
 #include <ctime>
 
 #define QQ_APPID 537066978
-#define QQ_VERSION "8.4.1"
+#define QQ_VERSION "8.5.5"
 #define QQ_APKID "com.tencent.mobileqq"
 #define QQ_ASIG (const byte*)"\xA6\xB7\x45\xBF\x24\xA2\xC2\x77\x52\x77\x16\xF6\xF3\x6E\xB6\x8D"
-#define QQ_SDK_VERSION "6.0.0.2432"
-#define QQ_BUILDTIME 1593489106
+#define QQ_SDK_VERSION "6.0.0.2463"
+#define QQ_BUILDTIME 1607434434
 
 #define LOGIN_ERROR 0
 #define LOGIN_SUCCESS 1
@@ -103,7 +103,7 @@ private:
 		std::atomic_int SsoSeq;
 		unsigned char* MsgCookie = nullptr;//4
 		LPBYTE SyncCookies = nullptr;
-		char Version[33] = "|\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0|A8.4.1.2703aac4";
+		char Version[33] = "|\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0|A8.5.5.de12fadd";
 		Android::Login* Login = nullptr;
 		Android::Token Token;
 		Android::Cookie Cookie;
@@ -114,16 +114,17 @@ private:
 	struct Device
 	{
 		char* IMEI = nullptr;
-		const char* QIMEI = nullptr;//算法未知 在so层中
 		char* IMSI = nullptr;
 		byte* MAC = nullptr;
-		const char* BSSID = nullptr;
+		char* IP = nullptr;
 		byte* GUID = nullptr;
 		char* _device = nullptr;
 		char* Brand = nullptr;
+		unsigned short _network_type;
+		const char* QIMEI = nullptr;//算法未知 在so层中
+		const char* BSSID = nullptr;
 		const char* os_type = nullptr;
 		const char* os_version = nullptr;
-		unsigned short _network_type;
 		const char* _apn = nullptr;
 		const char* NetworkName = nullptr;
 		const char* WiFiName = nullptr;
@@ -161,6 +162,7 @@ private:
 	void wtlogin_login_Viery_204();
 	void wtlogin_exchange_emp();
 	void StatSvc_Register(const byte state = NULL);
+	void StatSvc_SimpleGet();
 	void StatSvc_SetStatusFromClient(const byte state);
 	void friendlist_getFriendGroupList(const int StartIndex);
 	void friendlist_GetTroopListReqV2();

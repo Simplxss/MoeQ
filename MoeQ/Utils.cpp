@@ -311,6 +311,19 @@ char* XBin::Int2IP(const uint i)
 	return IP;
 }
 
+byte* XBin::IP2Bin(const char* IP_)
+{
+	char IP[16];
+	strcpy(IP, IP_);
+	byte ip[3];
+	ip[0] = atoi(strtok(IP, "."));
+	for (size_t i = 1; i < 3; i++)
+	{
+		ip[i] = atoi(strtok(NULL, "."));
+	}
+	return ip;
+}
+
 uint XBin::Bin2Short(const byte* bin)
 {
 	return bin[0] << 8 | bin[1];
