@@ -19,11 +19,12 @@
 
 #include "Defined.h"
 
+#include "..\include\rapidjson\document.h"
 #include "..\include\sqlite3\sqlite3.h"
-#include "..\include\openssl\sha.h"
-#include "..\include\openssl\md5.h"
-#include "..\include\openssl\ecdh.h"
-#include "..\include\openssl\des.h"
+#include <openssl\sha.h>
+#include <openssl\md5.h>
+#include <openssl\ecdh.h>
+#include <openssl\des.h>
 #include "..\include\zlib\zlib.h"
 #include "..\include\miniblink\wke.h" //include windows.h
 

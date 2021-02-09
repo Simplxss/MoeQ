@@ -10,6 +10,90 @@ std::queue<Log::Log> LogQueue;
 extern wchar_t DataPath[MAX_PATH + 1];
 sqlite3* Database_Data, * Database_Log = nullptr;
 
+std::wstringstream ParseMsg(Message::Msg* Msg)
+{
+	std::wstringstream MsgSteam;
+	do
+	{
+		switch (Msg->MsgType)
+		{
+		case Message::MsgType::text:
+			if (((Message::text*)Msg->Message)->text != nullptr) MsgSteam << Iconv::Utf82Unicode(((Message::text*)Msg->Message)->text);//Todo ÄÚ´æÐ¹Â¶
+			else
+			{
+				MsgSteam << "[MQ:at,qq=";
+				MsgSteam << ((Message::text*)Msg->Message)->AtQQ;
+				MsgSteam << "]";
+			}
+			break;
+		case Message::MsgType::classcal_face:
+			MsgSteam << "[MQ:cface,id=";
+			MsgSteam << ((Message::classcal_face*)Msg->Message)->id;
+			MsgSteam << "]";
+			break;
+		case Message::MsgType::expression:
+			MsgSteam << "[MQ:expression,id=";
+			MsgSteam << ((Message::expression*)Msg->Message)->id;
+			MsgSteam << ",MD5=";
+			MsgSteam << XBin::Bin2Hex(((Message::expression*)Msg->Message)->MD5, 16);
+			MsgSteam << "]";
+			break;
+		case Message::MsgType::picture:
+			MsgSteam << "[MQ:picture,MD5=";
+			MsgSteam << XBin::Bin2Hex(((Message::picture*)Msg->Message)->MD5, 16);
+			MsgSteam << ",Width=";
+			MsgSteam << ((Message::picture*)Msg->Message)->Width;
+			MsgSteam << ",Height=";
+			MsgSteam << ((Message::picture*)Msg->Message)->Height;
+			MsgSteam << ",Length=";
+			MsgSteam << ((Message::picture*)Msg->Message)->Data.Length;
+			MsgSteam << "]";
+			break;
+		case Message::MsgType::xml:
+			MsgSteam << "[MQ:xml,text=";
+			MsgSteam << ((Message::xml*)Msg->Message)->text;
+			MsgSteam << "]";
+			break;
+		case Message::MsgType::reply:
+			MsgSteam << "[MQ:reply,MsgId=";
+			MsgSteam << ((Message::reply*)Msg->Message)->MsgId;
+			MsgSteam << ",QQ=";
+			MsgSteam << ((Message::reply*)Msg->Message)->QQ;
+			MsgSteam << ",Time=";
+			MsgSteam << ((Message::reply*)Msg->Message)->Time;
+			MsgSteam << ",Msg=";
+			{
+				const Message::Msg* ReplyMsg = ((Message::reply*)Msg->Message)->Msg;
+				do
+				{
+					switch (ReplyMsg->MsgType)
+					{
+					case Message::MsgType::text:
+						MsgSteam << Iconv::Utf82Unicode(((Message::text*)ReplyMsg->Message)->text);//Todo ÄÚ´æÐ¹Â¶
+						break;
+					case Message::MsgType::classcal_face:
+						MsgSteam << "[MQ:cface,id=";
+						MsgSteam << ((Message::classcal_face*)ReplyMsg->Message)->id;
+						MsgSteam << "]";
+						break;
+					}
+					ReplyMsg->NextPoint;
+				} while ((ReplyMsg = ReplyMsg->NextPoint) != nullptr);
+			}
+			MsgSteam << "]";
+			break;
+		case Message::MsgType::json:
+			MsgSteam << "[MQ:json,text=";
+			MsgSteam << Iconv::Utf82Unicode(((Message::json*)Msg->Message)->text);
+			MsgSteam << "]";
+			break;
+		default:
+			break;
+		}
+	} while ((Msg = Msg->NextPoint) != nullptr);
+	return MsgSteam;
+}
+
 void Database::Init()
 {
 	wchar_t DatabaseFilePath[MAX_PATH + 1], DatabaseLogPath[MAX_PATH + 1] = { 0 };
@@ -108,11 +192,16 @@ uint Database::AddPrivateMsg(const Event::PrivateMsg* PrivateMsg)
 	char* zErrMsg = nullptr;
 	sqlite3_stmt* pStmt;
 	if (sqlite3_prepare(Database_Data,
-		"INSERT INTO PrivateMsg(FromQQ,SendTime,State,MsgType,MsgID,MsgRand,Msg) VALUES(?,?,?,?,?,?,?,?);"
+		"INSERT INTO PrivateMsg(FromQQ,SendTime,State,MsgType,MsgID,MsgRand,Msg) VALUES(?,?,0,?,?,?,?,?);"
 		, 0, &pStmt, 0) != SQLITE_OK)
 	{
 		sqlite3_bind_int64(pStmt, 0, PrivateMsg->FromQQ);
-		sqlite3_bind_int64(pStmt, 1, PrivateMsg->FromQQ);
+		sqlite3_bind_int64(pStmt, 1, PrivateMsg->SendTime);
+		sqlite3_bind_int64(pStmt, 2, PrivateMsg->MsgType);
+		sqlite3_bind_int64(pStmt, 3, PrivateMsg->MsgID);
+		sqlite3_bind_int64(pStmt, 4, PrivateMsg->MsgRand);
+		std::wstringstream Msg = ParseMsg(PrivateMsg->Msg);
+		sqlite3_bind_text(pStmt, 5, Msg.str().c_str(), Msg.str().length(), );
 
 		Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, L"Create table 'Log' error", zErrMsg);
 		sqlite3_free(zErrMsg);
@@ -274,102 +363,6 @@ void Log::AddLog(const LogType LogType, const MsgType MsgType, const wchar_t* Ty
 	Log_.MsgType = MsgType;
 	Log_.Type = Type;
 	Log_.Msg = Msg;
-
-	LogQueue.push(Log_);
-	++Semaphore;
-	cv.notify_one();
-}
-
-void Log::AddLog(const LogType LogType, const MsgType MsgType, const wchar_t* Type, const Message::Msg* Msg)
-{
-	std::wstringstream MsgSteam;
-	do
-	{
-		switch (Msg->MsgType)
-		{
-		case Message::MsgType::text:
-			if (((Message::text*)Msg->Message)->text != nullptr) MsgSteam << Iconv::Utf82Unicode(((Message::text*)Msg->Message)->text);//Todo ÄÚ´æÐ¹Â¶
-			else
-			{
-				MsgSteam << "[MQ:at,qq=";
-				MsgSteam << ((Message::text*)Msg->Message)->AtQQ;
-				MsgSteam << "]";
-			}
-			break;
-		case Message::MsgType::classcal_face:
-			MsgSteam << "[MQ:cface,id=";
-			MsgSteam << ((Message::classcal_face*)Msg->Message)->id;
-			MsgSteam << "]";
-			break;
-		case Message::MsgType::expression:
-			MsgSteam << "[MQ:expression,id=";
-			MsgSteam << ((Message::expression*)Msg->Message)->id;
-			MsgSteam << ",MD5=";
-			MsgSteam << XBin::Bin2Hex(((Message::expression*)Msg->Message)->MD5, 16);
-			MsgSteam << "]";
-			break;
-		case Message::MsgType::picture:
-			MsgSteam << "[MQ:picture,MD5=";
-			MsgSteam << XBin::Bin2Hex(((Message::picture*)Msg->Message)->MD5, 16);
-			MsgSteam << ",Width=";
-			MsgSteam << ((Message::picture*)Msg->Message)->Width;
-			MsgSteam << ",Height=";
-			MsgSteam << ((Message::picture*)Msg->Message)->Height;
-			MsgSteam << ",Length=";
-			MsgSteam << ((Message::picture*)Msg->Message)->Data.Length;
-			MsgSteam << "]";
-			break;
-		case Message::MsgType::xml:
-			MsgSteam << "[MQ:xml,text=";
-			MsgSteam << ((Message::xml*)Msg->Message)->text;
-			MsgSteam << "]";
-			break;
-		case Message::MsgType::reply:
-			MsgSteam << "[MQ:reply,MsgId=";
-			MsgSteam << ((Message::reply*)Msg->Message)->MsgId;
-			MsgSteam << ",QQ=";
-			MsgSteam << ((Message::reply*)Msg->Message)->QQ;
-			MsgSteam << ",Time=";
-			MsgSteam << ((Message::reply*)Msg->Message)->Time;
-			MsgSteam << ",Msg=";
-			{
-				const Message::Msg* ReplyMsg = ((Message::reply*)Msg->Message)->Msg;
-				do
-				{
-					switch (ReplyMsg->MsgType)
-					{
-					case Message::MsgType::text:
-						MsgSteam << Iconv::Utf82Unicode(((Message::text*)ReplyMsg->Message)->text);//Todo ÄÚ´æÐ¹Â¶
-						break;
-					case Message::MsgType::classcal_face:
-						MsgSteam << "[MQ:cface,id=";
-						MsgSteam << ((Message::classcal_face*)ReplyMsg->Message)->id;
-						MsgSteam << "]";
-						break;
-					}
-					ReplyMsg->NextPoint;
-				} while ((ReplyMsg = ReplyMsg->NextPoint) != nullptr);
-			}
-			MsgSteam << "]";
-			break;
-		case Message::MsgType::json:
-			MsgSteam << "[MQ:json,text=";
-			MsgSteam << Iconv::Utf82Unicode(((Message::json*)Msg->Message)->text);
-			MsgSteam << "]";
-			break;
-		default:
-			break;
-		}
-	} while ((Msg = Msg->NextPoint) != nullptr);
-
-	Log Log_;
-	Log_.LogType = LogType;
-	Log_.MsgType = MsgType;
-	Log_.Type = Type;
-	std::wstring wstr = MsgSteam.str();
-	Log_.Msg = new wchar_t[wstr.size() + 1];
-	memcpy((wchar_t*)Log_.Msg, wstr.c_str(), wstr.size() * sizeof(wchar_t));
-	((wchar_t*)Log_.Msg)[wstr.size()] = L'\0';
 
 	LogQueue.push(Log_);
 	++Semaphore;

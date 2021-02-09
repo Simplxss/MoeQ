@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Log.h"
-#include "..\include\rapidjson\document.h"
 
 #include <fstream>
 #include <io.h>
