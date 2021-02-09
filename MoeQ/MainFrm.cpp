@@ -309,7 +309,7 @@ void WINAPI Login(MainFrm* MainFrm)
 			}
 		case LOGIN_ERROR:
 			Log::AddLog(Log::LogType::INFORMATION, Log::MsgType::OTHER, L"Login", L"Login failed");
-			Log::AddLog(Log::LogType::INFORMATION, Log::MsgType::OTHER, L"Login", Iconv::Utf82Unicode(Sdk.QQ_GetErrorMsg()));
+			Log::AddLog(Log::LogType::INFORMATION, Log::MsgType::OTHER, L"Login", Iconv::Utf82Unicode((char*)Sdk.QQ_GetErrorMsg()));
 			((CButton*)MainFrm->GetDlgItem(IDC_LOGIN))->EnableWindow(TRUE);
 			return;
 		default:

@@ -4,7 +4,14 @@
 #include <sstream>
 #include <thread>
 #include <queue>
+#include <codecvt>
 #include <condition_variable>
+
+namespace Message
+{
+	std::u8string ParseMsg(Message::Msg* Msg);
+	void DestoryMsg(Message::Msg* Msg);
+}
 
 namespace Database
 {
@@ -29,7 +36,6 @@ namespace Log
 	void AddLog(const LogType LogType, const MsgType MsgType, const char* Type, const wchar_t* Msg);
 	void AddLog(const LogType LogType, const MsgType MsgType, const wchar_t* Type, const char* Msg);
 	void AddLog(const LogType LogType, const MsgType MsgType, const wchar_t* Type, const wchar_t* Msg);
-	void AddLog(const LogType LogType, const MsgType MsgType, const wchar_t* Type, const Message::Msg* Msg);
 	void AddLog(const LogType LogType, const MsgType MsgType, const Event::NoticeEvent::NoticeEvent* NoticeEvent);
 	void AddLog(const LogType LogType, const MsgType MsgType, const Event::RequestEvent::RequestEvent* RequestEvent);
 };

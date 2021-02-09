@@ -97,9 +97,9 @@ private:
 	{
 		uint QQ;
 		char* QQ_Str = nullptr;
-		char* Nick = nullptr;//utf8
+		char8_t* Nick = nullptr;
 		byte Status = 21;
-		char* ErrorMsg = nullptr;
+		char8_t* ErrorMsg = nullptr;
 		std::atomic_int SsoSeq;
 		unsigned char* MsgCookie = nullptr;//4
 		LPBYTE SyncCookies = nullptr;
@@ -209,7 +209,7 @@ public:
 	void QQ_Heart_Beat();
 	void QQ_SyncCookie();
 	bool QQ_Status();
-	const char* QQ_GetErrorMsg();
+	const char8_t* QQ_GetErrorMsg();
 	void QQ_Set_Token(Android::Token* _Token);
 	const Android::Token* QQ_Get_Token();
 	char* QQ_GetCookies(const char* Host);

@@ -23,7 +23,7 @@ namespace Message
 	{
 		uint Length = NULL;
 		byte* Contain = nullptr;
-		char* URL = nullptr;
+		char8_t* URL = nullptr;
 		char* Location = nullptr;
 	};
 
@@ -36,7 +36,7 @@ namespace Message
 
 	struct text
 	{
-		char* text;
+		char8_t* text;
 		uint AtQQ; //if text == nullptr,this is a at,0=AtAll
 	};
 
@@ -67,12 +67,12 @@ namespace Message
 
 	struct xml
 	{
-		char* text = nullptr;
+		char8_t* text = nullptr;
 	};
 
 	struct json
 	{
-		char* text = nullptr;
+		char8_t* text = nullptr;
 	};
 
 	struct reply
@@ -217,13 +217,13 @@ namespace Event
 		struct add_friend
 		{
 			uint FromQQ;
-			char* msg;
+			char8_t* msg;
 		};
 		struct add_group
 		{
 			uint FromGroup;
 			uint FromQQ;
-			char* msg;
+			char8_t* msg;
 			uint Type; // 0 Others apply to join the group 他人申请入群 1 Myself was invited to join the group 自己受邀入群
 		};
 	}
@@ -232,21 +232,21 @@ namespace Event
 	{
 		uint FromQQ;
 		uint FromGroup;
-		char* FromQQName;//u8
-		char* FromGroupName;//u8
+		char8_t* FromQQName;
+		char8_t* FromGroupName;
 
 		uint SendTime;
 		uint MsgType;
 		uint MsgID;
 		uint MsgRand;
 
-		Message::Msg* Msg = nullptr;//u8
+		Message::Msg* Msg = nullptr;
 	};
 
 	struct PrivateMsg
 	{
 		uint FromQQ;
-		char* FromQQName;//u8
+		char8_t* FromQQName;
 
 		uint SendTime;
 		uint MsgType;

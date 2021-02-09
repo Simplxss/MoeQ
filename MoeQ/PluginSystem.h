@@ -6,11 +6,6 @@
 #include <io.h>
 #include <libloaderapi.h>
 
-namespace Message
-{
-	void DestoryMsg(Message::Msg* Msg);
-}
-
 namespace Event
 {
 	void OnGroupMsg(const GroupMsg* GroupMsg);

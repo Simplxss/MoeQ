@@ -19,30 +19,15 @@
 
 #include "Defined.h"
 
-#include "..\include\rapidjson\document.h"
-#include "..\include\sqlite3\sqlite3.h"
+#include <zlib.h>
+#include <sqlite3.h>
 #include <openssl\sha.h>
 #include <openssl\md5.h>
 #include <openssl\ecdh.h>
 #include <openssl\des.h>
-#include "..\include\zlib\zlib.h"
 #include "..\include\miniblink\wke.h" //include windows.h
+#include "..\include\rapidjson\document.h"
 
 #pragma comment(lib, "crypt32.lib")
-
-#ifdef _WINDOWS
-#ifdef _DEBUG
-#pragma comment(lib, "..\\lib\\openssl_lib_windows\\x64\\libcrypto.lib")
-#pragma comment(lib, "..\\lib\\zlib_lib_windows\\x64\\zlibstat.lib")
-#pragma comment(lib, "..\\lib\\sqlite3_lib_windows\\debug\\x64\\sqlite3.lib")
-#else
-#pragma comment(lib, "..\\lib\\openssl_lib_windows\\x64\\libcrypto.lib")
-#pragma comment(lib, "..\\lib\\zlib_lib_windows\\x64\\zlibstat.lib")
-#pragma comment(lib, "..\\lib\\sqlite3_lib_windows\\release\\x64\\sqlite3.lib")
-#endif
-#elif _MAC
-#pragma comment(lib, "..\\lib\\openssl_lib_mac\\libcrypto.a")
-#pragma comment(lib, "..\\lib\\zlib_lib_mac\\zlibstat.a")
-#endif
 
 #endif //PCH_H

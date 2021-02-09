@@ -7,7 +7,7 @@ wchar_t ImageFilePath[MAX_PATH + 1];
 
 namespace Message
 {
-	LPBYTE Pack1(const char* Text, const uint AtQQ)
+	LPBYTE Pack1(const char8_t* Text, const uint AtQQ)
 	{
 		if (Text == nullptr)
 		{
@@ -15,17 +15,17 @@ namespace Message
 			if (AtQQ == 0)
 			{
 				memcpy(B, "\0\0\0\x11\0\1\0\0\0\5\1\0\0\0\0\0\0", 17);
-				Text = (const char*)u8"@全体成员";
+				Text = u8"@全体成员";
 			}
 			else
 			{
 				memcpy(B, "\0\0\0\x11\0\1\0\0\0\5\0\0\0\0\0\0\0", 17);
 				memcpy(B + 11, XBin::Int2Bin(AtQQ), 4);
-				Text = (const char*)u8"@";
+				Text = u8"@";
 				//Todo
 				//strcat(Text,)
 			}
-			uint len = strlen(Text);
+			uint len = strlen((char*)Text);
 			LPBYTE T = new byte[len + 4];
 			memcpy(T, XBin::Int2Bin(len + 4), 4);
 			memcpy(T + 4, Text, len);
@@ -39,7 +39,7 @@ namespace Message
 		}
 		else
 		{
-			uint len = strlen(Text);
+			uint len = strlen((char*)Text);
 			LPBYTE T = new byte[len + 4];
 			memcpy(T, XBin::Int2Bin(len + 4), 4);
 			memcpy(T + 4, Text, len);
@@ -105,11 +105,11 @@ namespace Message
 		Protobuf PB;
 		return PB.Pack(&Node37);
 	}
-	LPBYTE Pack51(const char* Json)
+	LPBYTE Pack51(const char8_t* Json)
 	{
 		Pack Pack(500, true);
 		Pack.SetByte(1);//压缩
-		LPBYTE bin = Utils::ZlibCompress(Json);
+		LPBYTE bin = Utils::ZlibCompress((char*)Json);
 		Pack.SetBin(bin + 4, XBin::Bin2Int(bin) - 4);
 		Pack.SetLength();
 		ProtobufStruct::TreeNode Node51_1{ nullptr,nullptr,1,ProtobufStruct::ProtobufStructType::LENGTH, Pack.GetAll() };
@@ -1319,13 +1319,13 @@ void Android::MessageSvc_PbGetMsg()
 							LPBYTE Bin = UnPB.GetBin(1);
 							if (Bin[4] == 1)
 							{
-								((Message::xml*)ThisMsg->Message)->text = Utils::ZlibUnCompress(Bin + 5, XBin::Bin2Int(Bin) - 5);
+								((Message::xml*)ThisMsg->Message)->text = (char8_t*)Utils::ZlibUnCompress(Bin + 5, XBin::Bin2Int(Bin) - 5);
 								delete Bin;
 							}
 							else
 							{
 								uint len = XBin::Bin2Int(Bin) - 4;
-								((Message::xml*)ThisMsg->Message)->text = new char[len];
+								((Message::xml*)ThisMsg->Message)->text = new char8_t[len];
 								memcpy(((Message::xml*)ThisMsg->Message)->text, Bin + 5, len - 1);
 								((Message::xml*)ThisMsg->Message)->text[len] = 0;
 								delete Bin;
@@ -1346,6 +1346,18 @@ void Android::MessageSvc_PbGetMsg()
 						}
 						]
 						*/
+						break;
+					case 24://红包
+						UnPB.StepIn(24);
+						UnPB.StepIn(1);
+						{
+							char8_t* listid = UnPB.GetStr(9);
+							char8_t* authkey = UnPB.GetStr(10);
+							uint channel = UnPB.GetVarint(19);
+							delete[] listid, authkey;
+						}
+						UnPB.StepOut();
+						UnPB.StepOut();
 						break;
 					case 33://小视频
 						break;
@@ -1431,13 +1443,13 @@ void Android::MessageSvc_PbGetMsg()
 							LPBYTE Bin = UnPB.GetBin(1);
 							if (Bin[4] == 1)
 							{
-								((Message::json*)ThisMsg->Message)->text = Utils::ZlibUnCompress(Bin + 5, XBin::Bin2Int(Bin) - 5);
+								((Message::json*)ThisMsg->Message)->text = (char8_t*)Utils::ZlibUnCompress(Bin + 5, XBin::Bin2Int(Bin) - 5);
 								delete Bin;
 							}
 							else
 							{
 								uint len = XBin::Bin2Int(Bin) - 4;
-								((Message::json*)ThisMsg->Message)->text = new char[len];
+								((Message::json*)ThisMsg->Message)->text = new char8_t[len];
 								memcpy(((Message::json*)ThisMsg->Message)->text, Bin + 5, len - 1);
 								((Message::json*)ThisMsg->Message)->text[len] = 0;
 								delete Bin;
@@ -1452,20 +1464,6 @@ void Android::MessageSvc_PbGetMsg()
 						//Todo 吃瓜等新表情,json等解析
 						UnPB.StepOut();
 						break;
-					case 56://红包和转账
-						UnPB.StepIn(38);
-						UnPB.StepIn(1);
-						{
-							char* listid = nullptr, * authkey = nullptr;
-							uint channel = NULL;
-							listid = UnPB.GetStr(9);
-							authkey = UnPB.GetStr(10);
-							channel = UnPB.GetVarint(51);
-							delete[] listid, authkey;
-						}
-						UnPB.StepOut();
-						UnPB.StepOut();
-						break;
 					default:
 						break;
 					}
@@ -1474,7 +1472,7 @@ void Android::MessageSvc_PbGetMsg()
 				UnPB.StepOut();
 				UnPB.StepOut();
 				Event::OnPrivateMsg(&PrivateMsg);
-				if (PrivateMsg.Msg != nullptr) Log::AddLog(Log::LogType::INFORMATION, Log::MsgType::PRIVATE, L"Simple Message", PrivateMsg.Msg);
+				if (PrivateMsg.Msg != nullptr) Database::AddPrivateMsg(&PrivateMsg);
 				Message::DestoryMsg(PrivateMsg.Msg);
 				break;
 			default:
@@ -2044,7 +2042,7 @@ void Android::Un_Tlv_Get(const unsigned short cmd, const byte* bin, const uint l
 		UnPack.GetByte();
 		if (QQ.Nick != nullptr) delete[] QQ.Nick;
 		byte length = UnPack.GetByte();
-		QQ.Nick = new char[length];
+		QQ.Nick = new char8_t[length];
 		QQ.Nick[length] = 0;
 		memcpy(QQ.Nick, UnPack.GetBin(length), length);
 	}
@@ -2102,7 +2100,7 @@ void Android::Un_Tlv_Get(const unsigned short cmd, const byte* bin, const uint l
 		{
 			if (QQ.ErrorMsg != nullptr) delete[] QQ.ErrorMsg;
 			int length = UnPack.GetShort();
-			QQ.ErrorMsg = new char[length + 1];
+			QQ.ErrorMsg = new char8_t[length + 1];
 			memcpy(QQ.ErrorMsg, UnPack.GetBin(length), length);
 			QQ.ErrorMsg[length] = 0;
 		}
@@ -2420,13 +2418,13 @@ void Android::Unpack_OnlinePush_PbPushGroupMsg(const LPBYTE BodyBin, const uint 
 				LPBYTE Bin = UnPB.GetBin(1);
 				if (Bin[4] == 1)
 				{
-					((Message::xml*)ThisMsg->Message)->text = Utils::ZlibUnCompress(Bin + 5, XBin::Bin2Int(Bin) - 5);
+					((Message::xml*)ThisMsg->Message)->text = (char8_t*)Utils::ZlibUnCompress(Bin + 5, XBin::Bin2Int(Bin) - 5);
 					delete Bin;
 				}
 				else
 				{
 					uint len = XBin::Bin2Int(Bin) - 4;
-					((Message::xml*)ThisMsg->Message)->text = new char[len];
+					((Message::xml*)ThisMsg->Message)->text = new char8_t[len];
 					memcpy(((Message::xml*)ThisMsg->Message)->text, Bin + 5, len - 1);
 					((Message::xml*)ThisMsg->Message)->text[len] = 0;
 					delete Bin;
@@ -2447,6 +2445,18 @@ void Android::Unpack_OnlinePush_PbPushGroupMsg(const LPBYTE BodyBin, const uint 
 			}
 			]
 			*/
+			break;
+		case 24://红包
+			UnPB.StepIn(24);
+			UnPB.StepIn(1);
+			{
+				char8_t* listid = UnPB.GetStr(9);
+				char8_t* authkey = UnPB.GetStr(10);
+				uint channel = UnPB.GetVarint(19);
+				delete[] listid, authkey;
+			}
+			UnPB.StepOut();
+			UnPB.StepOut();
 			break;
 		case 33://小视频
 			break;
@@ -2532,13 +2542,13 @@ void Android::Unpack_OnlinePush_PbPushGroupMsg(const LPBYTE BodyBin, const uint 
 				LPBYTE Bin = UnPB.GetBin(1);
 				if (Bin[4] == 1)
 				{
-					((Message::json*)ThisMsg->Message)->text = Utils::ZlibUnCompress(Bin + 5, XBin::Bin2Int(Bin) - 5);
+					((Message::json*)ThisMsg->Message)->text = (char8_t*)Utils::ZlibUnCompress(Bin + 5, XBin::Bin2Int(Bin) - 5);
 					delete Bin;
 				}
 				else
 				{
 					uint len = XBin::Bin2Int(Bin) - 4;
-					((Message::json*)ThisMsg->Message)->text = new char[len];
+					((Message::json*)ThisMsg->Message)->text = new char8_t[len];
 					memcpy(((Message::json*)ThisMsg->Message)->text, Bin + 5, len - 1);
 					((Message::json*)ThisMsg->Message)->text[len] = 0;
 					delete Bin;
@@ -2550,20 +2560,6 @@ void Android::Unpack_OnlinePush_PbPushGroupMsg(const LPBYTE BodyBin, const uint 
 			UnPB.StepIn(53);
 			UnPB.GetVarint(1);
 			//Todo 吃瓜等新表情,json等解析
-			UnPB.StepOut();
-			break;
-		case 56://红包和转账
-			UnPB.StepIn(38);
-			UnPB.StepIn(1);
-			{
-				char* listid = nullptr, * authkey = nullptr;
-				uint channel = NULL;
-				listid = UnPB.GetStr(9);
-				authkey = UnPB.GetStr(10);
-				channel = UnPB.GetVarint(51);
-				delete[] listid, authkey;
-			}
-			UnPB.StepOut();
 			UnPB.StepOut();
 			break;
 		default:
@@ -2589,7 +2585,7 @@ void Android::Unpack_OnlinePush_PbPushGroupMsg(const LPBYTE BodyBin, const uint 
 #endif // DEBUG
 
 	Event::OnGroupMsg(&GroupMsg);
-	if (GroupMsg.Msg != nullptr) Log::AddLog(Log::LogType::INFORMATION, Log::MsgType::_GROUP, L"Simple Message", GroupMsg.Msg);
+	if (GroupMsg.Msg != nullptr) Database::AddGroupMsg(&GroupMsg);
 	Message::DestoryMsg(GroupMsg.Msg);
 }
 
@@ -2909,7 +2905,7 @@ bool Android::QQ_Status()
 	return QQ.Status != 21;
 }
 
-const char* Android::QQ_GetErrorMsg()
+const char8_t* Android::QQ_GetErrorMsg()
 {
 	return QQ.ErrorMsg;
 }

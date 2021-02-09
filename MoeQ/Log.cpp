@@ -10,58 +10,58 @@ std::queue<Log::Log> LogQueue;
 extern wchar_t DataPath[MAX_PATH + 1];
 sqlite3* Database_Data, * Database_Log = nullptr;
 
-std::wstringstream ParseMsg(Message::Msg* Msg)
+std::u8string Message::ParseMsg(Message::Msg* Msg)
 {
-	std::wstringstream MsgSteam;
+	std::u8string MsgSteam;
 	do
 	{
 		switch (Msg->MsgType)
 		{
 		case Message::MsgType::text:
-			if (((Message::text*)Msg->Message)->text != nullptr) MsgSteam << Iconv::Utf82Unicode(((Message::text*)Msg->Message)->text);//Todo ÄÚ´æÐ¹Â¶
+			if (((Message::text*)Msg->Message)->text != nullptr) MsgSteam += ((Message::text*)Msg->Message)->text;//Todo ÄÚ´æÐ¹Â¶
 			else
 			{
-				MsgSteam << "[MQ:at,qq=";
-				MsgSteam << ((Message::text*)Msg->Message)->AtQQ;
-				MsgSteam << "]";
+				MsgSteam += u8"[MQ:at,qq=";
+				MsgSteam += ((Message::text*)Msg->Message)->AtQQ;
+				MsgSteam += u8"]";
 			}
 			break;
 		case Message::MsgType::classcal_face:
-			MsgSteam << "[MQ:cface,id=";
-			MsgSteam << ((Message::classcal_face*)Msg->Message)->id;
-			MsgSteam << "]";
+			MsgSteam += u8"[MQ:cface,id=";
+			MsgSteam += ((Message::classcal_face*)Msg->Message)->id;
+			MsgSteam += u8"]";
 			break;
 		case Message::MsgType::expression:
-			MsgSteam << "[MQ:expression,id=";
-			MsgSteam << ((Message::expression*)Msg->Message)->id;
-			MsgSteam << ",MD5=";
-			MsgSteam << XBin::Bin2Hex(((Message::expression*)Msg->Message)->MD5, 16);
-			MsgSteam << "]";
+			MsgSteam += u8"[MQ:expression,id=";
+			MsgSteam += ((Message::expression*)Msg->Message)->id;
+			MsgSteam += u8",MD5=";
+			MsgSteam += (char8_t*)XBin::Bin2Hex(((Message::expression*)Msg->Message)->MD5, 16);
+			MsgSteam += u8"]";
 			break;
 		case Message::MsgType::picture:
-			MsgSteam << "[MQ:picture,MD5=";
-			MsgSteam << XBin::Bin2Hex(((Message::picture*)Msg->Message)->MD5, 16);
-			MsgSteam << ",Width=";
-			MsgSteam << ((Message::picture*)Msg->Message)->Width;
-			MsgSteam << ",Height=";
-			MsgSteam << ((Message::picture*)Msg->Message)->Height;
-			MsgSteam << ",Length=";
-			MsgSteam << ((Message::picture*)Msg->Message)->Data.Length;
-			MsgSteam << "]";
+			MsgSteam += u8"[MQ:picture,MD5=";
+			MsgSteam += (char8_t*)XBin::Bin2Hex(((Message::picture*)Msg->Message)->MD5, 16);
+			MsgSteam += u8",Width=";
+			MsgSteam += ((Message::picture*)Msg->Message)->Width;
+			MsgSteam += u8",Height=";
+			MsgSteam += ((Message::picture*)Msg->Message)->Height;
+			MsgSteam += u8",Length=";
+			MsgSteam += ((Message::picture*)Msg->Message)->Data.Length;
+			MsgSteam += u8"]";
 			break;
 		case Message::MsgType::xml:
-			MsgSteam << "[MQ:xml,text=";
-			MsgSteam << ((Message::xml*)Msg->Message)->text;
-			MsgSteam << "]";
+			MsgSteam += u8"[MQ:xml,text=";
+			MsgSteam += ((Message::xml*)Msg->Message)->text;
+			MsgSteam += u8"]";
 			break;
 		case Message::MsgType::reply:
-			MsgSteam << "[MQ:reply,MsgId=";
-			MsgSteam << ((Message::reply*)Msg->Message)->MsgId;
-			MsgSteam << ",QQ=";
-			MsgSteam << ((Message::reply*)Msg->Message)->QQ;
-			MsgSteam << ",Time=";
-			MsgSteam << ((Message::reply*)Msg->Message)->Time;
-			MsgSteam << ",Msg=";
+			MsgSteam += u8"[MQ:reply,MsgId=";
+			MsgSteam += ((Message::reply*)Msg->Message)->MsgId;
+			MsgSteam += u8",QQ=";
+			MsgSteam += ((Message::reply*)Msg->Message)->QQ;
+			MsgSteam += u8",Time=";
+			MsgSteam += ((Message::reply*)Msg->Message)->Time;
+			MsgSteam += u8",Msg=";
 			{
 				const Message::Msg* ReplyMsg = ((Message::reply*)Msg->Message)->Msg;
 				do
@@ -69,23 +69,23 @@ std::wstringstream ParseMsg(Message::Msg* Msg)
 					switch (ReplyMsg->MsgType)
 					{
 					case Message::MsgType::text:
-						MsgSteam << Iconv::Utf82Unicode(((Message::text*)ReplyMsg->Message)->text);//Todo ÄÚ´æÐ¹Â¶
+						MsgSteam += ((Message::text*)ReplyMsg->Message)->text;//Todo ÄÚ´æÐ¹Â¶
 						break;
 					case Message::MsgType::classcal_face:
-						MsgSteam << "[MQ:cface,id=";
-						MsgSteam << ((Message::classcal_face*)ReplyMsg->Message)->id;
-						MsgSteam << "]";
+						MsgSteam += u8"[MQ:cface,id=";
+						MsgSteam += ((Message::classcal_face*)ReplyMsg->Message)->id;
+						MsgSteam += u8"]";
 						break;
 					}
 					ReplyMsg->NextPoint;
 				} while ((ReplyMsg = ReplyMsg->NextPoint) != nullptr);
 			}
-			MsgSteam << "]";
+			MsgSteam += u8"]";
 			break;
 		case Message::MsgType::json:
-			MsgSteam << "[MQ:json,text=";
-			MsgSteam << Iconv::Utf82Unicode(((Message::json*)Msg->Message)->text);
-			MsgSteam << "]";
+			MsgSteam += u8"[MQ:json,text=";
+			MsgSteam += ((Message::json*)Msg->Message)->text;
+			MsgSteam += u8"]";
 			break;
 		default:
 			break;
@@ -94,8 +94,63 @@ std::wstringstream ParseMsg(Message::Msg* Msg)
 	return MsgSteam;
 }
 
+void Message::DestoryMsg(Message::Msg* Msg)
+{
+	while (Msg != nullptr)
+	{
+		switch (Msg->MsgType)
+		{
+		case Message::MsgType::text:
+			if (((Message::text*)Msg->Message)->text != nullptr) delete[]((Message::text*)Msg->Message)->text;
+			break;
+		case Message::MsgType::classcal_face:
+			break;
+		case Message::MsgType::expression:
+			delete[]((Message::expression*)Msg->Message)->MD5;
+			break;
+		case Message::MsgType::picture:
+			delete[]((Message::picture*)Msg->Message)->MD5;
+			delete[]((Message::picture*)Msg->Message)->Data.URL;
+			break;
+		case Message::MsgType::xml:
+			delete[]((Message::xml*)Msg->Message)->text;
+			break;
+		case Message::MsgType::reply:
+		{
+			Message::Msg* ReplyMsg = ((Message::reply*)Msg->Message)->Msg;
+			while (ReplyMsg != nullptr)
+			{
+				switch (ReplyMsg->MsgType)
+				{
+				case Message::MsgType::text:
+					delete[]((Message::text*)ReplyMsg->Message)->text;
+					break;
+				case Message::MsgType::classcal_face:
+					break;
+				}
+				delete ReplyMsg->Message;
+				Message::Msg* tmp = ReplyMsg->NextPoint;
+				delete ReplyMsg;
+				ReplyMsg = tmp;
+			}
+		}
+		break;
+		case Message::MsgType::json:
+			delete[]((Message::json*)Msg->Message)->text;
+			break;
+		default:
+			break;
+		}
+		delete Msg->Message;
+		Message::Msg* tmp = Msg->NextPoint;
+		delete Msg;
+		Msg = tmp;
+	};
+}
+
 void Database::Init()
 {
+	char* zErrMsg = nullptr;
 	wchar_t DatabaseFilePath[MAX_PATH + 1], DatabaseLogPath[MAX_PATH + 1] = { 0 };
 
 	wcscpy(DatabaseFilePath, DataPath);
@@ -111,10 +166,26 @@ void Database::Init()
 		//error
 	};
 
-	char* zErrMsg = nullptr;
+
+	if (sqlite3_exec(Database_Data,
+		"CREATE TABLE IF NOT EXISTS PrivateMsg("  \
+		"ID         INTEGER  PRIMARY KEY  AUTOINCREMENT," \
+		"FromQQ     INTEGER     ," \
+		"SendTime   DATETIME    ," \
+		"State      INTEGER     ," \
+		"MsgType    INTEGER     ," \
+		"MsgID      INTEGER     ," \
+		"MsgRand    INTEGER     ," \
+		"Msg        TEXT        );"
+		, 0, 0, &zErrMsg) != SQLITE_OK)
+	{
+		Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, L"Create table 'PrivateMsg' erroru8", zErrMsg);
+		sqlite3_free(zErrMsg);
+	}
+
 	if (sqlite3_exec(Database_Data,
 		"CREATE TABLE IF NOT EXISTS GroupMsg("  \
-		"ID         INTEGER  AUTOINCREMENT  PRIMARY KEY ," \
+		"ID         INTEGER  PRIMARY KEY  AUTOINCREMENT ," \
 		"FromGroup  INTEGER     ," \
 		"FromQQ     INTEGER     ," \
 		"SendTime   DATETIME    ," \
@@ -125,23 +196,7 @@ void Database::Init()
 		"Msg        TEXT        );"
 		, 0, 0, &zErrMsg) != SQLITE_OK)
 	{
-		Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, L"Create table 'GroupMsg' error", zErrMsg);
-		sqlite3_free(zErrMsg);
-	}
-
-	if (sqlite3_exec(Database_Data,
-		"CREATE TABLE IF NOT EXISTS PrivateMsg("  \
-		"ID         INTEGER  AUTOINCREMENT PRIMARY KEY ," \
-		"FromQQ     INTEGER     ," \
-		"SendTime   DATETIME    ," \
-		"State      INTEGER     ," \
-		"MsgType    INTEGER     ," \
-		"MsgID      INTEGER     ," \
-		"MsgRand    INTEGER     ," \
-		"Msg        TEXT        );"
-		, 0, 0, &zErrMsg) != SQLITE_OK)
-	{
-		Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, L"Create table 'PrivateMsg' error", zErrMsg);
+		Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, L"Create table 'GroupMsg' erroru8", zErrMsg);
 		sqlite3_free(zErrMsg);
 	}
 
@@ -154,7 +209,7 @@ void Database::Init()
 		"Height     INTEGER      );"
 		, 0, 0, &zErrMsg) != SQLITE_OK)
 	{
-		Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, L"Create table 'Picture' error", zErrMsg);
+		Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, L"Create table 'Picture' erroru8", zErrMsg);
 		sqlite3_free(zErrMsg);
 	}
 
@@ -164,7 +219,7 @@ void Database::Init()
 		"Url        TEXT         );"
 		, 0, 0, &zErrMsg) != SQLITE_OK)
 	{
-		Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, L"Create table 'Voice' error", zErrMsg);
+		Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, L"Create table 'Voice' erroru8", zErrMsg);
 		sqlite3_free(zErrMsg);
 	}
 
@@ -176,7 +231,7 @@ void Database::Init()
 		"Msg        TEXT    );"
 		, 0, 0, &zErrMsg) != SQLITE_OK)
 	{
-		Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, L"Create table 'Log' error", zErrMsg);
+		Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, L"Create table 'Log' erroru8", zErrMsg);
 		sqlite3_free(zErrMsg);
 	}
 }
@@ -189,31 +244,63 @@ void Database::UnInit()
 
 uint Database::AddPrivateMsg(const Event::PrivateMsg* PrivateMsg)
 {
-	char* zErrMsg = nullptr;
 	sqlite3_stmt* pStmt;
-	if (sqlite3_prepare(Database_Data,
+	if (sqlite3_prepare16_v2(Database_Data,
 		"INSERT INTO PrivateMsg(FromQQ,SendTime,State,MsgType,MsgID,MsgRand,Msg) VALUES(?,?,0,?,?,?,?,?);"
-		, 0, &pStmt, 0) != SQLITE_OK)
-	{
-		sqlite3_bind_int64(pStmt, 0, PrivateMsg->FromQQ);
-		sqlite3_bind_int64(pStmt, 1, PrivateMsg->SendTime);
-		sqlite3_bind_int64(pStmt, 2, PrivateMsg->MsgType);
-		sqlite3_bind_int64(pStmt, 3, PrivateMsg->MsgID);
-		sqlite3_bind_int64(pStmt, 4, PrivateMsg->MsgRand);
-		std::wstringstream Msg = ParseMsg(PrivateMsg->Msg);
-		sqlite3_bind_text(pStmt, 5, Msg.str().c_str(), Msg.str().length(), );
-
-		Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, L"Create table 'Log' error", zErrMsg);
-		sqlite3_free(zErrMsg);
+		, -1, &pStmt, nullptr) != SQLITE_OK){
+		Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, L"Insert into 'PrivateMsg' error", sqlite3_errmsg(Database_Data));
+		return 0;
 	}
 
-	return 0;
+	sqlite3_bind_int64(pStmt, 1, PrivateMsg->FromQQ);
+	sqlite3_bind_int64(pStmt, 2, PrivateMsg->SendTime);
+	sqlite3_bind_int64(pStmt, 3, PrivateMsg->MsgType);
+	sqlite3_bind_int64(pStmt, 4, PrivateMsg->MsgID);
+	sqlite3_bind_int64(pStmt, 5, PrivateMsg->MsgRand);
+	std::u8string Msg = Message::ParseMsg(PrivateMsg->Msg);
+	sqlite3_bind_text(pStmt, 6, (char*)Msg.c_str(), Msg.length(), SQLITE_STATIC);
+
+	if (sqlite3_step(pStmt) != SQLITE_DONE) {
+		Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, L"Insert into 'PrivateMsg' error", sqlite3_errmsg(Database_Data));
+		sqlite3_finalize(pStmt);
+		return 0;
+	}
+	sqlite3_finalize(pStmt);
+
+	//std::wstring_convert<std::codecvt_utf8<wchar_t>> conv;
+	Log::AddLog(Log::LogType::INFORMATION, Log::MsgType::PRIVATE, L"Simple Message", Iconv::Utf82Unicode((char*)Msg.c_str()));
+
+
 }
 
 uint Database::AddGroupMsg(const Event::GroupMsg* GroupMsg)
 {
+	sqlite3_stmt* pStmt;
+	if (sqlite3_prepare16_v2(Database_Data,
+		"INSERT INTO GroupMsg(FromGroup,FromQQ,SendTime,State,MsgType,MsgID,MsgRand,Msg) VALUES(?,?,?,0,?,?,?,?,?);"
+		, -1, &pStmt, nullptr) != SQLITE_OK) {
+		Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, L"Insert into 'GroupMsg' error", sqlite3_errmsg(Database_Data));
+		return 0;
+	}
 
-	return uint();
+	sqlite3_bind_int64(pStmt, 1, GroupMsg->FromGroup);
+	sqlite3_bind_int64(pStmt, 2, GroupMsg->FromQQ);
+	sqlite3_bind_int64(pStmt, 3, GroupMsg->SendTime);
+	sqlite3_bind_int64(pStmt, 4, GroupMsg->MsgType);
+	sqlite3_bind_int64(pStmt, 5, GroupMsg->MsgID);
+	sqlite3_bind_int64(pStmt, 6, GroupMsg->MsgRand);
+	std::u8string Msg = Message::ParseMsg(GroupMsg->Msg);
+	sqlite3_bind_text(pStmt, 7, (char*)Msg.c_str(), Msg.length(), SQLITE_STATIC);
+
+	if (sqlite3_step(pStmt) != SQLITE_DONE) {
+		Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, L"Insert into 'GroupMsg' error", sqlite3_errmsg(Database_Data));
+		sqlite3_finalize(pStmt);
+		return 0;
+	}
+	sqlite3_finalize(pStmt);
+
+	//std::wstring_convert<std::codecvt_utf8<wchar_t>> conv;
+	Log::AddLog(Log::LogType::INFORMATION, Log::MsgType::_GROUP, L"Simple Message", Iconv::Utf82Unicode((char*)Msg.c_str()));
 }
 
 void Database::AddPicture(const char MD5[16], const char* Url, const unsigned short Length, const unsigned short Width, const unsigned short Height)
@@ -227,6 +314,24 @@ void Database::AddVoice(const char MD5[16], const char* Url)
 
 void Database::AddLog(const Log::LogType LogType, const Log::MsgType MsgType, const wchar_t* Type, const wchar_t* Msg)
 {
+	sqlite3_stmt* pStmt;
+	if (sqlite3_prepare16_v2(Database_Log,
+		"INSERT INTO Log(LogType,MsgType,Type,Msg) VALUES(?,?,?,?)"
+		, -1, &pStmt, nullptr) != SQLITE_OK) {
+		Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, L"Insert into 'Log' error", sqlite3_errmsg(Database_Log));
+		return;
+	}
+	sqlite3_bind_int64(pStmt, 1, static_cast<int>(LogType));
+	sqlite3_bind_int64(pStmt, 2, static_cast<int>(MsgType));
+	sqlite3_bind_text(pStmt, 3, Iconv::Unicode2Utf8(Type), -1, 0);
+	sqlite3_bind_text(pStmt, 4, Iconv::Unicode2Utf8(Msg), -1, 0);
+
+	if (sqlite3_step(pStmt) != SQLITE_DONE) {
+		Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, L"Insert into 'Log' error", sqlite3_errmsg(Database_Log));
+		sqlite3_finalize(pStmt);
+		return;
+	}
+	sqlite3_finalize(pStmt);
 }
 
 Event::PrivateMsg* Database::GetPrivateMsg(const uint MsgID)
@@ -425,13 +530,13 @@ void Log::AddLog(const LogType LogType, const MsgType MsgType, const Event::Requ
 	case Event::RequestEvent::RequestEventType::add_friend:
 		Log_.Type = L"add_friend";
 		MsgSteam << ((Event::RequestEvent::add_friend*)RequestEvent->Information)->FromQQ << " ";
-		MsgSteam << ((Event::RequestEvent::add_friend*)RequestEvent->Information)->msg << " ";
+		MsgSteam << Iconv::Utf82Unicode((char*)((Event::RequestEvent::add_friend*)RequestEvent->Information)->msg) << " ";
 		break;
 	case Event::RequestEvent::RequestEventType::add_group:
 		Log_.Type = L"add_group";
 		MsgSteam << ((Event::RequestEvent::add_group*)RequestEvent->Information)->FromGroup << " ";
 		MsgSteam << ((Event::RequestEvent::add_group*)RequestEvent->Information)->FromQQ << " ";
-		MsgSteam << ((Event::RequestEvent::add_group*)RequestEvent->Information)->Type;
+		MsgSteam << ((Event::RequestEvent::add_group*)RequestEvent->Information)->Type << " ";
 		//MsgSteam << ((Event::RequestEvent::add_group*)RequestEvent->Information)->msg << " ";
 		break;
 	default:

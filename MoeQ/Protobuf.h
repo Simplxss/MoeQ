@@ -70,7 +70,7 @@ public:
 	void StepOut();
 	bool IsEnd();
 	long long int GetVarint(const byte Field);
-	char* GetStr(const byte Field);
+	char8_t* GetStr(const byte Field);
 	uint GetBin(byte*& bin, const byte Field);
 	LPBYTE GetBin(const byte Field);
 	template <typename T>

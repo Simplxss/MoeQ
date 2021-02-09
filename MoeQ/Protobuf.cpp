@@ -88,12 +88,12 @@ long long int UnProtobuf::GetVarint(const byte Field)
 	if (SkipToField(Field) == ProtobufStruct::ProtobufStructType::VARINT) return GetVarint();
 }
 
-char* UnProtobuf::GetStr(const byte Field)
+char8_t* UnProtobuf::GetStr(const byte Field)
 {
 	if (SkipToField(Field) == ProtobufStruct::ProtobufStructType::LENGTH)
 	{
 		uint len = GetVarint();
-		char* str = new char[len + 1];
+		char8_t* str = new char8_t[len + 1];
 		memcpy(str, List->UnPack.GetStr(len), len);
 		str[len] = 0;
 		return str;
