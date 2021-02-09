@@ -82,12 +82,12 @@ FUNC(bool, sendDisscussMsg, const uint64_t AuthCode, const uint Disscuss, const 
 	}
 };
 
-FUNC(bool, drawPrivateMsg, const uint64_t AuthCode, const uint QQ, const uint MsgID)
+FUNC(bool, drawPrivateMsg, const uint64_t AuthCode, const uint QQ, const uint64_t MsgID_)
 {
 	if (Plugin.VieryAuth(AuthCode, 8))
 	{
-		//
-		//return Sdk.QQ_DrawPrivateMsg(QQ, Msg);
+		auto [MsgID, MsgRand] = Database::GetPrivateMsg(MsgID_);
+		return Sdk.QQ_DrawPrivateMsg(QQ, MsgID, MsgRand);
 	}
 	else
 	{
@@ -96,11 +96,12 @@ FUNC(bool, drawPrivateMsg, const uint64_t AuthCode, const uint QQ, const uint Ms
 	}
 };
 
-FUNC(bool, drawGroupMsg, const uint64_t AuthCode, const uint Group, const uint MsgID)
+FUNC(bool, drawGroupMsg, const uint64_t AuthCode, const uint Group, const uint64_t MsgID_)
 {
 	if (Plugin.VieryAuth(AuthCode, 8))
 	{
-		//return Sdk.QQ_DrawGroupMsg(Group, Msg);
+		auto [MsgID, MsgRand] = Database::GetGroupMsg(MsgID_);
+		return Sdk.QQ_DrawGroupMsg(Group, MsgID, MsgRand);
 	}
 	else
 	{

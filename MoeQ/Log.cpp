@@ -10,6 +10,7 @@ std::queue<Log::Log> LogQueue;
 extern wchar_t DataPath[MAX_PATH + 1];
 sqlite3* Database_Data, * Database_Log = nullptr;
 
+
 std::u8string Message::ParseMsg(Message::Msg* Msg)
 {
 	std::u8string MsgSteam;
@@ -22,13 +23,13 @@ std::u8string Message::ParseMsg(Message::Msg* Msg)
 			else
 			{
 				MsgSteam += u8"[MQ:at,qq=";
-				MsgSteam += ((Message::text*)Msg->Message)->AtQQ;
+				MsgSteam += (char8_t*)std::to_string(((Message::text*)Msg->Message)->AtQQ).c_str();
 				MsgSteam += u8"]";
 			}
 			break;
 		case Message::MsgType::classcal_face:
 			MsgSteam += u8"[MQ:cface,id=";
-			MsgSteam += ((Message::classcal_face*)Msg->Message)->id;
+			MsgSteam += (char8_t*)std::to_string(((Message::classcal_face*)Msg->Message)->id).c_str();
 			MsgSteam += u8"]";
 			break;
 		case Message::MsgType::expression:
@@ -42,11 +43,11 @@ std::u8string Message::ParseMsg(Message::Msg* Msg)
 			MsgSteam += u8"[MQ:picture,MD5=";
 			MsgSteam += (char8_t*)XBin::Bin2Hex(((Message::picture*)Msg->Message)->MD5, 16);
 			MsgSteam += u8",Width=";
-			MsgSteam += ((Message::picture*)Msg->Message)->Width;
+			MsgSteam += (char8_t*)std::to_string(((Message::picture*)Msg->Message)->Width).c_str();
 			MsgSteam += u8",Height=";
-			MsgSteam += ((Message::picture*)Msg->Message)->Height;
+			MsgSteam += (char8_t*)std::to_string(((Message::picture*)Msg->Message)->Height).c_str();
 			MsgSteam += u8",Length=";
-			MsgSteam += ((Message::picture*)Msg->Message)->Data.Length;
+			MsgSteam += (char8_t*)std::to_string(((Message::picture*)Msg->Message)->Data.Length).c_str();
 			MsgSteam += u8"]";
 			break;
 		case Message::MsgType::xml:
@@ -56,11 +57,11 @@ std::u8string Message::ParseMsg(Message::Msg* Msg)
 			break;
 		case Message::MsgType::reply:
 			MsgSteam += u8"[MQ:reply,MsgId=";
-			MsgSteam += ((Message::reply*)Msg->Message)->MsgId;
+			MsgSteam += (char8_t*)std::to_string(((Message::reply*)Msg->Message)->MsgId).c_str();
 			MsgSteam += u8",QQ=";
-			MsgSteam += ((Message::reply*)Msg->Message)->QQ;
+			MsgSteam += (char8_t*)std::to_string(((Message::reply*)Msg->Message)->QQ).c_str();
 			MsgSteam += u8",Time=";
-			MsgSteam += ((Message::reply*)Msg->Message)->Time;
+			MsgSteam += (char8_t*)std::to_string(((Message::reply*)Msg->Message)->Time).c_str();
 			MsgSteam += u8",Msg=";
 			{
 				const Message::Msg* ReplyMsg = ((Message::reply*)Msg->Message)->Msg;
@@ -73,7 +74,7 @@ std::u8string Message::ParseMsg(Message::Msg* Msg)
 						break;
 					case Message::MsgType::classcal_face:
 						MsgSteam += u8"[MQ:cface,id=";
-						MsgSteam += ((Message::classcal_face*)ReplyMsg->Message)->id;
+						MsgSteam += (char8_t*)std::to_string(((Message::classcal_face*)ReplyMsg->Message)->id).c_str();
 						MsgSteam += u8"]";
 						break;
 					}
@@ -148,6 +149,7 @@ void Message::DestoryMsg(Message::Msg* Msg)
 	};
 }
 
+
 void Database::Init()
 {
 	char* zErrMsg = nullptr;
@@ -179,7 +181,7 @@ void Database::Init()
 		"Msg        TEXT        );"
 		, 0, 0, &zErrMsg) != SQLITE_OK)
 	{
-		Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, L"Create table 'PrivateMsg' erroru8", zErrMsg);
+		Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, L"Create table 'PrivateMsg' error", zErrMsg);
 		sqlite3_free(zErrMsg);
 	}
 
@@ -196,7 +198,7 @@ void Database::Init()
 		"Msg        TEXT        );"
 		, 0, 0, &zErrMsg) != SQLITE_OK)
 	{
-		Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, L"Create table 'GroupMsg' erroru8", zErrMsg);
+		Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, L"Create table 'GroupMsg' error", zErrMsg);
 		sqlite3_free(zErrMsg);
 	}
 
@@ -209,7 +211,7 @@ void Database::Init()
 		"Height     INTEGER      );"
 		, 0, 0, &zErrMsg) != SQLITE_OK)
 	{
-		Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, L"Create table 'Picture' erroru8", zErrMsg);
+		Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, L"Create table 'Picture' error", zErrMsg);
 		sqlite3_free(zErrMsg);
 	}
 
@@ -219,7 +221,7 @@ void Database::Init()
 		"Url        TEXT         );"
 		, 0, 0, &zErrMsg) != SQLITE_OK)
 	{
-		Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, L"Create table 'Voice' erroru8", zErrMsg);
+		Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, L"Create table 'Voice' error", zErrMsg);
 		sqlite3_free(zErrMsg);
 	}
 
@@ -231,7 +233,7 @@ void Database::Init()
 		"Msg        TEXT    );"
 		, 0, 0, &zErrMsg) != SQLITE_OK)
 	{
-		Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, L"Create table 'Log' erroru8", zErrMsg);
+		Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, L"Create table 'Log' error", zErrMsg);
 		sqlite3_free(zErrMsg);
 	}
 }
@@ -242,12 +244,12 @@ void Database::UnInit()
 	sqlite3_close(Database_Log);
 }
 
-uint Database::AddPrivateMsg(const Event::PrivateMsg* PrivateMsg)
+uint64_t Database::AddPrivateMsg(const Event::PrivateMsg* PrivateMsg)
 {
 	sqlite3_stmt* pStmt;
-	if (sqlite3_prepare16_v2(Database_Data,
-		"INSERT INTO PrivateMsg(FromQQ,SendTime,State,MsgType,MsgID,MsgRand,Msg) VALUES(?,?,0,?,?,?,?,?);"
-		, -1, &pStmt, nullptr) != SQLITE_OK){
+	if (sqlite3_prepare_v2(Database_Data,
+		"INSERT INTO PrivateMsg(FromQQ,SendTime,State,MsgType,MsgID,MsgRand,Msg) VALUES(?,?,0,?,?,?,?);"
+		, 95, &pStmt, nullptr) != SQLITE_OK){
 		Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, L"Insert into 'PrivateMsg' error", sqlite3_errmsg(Database_Data));
 		return 0;
 	}
@@ -260,25 +262,26 @@ uint Database::AddPrivateMsg(const Event::PrivateMsg* PrivateMsg)
 	std::u8string Msg = Message::ParseMsg(PrivateMsg->Msg);
 	sqlite3_bind_text(pStmt, 6, (char*)Msg.c_str(), Msg.length(), SQLITE_STATIC);
 
-	if (sqlite3_step(pStmt) != SQLITE_DONE) {
+	if (sqlite3_step(pStmt) != SQLITE_DONE) { 
 		Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, L"Insert into 'PrivateMsg' error", sqlite3_errmsg(Database_Data));
 		sqlite3_finalize(pStmt);
 		return 0;
 	}
+	uint MsgID = sqlite3_last_insert_rowid(Database_Data);
 	sqlite3_finalize(pStmt);
 
 	//std::wstring_convert<std::codecvt_utf8<wchar_t>> conv;
 	Log::AddLog(Log::LogType::INFORMATION, Log::MsgType::PRIVATE, L"Simple Message", Iconv::Utf82Unicode((char*)Msg.c_str()));
 
-
+	return(MsgID);
 }
 
-uint Database::AddGroupMsg(const Event::GroupMsg* GroupMsg)
+uint64_t Database::AddGroupMsg(const Event::GroupMsg* GroupMsg)
 {
 	sqlite3_stmt* pStmt;
-	if (sqlite3_prepare16_v2(Database_Data,
-		"INSERT INTO GroupMsg(FromGroup,FromQQ,SendTime,State,MsgType,MsgID,MsgRand,Msg) VALUES(?,?,?,0,?,?,?,?,?);"
-		, -1, &pStmt, nullptr) != SQLITE_OK) {
+	if (sqlite3_prepare_v2(Database_Data,
+		"INSERT INTO GroupMsg(FromGroup,FromQQ,SendTime,State,MsgType,MsgID,MsgRand,Msg) VALUES(?,?,?,0,?,?,?,?);"
+		, 105, &pStmt, nullptr) != SQLITE_OK) {
 		Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, L"Insert into 'GroupMsg' error", sqlite3_errmsg(Database_Data));
 		return 0;
 	}
@@ -297,27 +300,66 @@ uint Database::AddGroupMsg(const Event::GroupMsg* GroupMsg)
 		sqlite3_finalize(pStmt);
 		return 0;
 	}
+	uint MsgID = sqlite3_last_insert_rowid(Database_Data);
 	sqlite3_finalize(pStmt);
 
-	//std::wstring_convert<std::codecvt_utf8<wchar_t>> conv;
 	Log::AddLog(Log::LogType::INFORMATION, Log::MsgType::_GROUP, L"Simple Message", Iconv::Utf82Unicode((char*)Msg.c_str()));
+
+	return(MsgID);
 }
 
-void Database::AddPicture(const char MD5[16], const char* Url, const unsigned short Length, const unsigned short Width, const unsigned short Height)
+void Database::AddPicture(const char MD5[16], const char8_t* Url, const unsigned short Length, const unsigned short Width, const unsigned short Height)
 {
+	sqlite3_stmt* pStmt;
+	if (sqlite3_prepare_v2(Database_Data,
+		"INSERT OR REPLACE INTO Picture(MD5,Url,Length,Width,Height) VALUES(?,?,?,?,?)"
+		, 78, &pStmt, nullptr) != SQLITE_OK) {
+		Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, L"Insert into 'Picture' error", sqlite3_errmsg(Database_Data));
+		return;
+	}
 
+	sqlite3_bind_blob(pStmt, 1, MD5, 16, SQLITE_STATIC);
+	sqlite3_bind_text(pStmt, 2, (char*)Url, -1, SQLITE_STATIC);
+	sqlite3_bind_int(pStmt, 3, Length);
+	sqlite3_bind_int(pStmt, 4, Width);
+	sqlite3_bind_int(pStmt, 5, Height);
+
+	if (sqlite3_step(pStmt) != SQLITE_DONE) {
+		Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, L"Insert into 'Picture' error", sqlite3_errmsg(Database_Data));
+		sqlite3_finalize(pStmt);
+		return;
+	}
+	sqlite3_finalize(pStmt);
 }
 
-void Database::AddVoice(const char MD5[16], const char* Url)
+void Database::AddVoice(const char MD5[16], const char8_t* Url)
 {
+	sqlite3_stmt* pStmt;
+	if (sqlite3_prepare_v2(Database_Data,
+		"INSERT OR REPLACE INTO Voice(MD5,Url) VALUES(?,?)"
+		, 50, &pStmt, nullptr) != SQLITE_OK) {
+		Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, L"Insert into 'Voice' error", sqlite3_errmsg(Database_Data));
+		return;
+	}
+
+	sqlite3_bind_blob(pStmt, 1, MD5, 16, SQLITE_STATIC);
+	sqlite3_bind_text(pStmt, 2, (char*)Url, -1, SQLITE_STATIC);
+
+	if (sqlite3_step(pStmt) != SQLITE_DONE) {
+		Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, L"Insert into 'Voice' error", sqlite3_errmsg(Database_Data));
+		sqlite3_finalize(pStmt);
+		return;
+	}
+	sqlite3_finalize(pStmt);
+
 }
 
 void Database::AddLog(const Log::LogType LogType, const Log::MsgType MsgType, const wchar_t* Type, const wchar_t* Msg)
 {
 	sqlite3_stmt* pStmt;
-	if (sqlite3_prepare16_v2(Database_Log,
-		"INSERT INTO Log(LogType,MsgType,Type,Msg) VALUES(?,?,?,?)"
-		, -1, &pStmt, nullptr) != SQLITE_OK) {
+	if (sqlite3_prepare_v2(Database_Log,
+		"INSERT INTO Log(LogType,MsgType,Type,Msg) VALUES(?,?,?,?);"
+		, 59, &pStmt, nullptr) != SQLITE_OK) {
 		Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, L"Insert into 'Log' error", sqlite3_errmsg(Database_Log));
 		return;
 	}
@@ -334,24 +376,96 @@ void Database::AddLog(const Log::LogType LogType, const Log::MsgType MsgType, co
 	sqlite3_finalize(pStmt);
 }
 
-Event::PrivateMsg* Database::GetPrivateMsg(const uint MsgID)
+std::tuple<uint, uint> Database::GetPrivateMsg(const uint64_t MsgID_)
 {
-	return nullptr;
+	sqlite3_stmt* pStmt;
+	if (sqlite3_prepare_v2(Database_Data, "SELECT MsgID,MsgRand FROM PrivateMsg WHERE Id = ?", 50, &pStmt, nullptr) != SQLITE_OK) {
+		Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, L"Select 'PrivateMsg' error", sqlite3_errmsg(Database_Data));
+		return { 0,0 };
+	}
+
+	sqlite3_bind_int64(pStmt, 1, MsgID_);
+
+	if (sqlite3_step(pStmt) != SQLITE_ROW) {
+		Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, L"Select 'PrivateMsg' error", sqlite3_errmsg(Database_Data));
+		sqlite3_finalize(pStmt);
+		return { 0,0 };
+	}
+
+	uint MsgID = sqlite3_column_int64(pStmt, 0);
+	uint MsgRand = sqlite3_column_int64(pStmt, 1);
+	sqlite3_finalize(pStmt);
+
+	return { MsgID, MsgRand };
 }
 
-Event::GroupMsg* Database::GetGroupMsg(const uint MsgID)
+std::tuple<uint, uint> Database::GetGroupMsg(const uint64_t MsgID_)
 {
-	return nullptr;
+	sqlite3_stmt* pStmt;
+	if (sqlite3_prepare_v2(Database_Data, "SELECT MsgID,MsgRand FROM GroupMsg WHERE Id = ?", 48, &pStmt, nullptr) != SQLITE_OK) {
+		Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, L"Select 'GroupMsg' error", sqlite3_errmsg(Database_Data));
+		return {0,0};
+	}
+
+	sqlite3_bind_int64(pStmt, 1, MsgID_);
+
+	if (sqlite3_step(pStmt) != SQLITE_ROW) {
+		Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, L"Select 'GroupMsg' error", sqlite3_errmsg(Database_Data));
+		sqlite3_finalize(pStmt);
+		return {0,0};
+	}
+
+	uint MsgID = sqlite3_column_int64(pStmt, 0);
+	uint MsgRand = sqlite3_column_int64(pStmt, 1);
+	sqlite3_finalize(pStmt);
+
+	return { MsgID, MsgRand };
 }
 
-std::string Database::GetPictureUrl(const char MD5[16])
+std::u8string Database::GetPictureUrl(const char MD5[16])
 {
-	return std::string();
+	sqlite3_stmt* pStmt;
+	if (sqlite3_prepare_v2(Database_Data, "SELECT Url FROM Picture WHERE Id = ?", 37, &pStmt, nullptr) != SQLITE_OK) {
+		Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, L"Select 'Picture' error", sqlite3_errmsg(Database_Data));
+		return std::u8string();
+	}
+
+	sqlite3_bind_blob(pStmt, 1, MD5, 16, SQLITE_STATIC);
+
+	if (sqlite3_step(pStmt) != SQLITE_ROW) {
+		Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, L"Select 'Picture' error", sqlite3_errmsg(Database_Data));
+		sqlite3_finalize(pStmt);
+		return std::u8string();
+	}
+
+	std::u8string Url = u8"http://gchat.qpic.cn";
+	Url += (char8_t*)sqlite3_column_text(pStmt, 0);
+	sqlite3_finalize(pStmt);
+
+	return Url;
 }
 
-std::string Database::GetVoiceUrl(const char MD5[16])
+std::u8string Database::GetVoiceUrl(const char MD5[16])
 {
-	return std::string();
+	sqlite3_stmt* pStmt;
+	if (sqlite3_prepare_v2(Database_Data, "SELECT Url FROM Voice WHERE Id = ?", 35, &pStmt, nullptr) != SQLITE_OK) {
+		Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, L"Select 'Voice' error", sqlite3_errmsg(Database_Data));
+		return std::u8string();
+	}
+
+	sqlite3_bind_blob(pStmt, 1, MD5, 16, SQLITE_STATIC);
+
+	if (sqlite3_step(pStmt) != SQLITE_ROW) {
+		Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, L"Select 'Voice' error", sqlite3_errmsg(Database_Data));
+		sqlite3_finalize(pStmt);
+		return std::u8string();
+	}
+
+	std::u8string Url = u8"http://grouptalk.c2c.qq.com";
+	Url += (char8_t*)sqlite3_column_text(pStmt, 0);
+	sqlite3_finalize(pStmt);
+
+	return Url;
 }
 
 

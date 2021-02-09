@@ -14,9 +14,9 @@ namespace Message
 		expression = 6,
 		picture = 8,
 		xml = 12,
+		red_packet = 24,
 		reply = 45,
 		json = 51,
-		red_packet = 56,
 	};
 
 	struct Data

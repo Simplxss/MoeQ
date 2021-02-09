@@ -53,13 +53,13 @@ private:
 	typedef void(__stdcall* LifeCycleEvent)(const ::Event::LifeCycleEvent::LifeCycleEventType);
 	std::vector<LifeCycleEvent>LifeCycleEventList[4]; //4 subevents
 
-	typedef ::Event::ReturnType(__stdcall* MessageEvent)(const ::Target::Target*, const ::Message::Msg*, const uint);
+	typedef ::Event::ReturnType(__stdcall* MessageEvent)(const ::Target::Target*, const ::Message::Msg*, const uint64_t);
 	std::vector<MessageEvent>MessageEventList[3]; //3 subevents
 
 	typedef ::Event::ReturnType(__stdcall* NoticeEvent)(const ::Event::NoticeEvent::NoticeEvent*);
 	std::vector<NoticeEvent>NoticeEventList[4]; //4 subevents
 
-	typedef ::Event::RequestEvent::ReturnType(__stdcall* RequestEvent)(const ::Event::RequestEvent::RequestEvent* RequestEvent, const uint responseFlag);
+	typedef ::Event::RequestEvent::ReturnType(__stdcall* RequestEvent)(const ::Event::RequestEvent::RequestEvent* RequestEvent, const uint64_t responseFlag);
 	std::vector<RequestEvent>RequestEventList[2]; //2 subevents
 public:
 	void Load(char* szFilePath);
@@ -67,7 +67,7 @@ public:
 	bool VieryAuth(const uint64_t auth_code, const int auth);
 	const char* AuthCode2Name(const uint64_t auth_code);
 	void BroadcastLifeCycleEvent(const ::Event::LifeCycleEvent::LifeCycleEventType LifeCycleEventType);
-	void BroadcastMessageEvent(const ::Target::Target* Target, const ::Message::Msg* Msg, const uint MsgID);
+	void BroadcastMessageEvent(const ::Target::Target* Target, const ::Message::Msg* Msg, const uint64_t MsgID);
 	void BroadcastNoticeEvent(const ::Event::NoticeEvent::NoticeEvent* NoticeEvent);
-	void BroadcastRequestEvent(const ::Event::RequestEvent::RequestEvent* RequestEvent, const uint responseFlag);
+	void BroadcastRequestEvent(const ::Event::RequestEvent::RequestEvent* RequestEvent, const uint64_t responseFlag);
 };

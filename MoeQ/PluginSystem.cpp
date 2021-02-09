@@ -9,8 +9,7 @@ extern PluginSystem Plugin;
 void Event::OnGroupMsg(const GroupMsg* GroupMsg)
 {
 	Target::Target Target{ Target::TargetType::group,(void*)new Target::group{GroupMsg->FromGroup,GroupMsg->FromQQ } };
-	uint MsgID = Database::AddGroupMsg(GroupMsg);
-	Plugin.BroadcastMessageEvent(&Target, GroupMsg->Msg, MsgID);
+	Plugin.BroadcastMessageEvent(&Target, GroupMsg->Msg, Database::AddGroupMsg(GroupMsg));
 }
 
 void Event::OnPrivateMsg(const PrivateMsg* PrivateMsg)
@@ -30,6 +29,7 @@ void Event::OnRequestMsg(const RequestEvent::RequestEvent* RequestEvent)
 	//Todo
 	Plugin.BroadcastRequestEvent(RequestEvent, 0);
 }
+
 
 void PluginSystem::Load(char* szFilePath)
 {
@@ -293,6 +293,7 @@ void PluginSystem::Load(char* szFilePath)
 		_findclose(handle);
 	}
 	LoadEvent();
+
 	BroadcastLifeCycleEvent(::Event::LifeCycleEvent::LifeCycleEventType::StartUp);
 }
 
@@ -423,7 +424,7 @@ void PluginSystem::BroadcastLifeCycleEvent(const ::Event::LifeCycleEvent::LifeCy
 	}
 }
 
-void PluginSystem::BroadcastMessageEvent(const ::Target::Target* Target, const ::Message::Msg* Msg, const uint MsgID)
+void PluginSystem::BroadcastMessageEvent(const ::Target::Target* Target, const ::Message::Msg* Msg, const uint64_t MsgID)
 {
 	for (size_t i = 0; i < MessageEventList[static_cast<int>(Target->TargetType)].size(); i++)
 	{
@@ -439,7 +440,7 @@ void PluginSystem::BroadcastNoticeEvent(const ::Event::NoticeEvent::NoticeEvent*
 	}
 }
 
-void PluginSystem::BroadcastRequestEvent(const ::Event::RequestEvent::RequestEvent* RequestEvent, const uint responseFlag)
+void PluginSystem::BroadcastRequestEvent(const ::Event::RequestEvent::RequestEvent* RequestEvent, const uint64_t responseFlag)
 {
 	for (size_t i = 0; i < RequestEventList[static_cast<int>(RequestEvent->RequestEventType)].size(); i++)
 	{

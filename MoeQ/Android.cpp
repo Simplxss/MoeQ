@@ -120,6 +120,129 @@ namespace Message
 		delete[] Pack.GetAll();
 		return bin;
 	}
+
+	void UnPack1(UnProtobuf* UnPB, Msg*& Msg)
+	{
+		UnPB->StepIn(1);
+		Msg = new Message::Msg{ Message::MsgType::text,nullptr, new Message::text };
+		((Message::text*)Msg->Message)->text = UnPB->GetStr(1);
+		if (UnPB->GetField() == 3)
+		{
+			delete[]((Message::text*)Msg->Message)->text;
+			((Message::text*)Msg->Message)->text = nullptr;
+			UnPack UnPack(UnPB->GetBin(3));
+			UnPack.Skip(7);
+			((Message::text*)Msg->Message)->AtQQ = UnPack.GetInt();
+		}
+		UnPB->StepOut();
+	}
+	void UnPack2(UnProtobuf* UnPB, Msg*& Msg)
+	{
+		UnPB->StepIn(2);
+		Msg = new Message::Msg{ Message::MsgType::classcal_face,nullptr,new Message::classcal_face };
+		((Message::classcal_face*)Msg->Message)->id = UnPB->GetVarint(1);
+		UnPB->StepOut();
+	}
+	void UnPack6(UnProtobuf* UnPB, Msg*& Msg)
+	{
+		UnPB->StepIn(6);
+		Msg = new Message::Msg{ Message::MsgType::expression,nullptr,new Message::expression };
+		UnPB->GetBin(((Message::expression*)Msg->Message)->MD5, 4);
+		((Message::expression*)Msg->Message)->id = UnPB->GetVarint(5);
+		UnPB->StepOut();
+	}
+	void UnPack8(UnProtobuf* UnPB, Msg*& Msg)
+	{
+		UnPB->StepIn(8);
+		Msg = new Message::Msg{ Message::MsgType::picture,nullptr,new Message::picture };
+		UnPB->GetBin(((Message::picture*)Msg->Message)->MD5, 13);
+		((Message::picture*)Msg->Message)->Data.URL = UnPB->GetStr(16);
+		((Message::picture*)Msg->Message)->Width = UnPB->GetVarint(22);
+		((Message::picture*)Msg->Message)->Height = UnPB->GetVarint(23);
+		((Message::picture*)Msg->Message)->Data.Length = UnPB->GetVarint(25);
+		UnPB->StepOut();
+		Database::AddPicture((char*)((Message::picture*)Msg->Message)->MD5, ((Message::picture*)Msg->Message)->Data.URL, ((Message::picture*)Msg->Message)->Width, ((Message::picture*)Msg->Message)->Height, ((Message::picture*)Msg->Message)->Data.Length);
+	}
+	void UnPack12(UnProtobuf* UnPB, Msg*& Msg)
+	{
+		Msg = new Message::Msg{ Message::MsgType::xml ,nullptr,new Message::xml };
+		{
+			LPBYTE Bin = UnPB->GetBin(1);
+			if (Bin[4] == 1)
+			{
+				((Message::xml*)Msg->Message)->text = (char8_t*)Utils::ZlibUnCompress(Bin + 5, XBin::Bin2Int(Bin) - 5);
+				delete Bin;
+			}
+			else
+			{
+				uint len = XBin::Bin2Int(Bin) - 4;
+				((Message::xml*)Msg->Message)->text = new char8_t[len];
+				memcpy(((Message::xml*)Msg->Message)->text, Bin + 5, len - 1);
+				((Message::xml*)Msg->Message)->text[len] = 0;
+				delete Bin;
+			}
+		}
+		UnPB->StepOut();
+	}
+	void UnPack45(UnProtobuf* UnPB, Msg*& Msg)
+	{
+		UnPB->StepIn(45);
+		Msg = new Message::Msg{ Message::MsgType::reply ,nullptr,new Message::reply };
+		((Message::reply*)Msg->Message)->MsgId = UnPB->GetVarint(1);
+		((Message::reply*)Msg->Message)->QQ = UnPB->GetVarint(2);
+		((Message::reply*)Msg->Message)->Time = UnPB->GetVarint(3);
+		UnPB->GetVarint(4);
+		{
+			Message::Msg* ReplyMsg = nullptr;
+			while (UnPB->GetField() == 5)
+			{
+				UnPB->StepIn(5);
+				if (ReplyMsg != nullptr) ReplyMsg = ReplyMsg->NextPoint = new Message::Msg;
+				else ((Message::reply*)Msg->Message)->Msg = ReplyMsg = new Message::Msg;
+				switch (UnPB->GetField())
+				{
+				case 1:
+					ReplyMsg->MsgType = Message::MsgType::text;
+					ReplyMsg->Message = new Message::text;
+					UnPB->StepIn(1);
+					((Message::text*)ReplyMsg->Message)->text = UnPB->GetStr(1);
+					UnPB->StepOut();
+					break;
+				case 2:
+					ReplyMsg->MsgType = Message::MsgType::classcal_face;
+					ReplyMsg->Message = new Message::classcal_face;
+					UnPB->StepIn(2);
+					((Message::classcal_face*)ReplyMsg->Message)->id = UnPB->GetVarint(1);
+					UnPB->StepOut();
+					break;
+				}
+				UnPB->StepOut();
+			}
+		}
+		UnPB->StepOut();
+	}
+	void UnPack51(UnProtobuf* UnPB, Msg*& Msg)
+	{
+		UnPB->StepIn(51);
+		Msg = new Message::Msg{ Message::MsgType::json ,nullptr,new Message::json };
+		{
+			LPBYTE Bin = UnPB->GetBin(1);
+			if (Bin[4] == 1)
+			{
+				((Message::json*)Msg->Message)->text = (char8_t*)Utils::ZlibUnCompress(Bin + 5, XBin::Bin2Int(Bin) - 5);
+				delete Bin;
+			}
+			else
+			{
+				uint len = XBin::Bin2Int(Bin) - 4;
+				((Message::json*)Msg->Message)->text = new char8_t[len];
+				memcpy(((Message::json*)Msg->Message)->text, Bin + 5, len - 1);
+				((Message::json*)Msg->Message)->text[len] = 0;
+				delete Bin;
+			}
+		}
+		UnPB->StepOut();
+	}
 }
 
 Android::Android(const char* IMEI, const char IMSI[16], const byte GUID[16], const byte MAC[6], const char* _device, const char* Brand)
@@ -1255,18 +1378,14 @@ void Android::MessageSvc_PbGetMsg()
 					switch (UnPB.GetField())
 					{
 					case 1:
-						UnPB.StepIn(1);
-						if (ThisMsg != nullptr) ThisMsg = ThisMsg->NextPoint = new Message::Msg{ Message::MsgType::text,nullptr,new Message::text };
-						else PrivateMsg.Msg = ThisMsg = new Message::Msg{ Message::MsgType::text,nullptr, new Message::text };
-						((Message::text*)ThisMsg->Message)->text = UnPB.GetStr(1);
-						UnPB.StepOut();
+						UnPack1(&UnPB, ThisMsg != nullptr ? ThisMsg->NextPoint : ThisMsg);
+						if (ThisMsg->NextPoint == nullptr) { PrivateMsg.Msg = ThisMsg; }
+						else ThisMsg = ThisMsg->NextPoint;
 						break;
 					case 2://小黄豆
-						UnPB.StepIn(2);
-						if (ThisMsg != nullptr)	ThisMsg = ThisMsg->NextPoint = new Message::Msg{ Message::MsgType::classcal_face,nullptr,new Message::classcal_face };
-						else PrivateMsg.Msg = ThisMsg = new Message::Msg{ Message::MsgType::classcal_face,nullptr,new Message::classcal_face };
-						((Message::classcal_face*)ThisMsg->Message)->id = UnPB.GetVarint(1);
-						UnPB.StepOut();
+						UnPack2(&UnPB, ThisMsg != nullptr ? ThisMsg->NextPoint : ThisMsg);
+						if (ThisMsg->NextPoint == nullptr) { PrivateMsg.Msg = ThisMsg; }
+						else ThisMsg = ThisMsg->NextPoint;
 						break;
 					case 4:
 						UnPB.StepIn(4);
@@ -1282,23 +1401,14 @@ void Android::MessageSvc_PbGetMsg()
 					case 5://文件
 						break;
 					case 6://原创表情
-						UnPB.StepIn(6);
-						if (ThisMsg != nullptr)	ThisMsg = ThisMsg->NextPoint = new Message::Msg{ Message::MsgType::expression,nullptr,new Message::expression };
-						else PrivateMsg.Msg = ThisMsg = new Message::Msg{ Message::MsgType::expression,nullptr,new Message::expression };
-						UnPB.GetBin(((Message::expression*)ThisMsg->Message)->MD5, 4);
-						((Message::expression*)ThisMsg->Message)->id = UnPB.GetVarint(5);
-						UnPB.StepOut();
+						UnPack6(&UnPB, ThisMsg != nullptr ? ThisMsg->NextPoint : ThisMsg);
+						if (ThisMsg->NextPoint == nullptr) { PrivateMsg.Msg = ThisMsg; }
+						else ThisMsg = ThisMsg->NextPoint;
 						break;
 					case 8://图片
-						UnPB.StepIn(8);
-						if (ThisMsg != nullptr)	ThisMsg = ThisMsg->NextPoint = new Message::Msg{ Message::MsgType::picture,nullptr,new Message::picture };
-						else PrivateMsg.Msg = ThisMsg = new Message::Msg{ Message::MsgType::picture,nullptr,new Message::picture };
-						UnPB.GetBin(((Message::picture*)ThisMsg->Message)->MD5, 13);
-						((Message::picture*)ThisMsg->Message)->Data.URL = UnPB.GetStr(16);
-						((Message::picture*)ThisMsg->Message)->Width = UnPB.GetVarint(22);
-						((Message::picture*)ThisMsg->Message)->Height = UnPB.GetVarint(23);
-						((Message::picture*)ThisMsg->Message)->Data.Length = UnPB.GetVarint(25);
-						UnPB.StepOut();
+						UnPack8(&UnPB, ThisMsg != nullptr ? ThisMsg->NextPoint : ThisMsg);
+						if (ThisMsg->NextPoint == nullptr) { PrivateMsg.Msg = ThisMsg; }
+						else ThisMsg = ThisMsg->NextPoint;
 						break;
 					case 9://气泡消息
 						/*
@@ -1312,26 +1422,9 @@ void Android::MessageSvc_PbGetMsg()
 						*/
 						break;
 					case 12://xml
-						UnPB.StepIn(12);
-						if (PrivateMsg.Msg != nullptr) Message::DestoryMsg(PrivateMsg.Msg);
-						PrivateMsg.Msg = ThisMsg = new Message::Msg{ Message::MsgType::xml ,nullptr,new Message::xml };
-						{
-							LPBYTE Bin = UnPB.GetBin(1);
-							if (Bin[4] == 1)
-							{
-								((Message::xml*)ThisMsg->Message)->text = (char8_t*)Utils::ZlibUnCompress(Bin + 5, XBin::Bin2Int(Bin) - 5);
-								delete Bin;
-							}
-							else
-							{
-								uint len = XBin::Bin2Int(Bin) - 4;
-								((Message::xml*)ThisMsg->Message)->text = new char8_t[len];
-								memcpy(((Message::xml*)ThisMsg->Message)->text, Bin + 5, len - 1);
-								((Message::xml*)ThisMsg->Message)->text[len] = 0;
-								delete Bin;
-							}
-						}
-						UnPB.StepOut();
+						UnPack12(&UnPB, ThisMsg != nullptr ? ThisMsg->NextPoint : ThisMsg);
+						if (ThisMsg->NextPoint == nullptr) { PrivateMsg.Msg = ThisMsg; }
+						else ThisMsg = ThisMsg->NextPoint;
 						break;
 					case 16:
 						/*
@@ -1399,64 +1492,14 @@ void Android::MessageSvc_PbGetMsg()
 						*/
 						break;
 					case 45://回复
-						UnPB.StepIn(45);
-						if (ThisMsg != nullptr) Message::DestoryMsg(PrivateMsg.Msg);
-						PrivateMsg.Msg = ThisMsg = new Message::Msg{ Message::MsgType::reply ,nullptr,new Message::reply };
-						((Message::reply*)ThisMsg->Message)->MsgId = UnPB.GetVarint(1);
-						((Message::reply*)ThisMsg->Message)->QQ = UnPB.GetVarint(2);
-						((Message::reply*)ThisMsg->Message)->Time = UnPB.GetVarint(3);
-						UnPB.GetVarint(4);
-						{
-							Message::Msg* ReplyMsg = nullptr;
-							while (UnPB.GetField() == 5)
-							{
-								UnPB.StepIn(5);
-								if (ReplyMsg != nullptr) ReplyMsg = ReplyMsg->NextPoint = new Message::Msg;
-								else ((Message::reply*)ThisMsg->Message)->Msg = ReplyMsg = new Message::Msg;
-								switch (UnPB.GetField())
-								{
-								case 1:
-									ReplyMsg->MsgType = Message::MsgType::text;
-									ReplyMsg->Message = new Message::text;
-									UnPB.StepIn(1);
-									((Message::text*)ReplyMsg->Message)->text = UnPB.GetStr(1);
-									UnPB.StepOut();
-									break;
-								case 2:
-									ReplyMsg->MsgType = Message::MsgType::classcal_face;
-									ReplyMsg->Message = new Message::classcal_face;
-									UnPB.StepIn(2);
-									((Message::classcal_face*)ReplyMsg->Message)->id = UnPB.GetVarint(1);
-									UnPB.StepOut();
-									break;
-								}
-								UnPB.StepOut();
-							}
-						}
-						UnPB.StepOut();
+						UnPack45(&UnPB, ThisMsg != nullptr ? ThisMsg->NextPoint : ThisMsg);
+						if (ThisMsg->NextPoint == nullptr) { PrivateMsg.Msg = ThisMsg; }
+						else ThisMsg = ThisMsg->NextPoint;
 						break;
 					case 51://json
-						UnPB.StepIn(51);
-						if (PrivateMsg.Msg != nullptr) Message::DestoryMsg(PrivateMsg.Msg);
-						PrivateMsg.Msg = ThisMsg = new Message::Msg{ Message::MsgType::json ,nullptr,new Message::json };
-						{
-							LPBYTE Bin = UnPB.GetBin(1);
-							if (Bin[4] == 1)
-							{
-								((Message::json*)ThisMsg->Message)->text = (char8_t*)Utils::ZlibUnCompress(Bin + 5, XBin::Bin2Int(Bin) - 5);
-								delete Bin;
-							}
-							else
-							{
-								uint len = XBin::Bin2Int(Bin) - 4;
-								((Message::json*)ThisMsg->Message)->text = new char8_t[len];
-								memcpy(((Message::json*)ThisMsg->Message)->text, Bin + 5, len - 1);
-								((Message::json*)ThisMsg->Message)->text[len] = 0;
-								delete Bin;
-							}
-
-						}
-						UnPB.StepOut();
+						UnPack51(&UnPB, ThisMsg != nullptr ? ThisMsg->NextPoint : ThisMsg);
+						if (ThisMsg->NextPoint == nullptr) { PrivateMsg.Msg = ThisMsg; }
+						else ThisMsg = ThisMsg->NextPoint;
 						break;
 					case 53:
 						UnPB.StepIn(53);
@@ -1471,8 +1514,8 @@ void Android::MessageSvc_PbGetMsg()
 				}
 				UnPB.StepOut();
 				UnPB.StepOut();
-				Event::OnPrivateMsg(&PrivateMsg);
-				if (PrivateMsg.Msg != nullptr) Database::AddPrivateMsg(&PrivateMsg);
+				
+				if (PrivateMsg.Msg != nullptr) Event::OnPrivateMsg(&PrivateMsg);
 				Message::DestoryMsg(PrivateMsg.Msg);
 				break;
 			default:
@@ -1667,7 +1710,7 @@ void Android::ProfileService_Pb_ReqSystemMsgNew_Group()
 	UnProtobuf UnPB(Fun_Send_Sync(11, 1, "ProfileService.Pb.ReqSystemMsgNew.Group", PB.Pack(&Node1)));
 }
 
-std::tuple <uint, uint, uint, LPBYTE> Android::ImgStore_GroupPicUp(const uint Group, const LPBYTE ImageName, const LPBYTE ImageMD5, const uint ImageLength, const uint ImageWidth, const uint ImageHeight)
+std::tuple<uint, uint, uint, LPBYTE> Android::ImgStore_GroupPicUp(const uint Group, const LPBYTE ImageName, const LPBYTE ImageMD5, const uint ImageLength, const uint ImageWidth, const uint ImageHeight)
 {
 	LPBYTE V = new byte[strlen(QQ_VERSION) + 4];
 	memcpy(V, XBin::Int2Bin(strlen(QQ_VERSION) + 4), 4);
@@ -2357,47 +2400,26 @@ void Android::Unpack_OnlinePush_PbPushGroupMsg(const LPBYTE BodyBin, const uint 
 		switch (UnPB.GetField())
 		{
 		case 1://文字和At
-			UnPB.StepIn(1);
-			if (ThisMsg != nullptr) ThisMsg = ThisMsg->NextPoint = new Message::Msg{ Message::MsgType::text,nullptr,new Message::text };
-			else GroupMsg.Msg = ThisMsg = new Message::Msg{ Message::MsgType::text,nullptr, new Message::text };
-			((Message::text*)ThisMsg->Message)->text = UnPB.GetStr(1);
-			if (UnPB.GetField() == 3)
-			{
-				delete[]((Message::text*)ThisMsg->Message)->text;
-				((Message::text*)ThisMsg->Message)->text = nullptr;
-				UnPack UnPack(UnPB.GetBin(3));
-				UnPack.Skip(7);
-				((Message::text*)ThisMsg->Message)->AtQQ = UnPack.GetInt();
-			}
-			UnPB.StepOut();
+			UnPack1(&UnPB, ThisMsg != nullptr ? ThisMsg->NextPoint : ThisMsg);
+			if (ThisMsg->NextPoint == nullptr) { GroupMsg.Msg = ThisMsg; }
+			else ThisMsg = ThisMsg->NextPoint;
 			break;
 		case 2://小黄豆
-			UnPB.StepIn(2);
-			if (ThisMsg != nullptr)	ThisMsg = ThisMsg->NextPoint = new Message::Msg{ Message::MsgType::classcal_face,nullptr,new Message::classcal_face };
-			else GroupMsg.Msg = ThisMsg = new Message::Msg{ Message::MsgType::classcal_face,nullptr,new Message::classcal_face };
-			((Message::classcal_face*)ThisMsg->Message)->id = UnPB.GetVarint(1);
-			UnPB.StepOut();
+			UnPack2(&UnPB, ThisMsg != nullptr ? ThisMsg->NextPoint : ThisMsg);
+			if (ThisMsg->NextPoint == nullptr) { GroupMsg.Msg = ThisMsg; }
+			else ThisMsg = ThisMsg->NextPoint;
 			break;
 		case 5://文件
 			break;
 		case 6://原创表情
-			UnPB.StepIn(6);
-			if (ThisMsg != nullptr)	ThisMsg = ThisMsg->NextPoint = new Message::Msg{ Message::MsgType::expression,nullptr,new Message::expression };
-			else GroupMsg.Msg = ThisMsg = new Message::Msg{ Message::MsgType::expression,nullptr,new Message::expression };
-			UnPB.GetBin(((Message::expression*)ThisMsg->Message)->MD5, 4);
-			((Message::expression*)ThisMsg->Message)->id = UnPB.GetVarint(5);
-			UnPB.StepOut();
+			UnPack6(&UnPB, ThisMsg != nullptr ? ThisMsg->NextPoint : ThisMsg);
+			if (ThisMsg->NextPoint == nullptr) { GroupMsg.Msg = ThisMsg; }
+			else ThisMsg = ThisMsg->NextPoint;
 			break;
 		case 8://图片
-			UnPB.StepIn(8);
-			if (ThisMsg != nullptr)	ThisMsg = ThisMsg->NextPoint = new Message::Msg{ Message::MsgType::picture,nullptr,new Message::picture };
-			else GroupMsg.Msg = ThisMsg = new Message::Msg{ Message::MsgType::picture,nullptr,new Message::picture };
-			UnPB.GetBin(((Message::picture*)ThisMsg->Message)->MD5, 13);
-			((Message::picture*)ThisMsg->Message)->Data.URL = UnPB.GetStr(16);
-			((Message::picture*)ThisMsg->Message)->Width = UnPB.GetVarint(22);
-			((Message::picture*)ThisMsg->Message)->Height = UnPB.GetVarint(23);
-			((Message::picture*)ThisMsg->Message)->Data.Length = UnPB.GetVarint(25);
-			UnPB.StepOut();
+			UnPack8(&UnPB, ThisMsg != nullptr ? ThisMsg->NextPoint : ThisMsg);
+			if (ThisMsg->NextPoint == nullptr) { GroupMsg.Msg = ThisMsg; }
+			else ThisMsg = ThisMsg->NextPoint;
 			break;
 		case 9://气泡消息
 			/*
@@ -2411,26 +2433,9 @@ void Android::Unpack_OnlinePush_PbPushGroupMsg(const LPBYTE BodyBin, const uint 
 			*/
 			break;
 		case 12://xml
-			UnPB.StepIn(12);
-			if (GroupMsg.Msg != nullptr) Message::DestoryMsg(GroupMsg.Msg);
-			GroupMsg.Msg = ThisMsg = new Message::Msg{ Message::MsgType::xml ,nullptr,new Message::xml };
-			{
-				LPBYTE Bin = UnPB.GetBin(1);
-				if (Bin[4] == 1)
-				{
-					((Message::xml*)ThisMsg->Message)->text = (char8_t*)Utils::ZlibUnCompress(Bin + 5, XBin::Bin2Int(Bin) - 5);
-					delete Bin;
-				}
-				else
-				{
-					uint len = XBin::Bin2Int(Bin) - 4;
-					((Message::xml*)ThisMsg->Message)->text = new char8_t[len];
-					memcpy(((Message::xml*)ThisMsg->Message)->text, Bin + 5, len - 1);
-					((Message::xml*)ThisMsg->Message)->text[len] = 0;
-					delete Bin;
-				}
-			}
-			UnPB.StepOut();
+			UnPack12(&UnPB, ThisMsg != nullptr ? ThisMsg->NextPoint : ThisMsg);
+			if (ThisMsg->NextPoint == nullptr) { GroupMsg.Msg = ThisMsg; }
+			else ThisMsg = ThisMsg->NextPoint;
 			break;
 		case 16:
 			/*
@@ -2498,63 +2503,14 @@ void Android::Unpack_OnlinePush_PbPushGroupMsg(const LPBYTE BodyBin, const uint 
 			*/
 			break;
 		case 45://回复
-			UnPB.StepIn(45);
-			if (ThisMsg != nullptr) Message::DestoryMsg(GroupMsg.Msg);
-			GroupMsg.Msg = ThisMsg = new Message::Msg{ Message::MsgType::reply ,nullptr,new Message::reply };
-			((Message::reply*)ThisMsg->Message)->MsgId = UnPB.GetVarint(1);
-			((Message::reply*)ThisMsg->Message)->QQ = UnPB.GetVarint(2);
-			((Message::reply*)ThisMsg->Message)->Time = UnPB.GetVarint(3);
-			UnPB.GetVarint(4);
-			{
-				Message::Msg* ReplyMsg = nullptr;
-				while (UnPB.GetField() == 5)
-				{
-					UnPB.StepIn(5);
-					if (ReplyMsg != nullptr) ReplyMsg = ReplyMsg->NextPoint = new Message::Msg;
-					else ((Message::reply*)ThisMsg->Message)->Msg = ReplyMsg = new Message::Msg;
-					switch (UnPB.GetField())
-					{
-					case 1:
-						ReplyMsg->MsgType = Message::MsgType::text;
-						ReplyMsg->Message = new Message::text;
-						UnPB.StepIn(1);
-						((Message::text*)ReplyMsg->Message)->text = UnPB.GetStr(1);
-						UnPB.StepOut();
-						break;
-					case 2:
-						ReplyMsg->MsgType = Message::MsgType::classcal_face;
-						ReplyMsg->Message = new Message::classcal_face;
-						UnPB.StepIn(2);
-						((Message::classcal_face*)ReplyMsg->Message)->id = UnPB.GetVarint(1);
-						UnPB.StepOut();
-						break;
-					}
-					UnPB.StepOut();
-				}
-			}
-			UnPB.StepOut();
+			UnPack45(&UnPB, ThisMsg != nullptr ? ThisMsg->NextPoint : ThisMsg);
+			if (ThisMsg->NextPoint == nullptr) { GroupMsg.Msg = ThisMsg; }
+			else ThisMsg = ThisMsg->NextPoint;
 			break;
 		case 51://json
-			UnPB.StepIn(51);
-			if (GroupMsg.Msg != nullptr) Message::DestoryMsg(GroupMsg.Msg);
-			GroupMsg.Msg = ThisMsg = new Message::Msg{ Message::MsgType::json ,nullptr,new Message::json };
-			{
-				LPBYTE Bin = UnPB.GetBin(1);
-				if (Bin[4] == 1)
-				{
-					((Message::json*)ThisMsg->Message)->text = (char8_t*)Utils::ZlibUnCompress(Bin + 5, XBin::Bin2Int(Bin) - 5);
-					delete Bin;
-				}
-				else
-				{
-					uint len = XBin::Bin2Int(Bin) - 4;
-					((Message::json*)ThisMsg->Message)->text = new char8_t[len];
-					memcpy(((Message::json*)ThisMsg->Message)->text, Bin + 5, len - 1);
-					((Message::json*)ThisMsg->Message)->text[len] = 0;
-					delete Bin;
-				}
-			}
-			UnPB.StepOut();
+			UnPack51(&UnPB, ThisMsg != nullptr ? ThisMsg->NextPoint : ThisMsg);
+			if (ThisMsg->NextPoint == nullptr) { GroupMsg.Msg = ThisMsg; }
+			else ThisMsg = ThisMsg->NextPoint;
 			break;
 		case 53:
 			UnPB.StepIn(53);
@@ -2584,8 +2540,7 @@ void Android::Unpack_OnlinePush_PbPushGroupMsg(const LPBYTE BodyBin, const uint 
 	}
 #endif // DEBUG
 
-	Event::OnGroupMsg(&GroupMsg);
-	if (GroupMsg.Msg != nullptr) Database::AddGroupMsg(&GroupMsg);
+	if (GroupMsg.Msg != nullptr) Event::OnGroupMsg(&GroupMsg);
 	Message::DestoryMsg(GroupMsg.Msg);
 }
 
@@ -3021,12 +2976,6 @@ const std::vector<uint>* Android::QQ_GetGroupAdminList(const uint Group)
 	return OidbSvc_0x899_0(Group);
 }
 
-/*
-bool Android::QQ_DrawPrivateMsg(const uint QQ, const uint MsgId, const uint MsgRand)
-{
-	return PbMessageSvc_PbMsgWithDraw(QQ, MsgId, MsgRand);
-}
-*/
 const std::vector<Android::FriendInfo>* Android::QQ_GetFriendList()
 {
 	return &QQ.FriendList;

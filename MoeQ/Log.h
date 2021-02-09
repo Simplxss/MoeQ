@@ -4,7 +4,6 @@
 #include <sstream>
 #include <thread>
 #include <queue>
-#include <codecvt>
 #include <condition_variable>
 
 namespace Message
@@ -17,15 +16,15 @@ namespace Database
 {
 	void Init();
 	void UnInit();
-	uint AddPrivateMsg(const Event::PrivateMsg* PrivateMsg);
-	uint AddGroupMsg(const Event::GroupMsg* GroupMsg);
-	void AddPicture(const char MD5[16], const char* Url, const unsigned short Length, const unsigned short Width, const unsigned short Height);
-	void AddVoice(const char MD5[16], const char* Url);
+	uint64_t AddPrivateMsg(const Event::PrivateMsg* PrivateMsg);
+	uint64_t AddGroupMsg(const Event::GroupMsg* GroupMsg);
+	void AddPicture(const char MD5[16], const char8_t* Url, const unsigned short Length, const unsigned short Width, const unsigned short Height);
+	void AddVoice(const char MD5[16], const char8_t* Url);
 	void AddLog(const Log::LogType LogType, const Log::MsgType MsgType, const wchar_t* Type, const wchar_t* Msg);
-	::Event::PrivateMsg* GetPrivateMsg(const uint MsgID);
-	::Event::GroupMsg* GetGroupMsg(const uint MsgID);
-	std::string GetPictureUrl(const char MD5[16]);
-	std::string GetVoiceUrl(const char MD5[16]);
+	std::tuple<uint, uint> GetPrivateMsg(const uint64_t MsgID);
+	std::tuple<uint, uint> GetGroupMsg(const uint64_t MsgID);
+	std::u8string GetPictureUrl(const char MD5[16]);
+	std::u8string GetVoiceUrl(const char MD5[16]);
 }
 
 namespace Log
