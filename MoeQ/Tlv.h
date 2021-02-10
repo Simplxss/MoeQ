@@ -43,7 +43,7 @@ namespace Tlv
 	unsigned __int16 Tlv511(byte* bin, const uint len, const char** domainList, const byte ListSize);
 	unsigned __int16 Tlv516(byte* bin, const uint len);
 	unsigned __int16 Tlv521(byte* bin, const uint len);
-	unsigned __int16 Tlv525(byte* bin, const uint len, const uint QQ, const byte IP[3], const uint Time, const uint APPID, const bool IsEmp);
+	unsigned __int16 Tlv525(byte* bin, const uint len, const uint QQ, const char* IP, const uint Time, const uint APPID, const bool IsEmp);
 	unsigned __int16 Tlv52D(byte* bin, const uint len);
 	unsigned __int16 Tlv544(byte* bin, const uint len, const char* QQ_APKID, const byte QQ_ASIG[16]);
 	unsigned __int16 Tlv545(byte* bin, const uint len, const char* qimei);

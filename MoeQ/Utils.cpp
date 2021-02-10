@@ -21,6 +21,7 @@ char* Utils::GetRandomLetter(const uint length)
 	{
 		tmp[i] = LetterTable[u(mt)];
 	}
+	tmp[length] = 0;
 	return tmp;
 }
 
@@ -315,9 +316,9 @@ byte* XBin::IP2Bin(const char* IP_)
 {
 	char IP[16];
 	strcpy(IP, IP_);
-	byte ip[3];
+	byte* ip = new byte[4];
 	ip[0] = atoi(strtok(IP, "."));
-	for (size_t i = 1; i < 3; i++)
+	for (size_t i = 1; i < 4; i++)
 	{
 		ip[i] = atoi(strtok(NULL, "."));
 	}
@@ -335,11 +336,11 @@ uint XBin::Bin2Int(const byte* bin)
 }
 
 /// <summary>
-/// 
+/// 无空格大写字母
 /// </summary>
 /// <param name="bin"></param>
 /// <param name="len"></param>
-/// <returns>无空格大写字母</returns>
+/// <returns></returns>
 char* XBin::Bin2Hex(const byte* bin, const uint len)
 {
 	const char Table[] = { '0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F' };

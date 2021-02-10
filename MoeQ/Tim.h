@@ -36,7 +36,7 @@ public:
 		byte* wtSessionTicketKey = nullptr;//16
 		byte* StSig = nullptr;
 		byte* StKey = nullptr;
-		byte* token_16A = nullptr;//48
+		byte* token_16A = nullptr;//56
 		byte* md5 = nullptr;//16
 		byte* md52 = nullptr;//16
 		byte* TGT = nullptr;//72

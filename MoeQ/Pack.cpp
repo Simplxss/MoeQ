@@ -353,6 +353,14 @@ void Pack::SetStr(const char* str)
 	ByteOutputStream::SetBin((byte*)str, len);
 }
 
+void Pack::SetStr_(const char* str)
+{
+	unsigned int len = strlen(str);
+	CheckBufferLen(len);
+	ByteOutputStream::SetBin((byte*)str, len);
+	delete str;
+}
+
 void Pack::SetBin(const byte* bin, const uint len)
 {
 	CheckBufferLen(len);
@@ -468,7 +476,13 @@ void TlvPack::SetBin_(const LPBYTE bin)
 	delete[] bin;
 }
 
-void TlvPack::Pack(const unsigned short cmd)
+void TlvPack::SetBinEx_(const LPBYTE bin)
+{
+	if (Check(BufferLen, XBin::Bin2Int(bin) - 4)) ByteOutputStream::SetBin(bin + 4, XBin::Bin2Int(bin) - 4);
+	delete[] bin;
+}
+
+unsigned __int16 TlvPack::Pack(const unsigned short cmd)
 {
 	uint len = ByteOutputStream::Length() - 4; //È¥µôÍ·
 	byte* Buffer = ByteOutputStream::GetAll();
@@ -476,4 +490,5 @@ void TlvPack::Pack(const unsigned short cmd)
 	Buffer[1] = cmd;
 	Buffer[2] = len >> 8;
 	Buffer[3] = len;
+	return len + 4;
 }

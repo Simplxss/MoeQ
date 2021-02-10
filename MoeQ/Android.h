@@ -13,10 +13,11 @@
 
 #define QQ_APPID 537066978
 #define QQ_VERSION "8.5.5"
+#define QQ_VERSION_ "A8.5.5.de12fadd"
 #define QQ_APKID "com.tencent.mobileqq"
-#define QQ_ASIG (const byte*)"\xA6\xB7\x45\xBF\x24\xA2\xC2\x77\x52\x77\x16\xF6\xF3\x6E\xB6\x8D"
+#define QQ_ASIG (const byte*)"\xA6\xB7\x45\xBF\x24\xA2\xC2\x77\x52\x77\x16\xF6\xF3\x6E\xB6\x8D"  // A6B745BF24A2C277527716F6F36EB68D 
 #define QQ_SDK_VERSION "6.0.0.2463"
-#define QQ_BUILDTIME 1607434434
+#define QQ_BUILDTIME 1612895972
 
 #define LOGIN_ERROR 0
 #define LOGIN_SUCCESS 1
@@ -36,7 +37,7 @@ public:
 		byte* wtSessionTicketKey = nullptr;//16
 		byte* StSig = nullptr;
 		byte* StKey = nullptr;
-		byte* token_16A = nullptr;//48
+		byte* token_16A = nullptr;//56
 		byte* md5 = nullptr;//16
 		byte* md52 = nullptr;//16
 		byte* TGT = nullptr;//72
@@ -103,7 +104,7 @@ private:
 		std::atomic_int SsoSeq;
 		unsigned char* MsgCookie = nullptr;//4
 		LPBYTE SyncCookies = nullptr;
-		char Version[33] = "|\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0|A8.5.5.de12fadd";
+		char Version[33] = "|\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0|" QQ_VERSION_;
 		Android::Login* Login = nullptr;
 		Android::Token Token;
 		Android::Cookie Cookie;

@@ -13,7 +13,8 @@ bool DevMode = true;
 PluginSystem Plugin;
 
 Android::Token Token;
-Android Sdk("861891778567", "460013521635791", (const byte*)"\x86\xA4\x45\xBF\x44\xA2\xC2\x87\x59\x76\x18\xF6\xF3\x6E\xB6\x8C", (const byte*)"\0\0\0\0\0\2", "XiaoMi", "Alpha");
+//GUID 86A445BF44A2C287597618F6F36EB68C   MAC 4F923C3D4568   4F:92:3C:3D:45:68
+Android Sdk("861891778567", "460013521635791", (const byte*)"\x86\xA4\x45\xBF\x44\xA2\xC2\x87\x59\x76\x18\xF6\xF3\x6E\xB6\x8C", (const byte*)"\x4F\x92\x3C\x3D\x45\x68", "Alpha", "XiaoMi");
 
 std::condition_variable Slider;
 char* Ticket = nullptr;
@@ -85,42 +86,49 @@ BOOL MainFrm::OnInitDialog()
 	wcscpy(DataFilePath, DataPath);
 	wcscat(DataFilePath, L"data.ini");
 
-	GetPrivateProfileString(L"Token", L"QQ", NULL, _QQ, 50, DataFilePath);
-
-	GetPrivateProfileString(L"Token", L"A2", NULL, str, 256, DataFilePath);
-	if (XBin::Hex2Bin(Iconv::Unicode2Ansi(str), Token.A2) != 64) throw "A2 len error";
-
-	GetPrivateProfileString(L"Token", L"TGT", NULL, str, 256, DataFilePath);
-	if (XBin::Hex2Bin(Iconv::Unicode2Ansi(str), Token.TGT) != 72) throw "TGT len error";
-
-	GetPrivateProfileString(L"Token", L"D2Key", NULL, str, 256, DataFilePath);
-	if (XBin::Hex2Bin(Iconv::Unicode2Ansi(str), Token.D2Key) != 16) throw "D2Key len error";
-
-	GetPrivateProfileString(L"Token", L"wtSessionTicket", NULL, str, 256, DataFilePath);
-	if (XBin::Hex2Bin(Iconv::Unicode2Ansi(str), Token.wtSessionTicket) != 48) throw "wtSessionTicket len error";
-
-	GetPrivateProfileString(L"Token", L"wtSessionTicketKey", NULL, str, 256, DataFilePath);
-	if (XBin::Hex2Bin(Iconv::Unicode2Ansi(str), Token.wtSessionTicketKey) != 16) throw "wtSessionTicketKey len error";
-
-	GetPrivateProfileString(L"Token", L"token_16A", NULL, str, 256, DataFilePath);
-	if (XBin::Hex2Bin(Iconv::Unicode2Ansi(str), Token.token_16A) != 48) throw "token_16A len error";
-
-	GetPrivateProfileString(L"Token", L"md5", NULL, str, 256, DataFilePath);
-	if (XBin::Hex2Bin(Iconv::Unicode2Ansi(str), Token.md5) != 16) throw "md5 len error";
-
-	GetPrivateProfileString(L"Token", L"TGTkey", NULL, str, 256, DataFilePath);
-	if (XBin::Hex2Bin(Iconv::Unicode2Ansi(str), Token.TGTkey) != 16) throw "TGTkey len error";
-
-	GetPrivateProfileString(L"Token", L"ksid", NULL, str, 256, DataFilePath);
-	if (XBin::Hex2Bin(Iconv::Unicode2Ansi(str), Token.ksid) != 16) throw "ksid len error";
-
-	if (lstrcmpW(_QQ, L""))
+	try
 	{
-		GetDlgItem(IDC_ACCOUNT)->SetWindowTextW(_QQ);
-		GetDlgItem(IDC_PASSWORD)->SetWindowTextW(L"******");
-		((CButton*)GetDlgItem(IDC_SAVE_PASSWORD))->SetCheck(BST_CHECKED);
-		((CButton*)GetDlgItem(IDC_SECOND_LOGIN))->SetCheck(BST_CHECKED);
-		((CButton*)GetDlgItem(IDC_SECOND_LOGIN))->EnableWindow(TRUE);
+		GetPrivateProfileString(L"Token", L"QQ", NULL, _QQ, 50, DataFilePath);
+
+		GetPrivateProfileString(L"Token", L"A2", NULL, str, 256, DataFilePath);
+		if (XBin::Hex2Bin(Iconv::Unicode2Ansi(str), Token.A2) != 64) throw "A2 len error";
+
+		GetPrivateProfileString(L"Token", L"TGT", NULL, str, 256, DataFilePath);
+		if (XBin::Hex2Bin(Iconv::Unicode2Ansi(str), Token.TGT) != 72) throw "TGT len error";
+
+		GetPrivateProfileString(L"Token", L"D2Key", NULL, str, 256, DataFilePath);
+		if (XBin::Hex2Bin(Iconv::Unicode2Ansi(str), Token.D2Key) != 16) throw "D2Key len error";
+
+		GetPrivateProfileString(L"Token", L"wtSessionTicket", NULL, str, 256, DataFilePath);
+		if (XBin::Hex2Bin(Iconv::Unicode2Ansi(str), Token.wtSessionTicket) != 48) throw "wtSessionTicket len error";
+
+		GetPrivateProfileString(L"Token", L"wtSessionTicketKey", NULL, str, 256, DataFilePath);
+		if (XBin::Hex2Bin(Iconv::Unicode2Ansi(str), Token.wtSessionTicketKey) != 16) throw "wtSessionTicketKey len error";
+
+		GetPrivateProfileString(L"Token", L"token_16A", NULL, str, 256, DataFilePath);
+		if (XBin::Hex2Bin(Iconv::Unicode2Ansi(str), Token.token_16A) != 56) throw "token_16A len error";
+
+		GetPrivateProfileString(L"Token", L"md5", NULL, str, 256, DataFilePath);
+		if (XBin::Hex2Bin(Iconv::Unicode2Ansi(str), Token.md5) != 16) throw "md5 len error";
+
+		GetPrivateProfileString(L"Token", L"TGTkey", NULL, str, 256, DataFilePath);
+		if (XBin::Hex2Bin(Iconv::Unicode2Ansi(str), Token.TGTkey) != 16) throw "TGTkey len error";
+
+		GetPrivateProfileString(L"Token", L"ksid", NULL, str, 256, DataFilePath);
+		if (XBin::Hex2Bin(Iconv::Unicode2Ansi(str), Token.ksid) != 16) throw "ksid len error";
+
+		if (lstrcmpW(_QQ, L""))
+		{
+			GetDlgItem(IDC_ACCOUNT)->SetWindowTextW(_QQ);
+			GetDlgItem(IDC_PASSWORD)->SetWindowTextW(L"******");
+			((CButton*)GetDlgItem(IDC_SAVE_PASSWORD))->SetCheck(BST_CHECKED);
+			((CButton*)GetDlgItem(IDC_SECOND_LOGIN))->SetCheck(BST_CHECKED);
+			((CButton*)GetDlgItem(IDC_SECOND_LOGIN))->EnableWindow(TRUE);
+		}
+	}
+	catch (std::exception e)
+	{
+
 	}
 
 	Plugin.Load(Iconv::Unicode2Ansi(szFilePath));
@@ -331,7 +339,7 @@ online:
 	WritePrivateProfileString(L"Token", L"D2Key", Iconv::Ansi2Unicode(XBin::Bin2Hex(Token.D2Key, 16)), DataFilePath);
 	WritePrivateProfileString(L"Token", L"wtSessionTicket", Iconv::Ansi2Unicode(XBin::Bin2Hex(Token.wtSessionTicket, 48)), DataFilePath);
 	WritePrivateProfileString(L"Token", L"wtSessionTicketKey", Iconv::Ansi2Unicode(XBin::Bin2Hex(Token.wtSessionTicketKey, 16)), DataFilePath);
-	WritePrivateProfileString(L"Token", L"token_16A", Iconv::Ansi2Unicode(XBin::Bin2Hex(Token.token_16A, 48)), DataFilePath);
+	WritePrivateProfileString(L"Token", L"token_16A", Iconv::Ansi2Unicode(XBin::Bin2Hex(Token.token_16A, 56)), DataFilePath);
 	WritePrivateProfileString(L"Token", L"md5", Iconv::Ansi2Unicode(XBin::Bin2Hex(Token.md5, 16)), DataFilePath);
 	WritePrivateProfileString(L"Token", L"TGTkey", Iconv::Ansi2Unicode(XBin::Bin2Hex(Token.TGTkey, 16)), DataFilePath);
 	WritePrivateProfileString(L"Token", L"ksid", Iconv::Ansi2Unicode(XBin::Bin2Hex(Token.ksid, 16)), DataFilePath);

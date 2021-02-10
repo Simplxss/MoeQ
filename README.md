@@ -22,7 +22,7 @@ Because of busy school, I can't spare time to continue updating this project on 
 
 3. Send part of group messages and private messages.
 
-4. Draw group message.
+4. Draw group and private message.
 
 5. Do some friend and group actions.
 
@@ -40,19 +40,13 @@ Because of busy school, I can't spare time to continue updating this project on 
 
 # Features Under Way
 
-1. Some memory leak.
-
-2. Support image message and voice message.
-
+1. Fix some memory leak.
+2. Support voice message.
 3. Fix bugs.
-
 4. Update protocol version.
-
-5. Plugin management.
-
+5. Optimize user Interface'
 6. Plugin store.
-
-8. ...
+7. ...
 
 # Files Usage
 
@@ -62,18 +56,19 @@ Because of busy school, I can't spare time to continue updating this project on 
 
 `./MoeQ` Include source code of this project.
 
-
 `./MoeQ/MoeQ.cpp` The entrance of the program.
 
-`./MoeQ/MainFrm.cpp` The main window of UI.
+`./MoeQ/MainFrm.cpp` The main window of user interface.
 
 `./MoeQ/Android.cpp` `./MoeQ/Tim.cpp` The protocol of *QQ*.
+
+`./MoeQ/Log.cpp` Database and log system.
 
 `./MoeQ/PluginSystem.cpp` The plugins control system.
 
 `./MoeQ/ExportFunction.cpp` The export functions to plugins.
 
-`./MoeQ/Utils.cpp` Include encode, compress, algorithm and some tools.
+`./MoeQ/Utils.cpp` Include encode, compress, algorithm and other tools.
 
 `./MoeQ/Protobuf.cpp` `./MoeQ/JceStruct.cpp` `./MoeQ/Pack.cpp` Include some packing measures.
 

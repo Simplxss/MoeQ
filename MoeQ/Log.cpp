@@ -249,7 +249,7 @@ uint64_t Database::AddPrivateMsg(const Event::PrivateMsg* PrivateMsg)
 	sqlite3_stmt* pStmt;
 	if (sqlite3_prepare_v2(Database_Data,
 		"INSERT INTO PrivateMsg(FromQQ,SendTime,State,MsgType,MsgID,MsgRand,Msg) VALUES(?,?,0,?,?,?,?);"
-		, 95, &pStmt, nullptr) != SQLITE_OK){
+		, 95, &pStmt, nullptr) != SQLITE_OK) {
 		Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, L"Insert into 'PrivateMsg' error", sqlite3_errmsg(Database_Data));
 		return 0;
 	}
@@ -262,7 +262,7 @@ uint64_t Database::AddPrivateMsg(const Event::PrivateMsg* PrivateMsg)
 	std::u8string Msg = Message::ParseMsg(PrivateMsg->Msg);
 	sqlite3_bind_text(pStmt, 6, (char*)Msg.c_str(), Msg.length(), SQLITE_STATIC);
 
-	if (sqlite3_step(pStmt) != SQLITE_DONE) { 
+	if (sqlite3_step(pStmt) != SQLITE_DONE) {
 		Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, L"Insert into 'PrivateMsg' error", sqlite3_errmsg(Database_Data));
 		sqlite3_finalize(pStmt);
 		return 0;
@@ -404,7 +404,7 @@ std::tuple<uint, uint> Database::GetGroupMsg(const uint64_t MsgID_)
 	sqlite3_stmt* pStmt;
 	if (sqlite3_prepare_v2(Database_Data, "SELECT MsgID,MsgRand FROM GroupMsg WHERE Id = ?", 48, &pStmt, nullptr) != SQLITE_OK) {
 		Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, L"Select 'GroupMsg' error", sqlite3_errmsg(Database_Data));
-		return {0,0};
+		return { 0,0 };
 	}
 
 	sqlite3_bind_int64(pStmt, 1, MsgID_);
@@ -412,7 +412,7 @@ std::tuple<uint, uint> Database::GetGroupMsg(const uint64_t MsgID_)
 	if (sqlite3_step(pStmt) != SQLITE_ROW) {
 		Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, L"Select 'GroupMsg' error", sqlite3_errmsg(Database_Data));
 		sqlite3_finalize(pStmt);
-		return {0,0};
+		return { 0,0 };
 	}
 
 	uint MsgID = sqlite3_column_int64(pStmt, 0);

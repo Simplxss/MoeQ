@@ -101,6 +101,7 @@ public:
 	void SetFloat(const float i);
 	void SetDouble(const double i);
 	void SetStr(const char* str);
+	void SetStr_(const char* str);
 	void SetBin(const byte* bin, const uint len);
 	void SetBin(const LPBYTE bin);
 	void SetBin(const std::vector<byte>* bin);
@@ -132,5 +133,6 @@ public:
 	void SetBin(const std::vector<byte>* bin);
 	void SetBin_(const byte* bin, const uint len);
 	void SetBin_(const LPBYTE bin);
-	void Pack(const unsigned short cmd);
+	void SetBinEx_(const LPBYTE bin);
+	unsigned __int16 Pack(const unsigned short cmd);
 };
