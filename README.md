@@ -2,7 +2,7 @@ Language: **`English`** [`简体中文`](https://github.com/YuFanXing/MoeQ/blob/
 
 # Brief Introduction
 
-***MoeQ*** is *a QQ robot* based on *Android QQ 8.4.1*.
+***MoeQ*** is *a QQ robot* based on *Android QQ* or *Tim*.
 
 It is still a *semi-finished product* now. If you want a *ready-made robot* frame, please go to the next door [mirai](https://www.google.com).
 
@@ -78,7 +78,7 @@ Because of busy school, I can't spare time to continue updating this project on 
 
 But, you **CAN'T** add features like *send or receive red envelopes*.
 
-### *Android QQ 8.4.1* Protocol
+### *Android QQ 8.5.5* Protocol
 
 `./MoeQ/Android.cpp`
 

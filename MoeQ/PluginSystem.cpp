@@ -14,9 +14,8 @@ void Event::OnGroupMsg(const GroupMsg* GroupMsg)
 
 void Event::OnPrivateMsg(const PrivateMsg* PrivateMsg)
 {
-	Target::Target Target{ Target::TargetType::_private,(void*)new Target::_private{PrivateMsg->FromQQ,0 } };//Todo
-	uint MsgID = Database::AddPrivateMsg(PrivateMsg);
-	Plugin.BroadcastMessageEvent(&Target, PrivateMsg->Msg, MsgID);
+	Target::Target Target{ Target::TargetType::_private,(void*)new Target::_private{PrivateMsg->FromQQ } };
+	Plugin.BroadcastMessageEvent(&Target, PrivateMsg->Msg, Database::AddPrivateMsg(PrivateMsg));
 }
 
 void Event::OnNoticeMsg(const NoticeEvent::NoticeEvent* NoticeEvent)
@@ -430,6 +429,7 @@ void PluginSystem::BroadcastMessageEvent(const ::Target::Target* Target, const :
 	{
 		if (MessageEventList[static_cast<int>(Target->TargetType)][i](Target, Msg, MsgID) == ::Event::ReturnType::block) break;
 	}
+	delete Target->Sender;
 }
 
 void PluginSystem::BroadcastNoticeEvent(const ::Event::NoticeEvent::NoticeEvent* NoticeEvent)
