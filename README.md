@@ -78,9 +78,11 @@ Because of busy school, I can't spare time to continue updating this project on 
 
 But, you **CAN'T** add features like *send or receive red envelopes*.
 
-### *Android QQ 8.5.5* Protocol
+### *Android QQ* Protocol
 
-`./MoeQ/Android.cpp`
+File: `./MoeQ/Android.cpp` 
+
+Version: *8.5.5*
 
 |               Function Name               |              Usage              |
 | :---------------------------------------: | :-----------------------------: |
@@ -93,9 +95,11 @@ But, you **CAN'T** add features like *send or receive red envelopes*.
 | Android::Unpack_OnlinePush_PbPushTransMsg |    get group action message     |
 |   Android::Unpack_MessageSvc_PushNotify   |       get private message       |
 
-### *Tim 3.3.1* Protocol
+### *Tim* Protocol
 
-`./MoeQ/Tim.cpp`
+File: `./MoeQ/Tim.cpp`
+
+Version: *3.3.1*
 
 |           Function Name           |              Usage              |
 | :-------------------------------: | :-----------------------------: |

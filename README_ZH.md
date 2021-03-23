@@ -2,7 +2,7 @@
 
 # 简介
 
-***MoeQ***是一个基于安卓QQ 8.4.1 的QQ机器人.
+***MoeQ***是一个基于安卓QQ或Tim的QQ机器人.
 
 由于学业繁忙, 我无力继续支撑这个项目, 于是将其开源.
 
@@ -12,11 +12,12 @@
 
 感谢以下这些项目铸就了今天的这个项目!
 
-1. *rapidjson*
-
-2. *miniblink*
-3. *openssl*
-4. *zlib*
-5. *curl*
+1. ***[rapidjson](https://github.com/Tencent/rapidjson)***
+2. ***[miniblink](https://miniblink.net/)***
+3. ***[openssl](https://github.com/openssl/openssl)***
+4. ***[sqlite3](https://sqlite.org/)***
+5. ***[zlib](https://github.com/madler/zlib)***
+6. ***[curl](https://github.com/curl/curl)***
 
 **如果非必要, 请不要添加其他依赖项.**
+

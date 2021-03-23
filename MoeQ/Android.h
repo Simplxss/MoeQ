@@ -133,6 +133,7 @@ private:
 	struct SenderInfo
 	{
 		std::condition_variable cv;
+		HANDLE hThread;
 		LPBYTE BodyBin;
 	};
 private:
@@ -147,8 +148,56 @@ public:
 private:
 	bool Fun_Connect(const char* IP = nullptr, const unsigned short Port = 0);
 	int Fun_Send(const uint PacketType, const byte EncodeType, const char* ServiceCmd, LPBYTE Buffer);
-	std::tuple<int, LPBYTE> Fun_Send_Sync(const uint PacketType, const byte EncodeType, const char* ServiceCmd, LPBYTE Buffer);
-	void Fun_Send_Sync_Release(const int sso_seq);
+	/// <summary>
+	/// Send package synchronously
+	/// </summary>
+	/// <typeparam name="R"></typeparam>
+	/// <param name="PacketType"></param>
+	/// <param name="EncodeType"></param>
+	/// <param name="ServiceCmd"></param>
+	/// <param name="Buffer">会自动销毁</param>
+	/// <param name="Function"></param>
+	/// <returns></returns>
+	template<typename R>
+	R Fun_Send_Sync(const uint PacketType, const byte EncodeType, const char* ServiceCmd, LPBYTE Buffer, std::function<R(uint, LPBYTE)> Function)
+	{
+		std::mutex lock;
+		std::unique_lock<std::mutex> ulock(lock);
+
+		int SsoSeq = Fun_Send(PacketType, EncodeType, ServiceCmd, Buffer);
+
+		SendList[SsoSeq & 0x3F].cv.wait(ulock);
+		HANDLE hThread = SendList[SsoSeq & 0x3F].hThread;
+		try {
+			R ret = Function(SsoSeq, SendList[SsoSeq & 0x3F].BodyBin);
+		}
+		catch (std::exception e)
+		{
+
+		}
+		ResumeThread(hThread);
+
+		return ret;
+	};
+	template<>
+	void Fun_Send_Sync<void>(const uint PacketType, const byte EncodeType, const char* ServiceCmd, LPBYTE Buffer, std::function<void(uint,LPBYTE)> Function)
+	{
+		std::mutex lock;
+		std::unique_lock<std::mutex> ulock(lock);
+
+		int SsoSeq = Fun_Send(PacketType, EncodeType, ServiceCmd, Buffer);
+
+		SendList[SsoSeq & 0x3F].cv.wait(ulock);
+		HANDLE hThread = SendList[SsoSeq & 0x3F].hThread;
+		try {
+			Function(SsoSeq, SendList[SsoSeq & 0x3F].BodyBin);
+		}
+		catch (std::exception e)
+		{
+
+		}
+		ResumeThread(hThread);
+	};
 	void Fun_Msg_Loop();
 	void Fun_Receice(LPBYTE bin);
 	void Fun_Handle(char* serviceCmd, const LPBYTE BodyBin, const uint sso_seq);
@@ -188,7 +237,7 @@ private:
 private:
 	void Un_Tlv_Get(const unsigned short cmd, const byte* bin, const uint len);
 	void Unpack_Body_Request_Packet(const LPBYTE BodyBin, LPBYTE& sBuffer);
-	void Unpack_wtlogin_login(const std::tuple<int, LPBYTE> tuple);
+	void Unpack_wtlogin_login(const LPBYTE BodyBin, const uint sso_seq);
 	void Unpack_OnlinePush_PbPushGroupMsg(const LPBYTE BodyBin, const uint sso_seq);
 	void Unpack_OnlinePush_PbC2CMsgSync(const LPBYTE BodyBin, const uint sso_seq);
 	void Unpack_OnlinePush_ReqPush(const LPBYTE BodyBin, const uint sso_seq);

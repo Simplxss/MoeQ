@@ -402,30 +402,6 @@ int Android::Fun_Send(const uint PacketType, const byte EncodeType, const char* 
 	return SsoSeq;
 }
 
-/// <summary>
-/// Send package synchronously
-/// </summary>
-/// <param name="PacketType"></param>
-/// <param name="EncodeType"></param>
-/// <param name="ServiceCmd"></param>
-/// <param name="Buffer">会自动销毁</param>
-/// <returns>call Fun_Send_Sync_Release() delete</returns>
-std::tuple<int, LPBYTE> Android::Fun_Send_Sync(const uint PacketType, const byte EncodeType, const char* ServiceCmd, LPBYTE Buffer)
-{
-	std::mutex lock;
-	std::unique_lock<std::mutex> ulock(lock);
-
-	int SsoSeq = Fun_Send(PacketType, EncodeType, ServiceCmd, Buffer);
-
-	SendList[SsoSeq & 0x3F].cv.wait(ulock);
-	return { SsoSeq, SendList[SsoSeq & 0x3F].BodyBin };
-}
-
-void Android::Fun_Send_Sync_Release(const int sso_seq)
-{
-	SendList[sso_seq & 0x3F].cv.notify_one();
-}
-
 void Android::Fun_Msg_Loop()
 {
 	LPBYTE bin;
@@ -528,9 +504,10 @@ void Android::Fun_Receice(const LPBYTE bin)
 		std::unique_lock<std::mutex> ulock(lock);
 
 		SendList[sso_seq & 0x3F].BodyBin = BodyBin;
+		SendList[sso_seq & 0x3F].hThread = GetCurrentThread();
 		SendList[sso_seq & 0x3F].cv.notify_one();
 
-		SendList[sso_seq & 0x3F].cv.wait(ulock);
+		SuspendThread(SendList[sso_seq & 0x3F].hThread);
 	}
 	else
 	{
@@ -695,7 +672,11 @@ void Android::wtlogin_login()
 	Pack.Skip(Tlv::Tlv521(Pack.GetCurrentPoint(), Pack.GetLeftSpace()));
 	Pack.Skip(Tlv::Tlv525(Pack.GetCurrentPoint(), Pack.GetLeftSpace(), 0, 0, 0, 0, false));
 	Pack.Skip(Tlv::Tlv544(Pack.GetCurrentPoint(), Pack.GetLeftSpace(), QQ_APKID, QQ_ASIG));
-	Unpack_wtlogin_login(Fun_Send_Sync(10, 2, "wtlogin.login", Make_Body_PC(Pack.GetAll(), Pack.Length(), false)));
+	Fun_Send_Sync<void>(10, 2, "wtlogin.login", Make_Body_PC(Pack.GetAll(), Pack.Length(), false),
+		[&](uint sso_seq, LPBYTE BodyBin) {
+			Unpack_wtlogin_login(BodyBin, sso_seq);
+		}
+	);
 }
 
 void Android::wtlogin_login_Send_Sms()
@@ -709,7 +690,11 @@ void Android::wtlogin_login_Send_Sms()
 	Pack.Skip(Tlv::Tlv174(Pack.GetCurrentPoint(), Pack.GetLeftSpace(), QQ.Login->SmsToken));
 	Pack.Skip(Tlv::Tlv17A(Pack.GetCurrentPoint(), Pack.GetLeftSpace()));
 	Pack.Skip(Tlv::Tlv197(Pack.GetCurrentPoint(), Pack.GetLeftSpace()));
-	Unpack_wtlogin_login(Fun_Send_Sync(10, 2, "wtlogin.login", Make_Body_PC(Pack.GetAll(), Pack.Length(), false)));
+	Fun_Send_Sync<void>(10, 2, "wtlogin.login", Make_Body_PC(Pack.GetAll(), Pack.Length(), false),
+		[&](uint sso_seq, LPBYTE BodyBin) {
+			Unpack_wtlogin_login(BodyBin, sso_seq);
+		}
+	);
 }
 
 void Android::wtlogin_login_Viery_Ticket(const char* Ticket)
@@ -722,7 +707,11 @@ void Android::wtlogin_login_Viery_Ticket(const char* Ticket)
 	Pack.Skip(Tlv::Tlv104(Pack.GetCurrentPoint(), Pack.GetLeftSpace(), QQ.Login->VieryToken2));
 	Pack.Skip(Tlv::Tlv116(Pack.GetCurrentPoint(), Pack.GetLeftSpace()));
 	//Pack.Skip(Tlv::Tlv547(Pack.GetCurrentPoint(), Pack.GetLeftSpace(), QQ.Login->ClientPow));
-	Unpack_wtlogin_login(Fun_Send_Sync(10, 2, "wtlogin.login", Make_Body_PC(Pack.GetAll(), Pack.Length(), false)));
+	Fun_Send_Sync<void>(10, 2, "wtlogin.login", Make_Body_PC(Pack.GetAll(), Pack.Length(), false),
+		[&](uint sso_seq, LPBYTE BodyBin) {
+			Unpack_wtlogin_login(BodyBin, sso_seq);
+		}
+	);
 }
 
 void Android::wtlogin_login_Viery_Sms(const char* SmsCode)
@@ -737,7 +726,11 @@ void Android::wtlogin_login_Viery_Sms(const char* SmsCode)
 	Pack.Skip(Tlv::Tlv17C(Pack.GetCurrentPoint(), Pack.GetLeftSpace(), SmsCode));
 	Pack.Skip(Tlv::Tlv401(Pack.GetCurrentPoint(), Pack.GetLeftSpace(), Device.GUID, QQ.Login->token_402));
 	Pack.Skip(Tlv::Tlv198(Pack.GetCurrentPoint(), Pack.GetLeftSpace()));
-	Unpack_wtlogin_login(Fun_Send_Sync(10, 2, "wtlogin.login", Make_Body_PC(Pack.GetAll(), Pack.Length(), false)));
+	Fun_Send_Sync<void>(10, 2, "wtlogin.login", Make_Body_PC(Pack.GetAll(), Pack.Length(), false),
+		[&](uint sso_seq, LPBYTE BodyBin) {
+			Unpack_wtlogin_login(BodyBin, sso_seq);
+		}
+	);
 }
 
 void Android::wtlogin_login_Viery_204()
@@ -751,7 +744,11 @@ void Android::wtlogin_login_Viery_204()
 	Pack.Skip(Tlv::Tlv401(Pack.GetCurrentPoint(), Pack.GetLeftSpace(), Device.GUID, QQ.Login->token_402));
 	//Pack.Skip(Tlv::Tlv402(Pack.GetCurrentPoint(), Pack.GetLeftSpace()));
 	//Pack.Skip(Tlv::Tlv403(Pack.GetCurrentPoint(), Pack.GetLeftSpace()));
-	Unpack_wtlogin_login(Fun_Send_Sync(10, 2, "wtlogin.login", Make_Body_PC(Pack.GetAll(), Pack.Length(), false)));
+	Fun_Send_Sync<void>(10, 2, "wtlogin.login", Make_Body_PC(Pack.GetAll(), Pack.Length(), false),
+		[&](uint sso_seq, LPBYTE BodyBin) {
+			Unpack_wtlogin_login(BodyBin, sso_seq);
+		}
+	);
 }
 
 void Android::wtlogin_exchange_emp()
@@ -789,57 +786,58 @@ void Android::wtlogin_exchange_emp()
 	Pack.Skip(Tlv::Tlv544(Pack.GetCurrentPoint(), Pack.GetLeftSpace(), QQ_APKID, QQ_ASIG));
 	Pack.Skip(Tlv::Tlv545(Pack.GetCurrentPoint(), Pack.GetLeftSpace(), Device.QIMEI));
 
-	auto [sso_seq, BodyBin] = Fun_Send_Sync(10, 2, "wtlogin.exchange_emp", Make_Body_PC(Pack.GetAll(), Pack.Length(), true));
-	::UnPack UnPack(BodyBin);
+	Fun_Send_Sync<void>(10, 2, "wtlogin.exchange_emp", Make_Body_PC(Pack.GetAll(), Pack.Length(), true),
+		[&](uint sso_seq, LPBYTE BodyBin) {
+			::UnPack UnPack(BodyBin);
 
-	UnPack.GetByte();
-	uint len = UnPack.GetShort() - 1 - 2 - 2 - 2 - 2 - 4 - 2 - 1 - 1;
-	UnPack.GetShort();
-	UnPack.GetShort();
-	UnPack.GetShort();
-	UnPack.GetInt();
-	UnPack.GetShort();
-	const byte Result = UnPack.GetByte();
+			UnPack.GetByte();
+			uint len = UnPack.GetShort() - 1 - 2 - 2 - 2 - 2 - 4 - 2 - 1 - 1;
+			UnPack.GetShort();
+			UnPack.GetShort();
+			UnPack.GetShort();
+			UnPack.GetInt();
+			UnPack.GetShort();
+			const byte Result = UnPack.GetByte();
 
-	const byte* Buffer = nullptr;
-	Buffer = UnPack.GetBin(len);
+			const byte* Buffer = nullptr;
+			Buffer = UnPack.GetBin(len);
 
-	std::vector<byte> data;
+			std::vector<byte> data;
 
-	Tea::decrypt(QQ.Token.wtSessionTicketKey, Buffer, len, data);
-	UnPack.Reset(&data);
+			Tea::decrypt(QQ.Token.wtSessionTicketKey, Buffer, len, data);
+			UnPack.Reset(&data);
 
-	UnPack.GetShort();
-	UnPack.GetByte();
-	if (Result == 0)
-	{
-		UnPack.GetInt();
-		len = UnPack.GetShort();;
-		Buffer = UnPack.GetBin(len);
-		Tea::decrypt(QQ.Token.TGTkey, Buffer, len, data);
-		UnPack.Reset(&data);
-	}
+			UnPack.GetShort();
+			UnPack.GetByte();
+			if (Result == 0)
+			{
+				UnPack.GetInt();
+				len = UnPack.GetShort();;
+				Buffer = UnPack.GetBin(len);
+				Tea::decrypt(QQ.Token.TGTkey, Buffer, len, data);
+				UnPack.Reset(&data);
+			}
 
-	unsigned short Count = UnPack.GetShort();
-	for (size_t i = 0; i < Count; i++)
-	{
-		unsigned short cmd = UnPack.GetShort();
-		unsigned short binlen = UnPack.GetShort();
-		Un_Tlv_Get(cmd, UnPack.GetBin(binlen), binlen);
-	}
+			unsigned short Count = UnPack.GetShort();
+			for (size_t i = 0; i < Count; i++)
+			{
+				unsigned short cmd = UnPack.GetShort();
+				unsigned short binlen = UnPack.GetShort();
+				Un_Tlv_Get(cmd, UnPack.GetBin(binlen), binlen);
+			}
 
-	switch (Result)
-	{
-	case 0:
-		QQ.Login->state = LOGIN_SUCCESS;
-		break;
-	default:
-		QQ.Login->state = Result;
-		Fun_Send_Sync_Release(sso_seq);
-		throw "Unknown login result";
-		break;
-	}
-	Fun_Send_Sync_Release(sso_seq);
+			switch (Result)
+			{
+			case 0:
+				QQ.Login->state = LOGIN_SUCCESS;
+				break;
+			default:
+				QQ.Login->state = Result;
+				throw "Unknown login result";
+				break;
+			}
+		}
+	);
 }
 
 void Android::StatSvc_Register(const byte state)
@@ -894,40 +892,44 @@ void Android::StatSvc_Register(const byte state)
 
 	uint len = Jce.GetAll(bin);
 
-	LPBYTE sBuffer;
-	auto [sso_seq, BodyBin] = Fun_Send_Sync(10, 1, "StatSvc.register", Make_Body_Request_Packet(3, 0, "PushService", "SvcReqRegister", bin, len));
-	Unpack_Body_Request_Packet(BodyBin, sBuffer);
+	Fun_Send_Sync<void>(10, 1, "StatSvc.register", Make_Body_Request_Packet(3, 0, "PushService", "SvcReqRegister", bin, len),
+		[&](uint sso_seq, LPBYTE BodyBin) {
+			LPBYTE sBuffer;
+			Unpack_Body_Request_Packet(BodyBin, sBuffer);
 
-	UnJce UnJce(sBuffer);
-	std::vector<JceStruct::Map<char*, std::vector<JceStruct::Map<char*, LPBYTE>>>> Map;
-	UnJce.Read(Map, 0);
+			UnJce UnJce(sBuffer);
+			std::vector<JceStruct::Map<char*, std::vector<JceStruct::Map<char*, LPBYTE>>>> Map;
+			UnJce.Read(Map, 0);
 
-	for (size_t i = 0; i < Map.size(); i++)
-	{
-		for (size_t j = 0; j < Map[i].Value.size(); j++)
-		{
-			UnJce.Reset(Map[i].Value[j].Value);
-			UnJce.Read(UnJce, 0);
+			for (size_t i = 0; i < Map.size(); i++)
+			{
+				for (size_t j = 0; j < Map[i].Value.size(); j++)
+				{
+					UnJce.Reset(Map[i].Value[j].Value);
+					UnJce.Read(UnJce, 0);
 
-			delete[] Map[i].Value[j].Key;
-			delete[] Map[i].Value[j].Value;
+					delete[] Map[i].Value[j].Key;
+					delete[] Map[i].Value[j].Value;
+				}
+
+				delete[] Map[i].Key;
+			}
+			delete[] sBuffer;
 		}
+	);
 
-		delete[] Map[i].Key;
-	}
-	delete[] sBuffer;
-	Fun_Send_Sync_Release(sso_seq);
 }
 
 void Android::StatSvc_SimpleGet()
 {
 	Pack Pack(4, true);
 	Pack.SetLength();
-	auto [sso_seq, BodyBin] = Fun_Send_Sync(10, 1, "StatSvc.SimpleGet", Pack.GetAll());
-	UnProtobuf UnPB(BodyBin);
+	Fun_Send_Sync<void>(10, 1, "StatSvc.SimpleGet", Pack.GetAll(),
+		[&](uint sso_seq, LPBYTE BodyBin) {
+			UnProtobuf UnPB(BodyBin);
 
-	Device.IP = (char*)UnPB.GetStr(4);
-	Fun_Send_Sync_Release(sso_seq);
+			Device.IP = (char*)UnPB.GetStr(4);
+		});
 }
 
 void Android::StatSvc_SetStatusFromClient(const byte state)
@@ -983,29 +985,29 @@ void Android::StatSvc_SetStatusFromClient(const byte state)
 	uint len = Jce.GetAll(bin);
 
 	LPBYTE sBuffer;
-	auto [sso_seq, BodyBin] = Fun_Send_Sync(10, 1, "StatSvc.SetStatusFromClient", Make_Body_Request_Packet(3, 0, "PushService", "SvcReqRegister", bin, len));
-	Unpack_Body_Request_Packet(BodyBin, sBuffer);
+	Fun_Send_Sync<void>(10, 1, "StatSvc.SetStatusFromClient", Make_Body_Request_Packet(3, 0, "PushService", "SvcReqRegister", bin, len),
+		[&](uint sso_seq, LPBYTE BodyBin) {
+			Unpack_Body_Request_Packet(BodyBin, sBuffer);
 
-	UnJce UnJce(sBuffer);
-	std::vector<JceStruct::Map<char*, std::vector<JceStruct::Map<char*, LPBYTE>>>> Map;
-	UnJce.Read(Map, 0);
+			::UnJce UnJce(sBuffer);
+			std::vector<JceStruct::Map<char*, std::vector<JceStruct::Map<char*, LPBYTE>>>> Map;
+			UnJce.Read(Map, 0);
 
-	for (size_t i = 0; i < Map.size(); i++)
-	{
-		for (size_t j = 0; j < Map[i].Value.size(); j++)
-		{
-			UnJce.Reset(Map[i].Value[j].Value);
-			UnJce.Read(UnJce, 0);
+			for (size_t i = 0; i < Map.size(); i++)
+			{
+				for (size_t j = 0; j < Map[i].Value.size(); j++)
+				{
+					UnJce.Reset(Map[i].Value[j].Value);
+					UnJce.Read(UnJce, 0);
 
-			delete[] Map[i].Value[j].Key;
-			delete[] Map[i].Value[j].Value;
-		}
+					delete[] Map[i].Value[j].Key;
+					delete[] Map[i].Value[j].Value;
+				}
 
-		delete[] Map[i].Key;
-	}
-	delete[] sBuffer;
-
-	Fun_Send_Sync_Release(sso_seq);
+				delete[] Map[i].Key;
+			}
+			delete[] sBuffer;
+		});
 }
 
 void Android::friendlist_getFriendGroupList(const int StartIndex)
@@ -1035,40 +1037,41 @@ void Android::friendlist_getFriendGroupList(const int StartIndex)
 	uint len = Jce.GetAll_(bin);
 
 	LPBYTE sBuffer;
-	auto [sso_seq, BodyBin] = Fun_Send_Sync(11, 1, "friendlist.getFriendGroupList", Make_Body_Request_Packet(3, 0, "mqq.IMService.FriendListServiceServantObj", "GetFriendListReq", bin, len));
-	Unpack_Body_Request_Packet(BodyBin, sBuffer);
+	Fun_Send_Sync<void>(11, 1, "friendlist.getFriendGroupList", Make_Body_Request_Packet(3, 0, "mqq.IMService.FriendListServiceServantObj", "GetFriendListReq", bin, len),
+		[&](uint sso_seq, LPBYTE BodyBin) {
+			Unpack_Body_Request_Packet(BodyBin, sBuffer);
 
-	UnJce UnJce(sBuffer);
-	std::vector<JceStruct::Map<char*, LPBYTE>> Map;
-	UnJce.Read(Map, 0);
+			UnJce UnJce(sBuffer);
+			std::vector<JceStruct::Map<char*, LPBYTE>> Map;
+			UnJce.Read(Map, 0);
 
-	for (size_t i = 0; i < Map.size(); i++)
-	{
-		UnJce.Reset(Map[i].Value);
-		UnJce.Read(UnJce, 0);
+			for (size_t i = 0; i < Map.size(); i++)
+			{
+				UnJce.Reset(Map[i].Value);
+				UnJce.Read(UnJce, 0);
 
-		int startIndex, totoal_friend_count, get_count = 0;
-		UnJce.Read(startIndex, 3);
-		UnJce.Read(totoal_friend_count, 5);
-		UnJce.Read(get_count, 6);
-		if (startIndex + get_count < totoal_friend_count) friendlist_getFriendGroupList(startIndex + get_count);
-		if (startIndex == 0) QQ.FriendList.resize(totoal_friend_count);
+				int startIndex, totoal_friend_count, get_count = 0;
+				UnJce.Read(startIndex, 3);
+				UnJce.Read(totoal_friend_count, 5);
+				UnJce.Read(get_count, 6);
+				if (startIndex + get_count < totoal_friend_count) friendlist_getFriendGroupList(startIndex + get_count);
+				if (startIndex == 0) QQ.FriendList.resize(totoal_friend_count);
 
-		std::vector<::UnJce> Friends;
-		UnJce.Read(Friends, 7);
-		for (size_t j = 0; j < Friends.size(); j++)
-		{
-			Friends[j].Read((int&)QQ.FriendList[startIndex + j].QQ, 0);
-			Friends[j].Read(QQ.FriendList[startIndex + j].Remark, 3);
-			Friends[j].Read(QQ.FriendList[startIndex + j].status, 5);
-			Friends[j].Read(QQ.FriendList[startIndex + j].Nick, 14);
-		}
+				std::vector<::UnJce> Friends;
+				UnJce.Read(Friends, 7);
+				for (size_t j = 0; j < Friends.size(); j++)
+				{
+					Friends[j].Read((int&)QQ.FriendList[startIndex + j].QQ, 0);
+					Friends[j].Read(QQ.FriendList[startIndex + j].Remark, 3);
+					Friends[j].Read(QQ.FriendList[startIndex + j].status, 5);
+					Friends[j].Read(QQ.FriendList[startIndex + j].Nick, 14);
+				}
 
-		delete[] Map[i].Key;
-		delete[] Map[i].Value;
-	}
-	delete[] sBuffer;
-	Fun_Send_Sync_Release(sso_seq);
+				delete[] Map[i].Key;
+				delete[] Map[i].Value;
+			}
+			delete[] sBuffer;
+		});
 }
 
 void Android::friendlist_GetTroopListReqV2()
@@ -1089,37 +1092,38 @@ void Android::friendlist_GetTroopListReqV2()
 	uint len = Jce.GetAll_(bin);
 
 	LPBYTE sBuffer;
-	auto [sso_seq, BodyBin] = Fun_Send_Sync(11, 1, "friendlist.GetTroopListReqV2", Make_Body_Request_Packet(3, 0, "mqq.IMService.FriendListServiceServantObj", "GetTroopListReqV2Simplify", bin, len));
-	Unpack_Body_Request_Packet(BodyBin, sBuffer);
+	Fun_Send_Sync<void>(11, 1, "friendlist.GetTroopListReqV2", Make_Body_Request_Packet(3, 0, "mqq.IMService.FriendListServiceServantObj", "GetTroopListReqV2Simplify", bin, len),
+		[&](uint sso_seq, LPBYTE BodyBin) {
+			Unpack_Body_Request_Packet(BodyBin, sBuffer);
 
-	UnJce UnJce(sBuffer);
-	std::vector<JceStruct::Map<char*, LPBYTE>> Map;
-	UnJce.Read(Map, 0);
+			UnJce UnJce(sBuffer);
+			std::vector<JceStruct::Map<char*, LPBYTE>> Map;
+			UnJce.Read(Map, 0);
 
-	for (size_t i = 0; i < Map.size(); i++)
-	{
-		UnJce.Reset(Map[i].Value);
-		UnJce.Read(UnJce, 0);
-		//UnJce.Read(totoal_group_count, 1);
+			for (size_t i = 0; i < Map.size(); i++)
+			{
+				UnJce.Reset(Map[i].Value);
+				UnJce.Read(UnJce, 0);
+				//UnJce.Read(totoal_group_count, 1);
 
-		std::vector<::UnJce> Groups;
-		UnJce.Read(Groups, 5);
-		QQ.GroupList.resize(Groups.size());
+				std::vector<::UnJce> Groups;
+				UnJce.Read(Groups, 5);
+				QQ.GroupList.resize(Groups.size());
 
-		for (size_t j = 0; j < Groups.size(); j++)
-		{
-			Groups[j].Read((int&)QQ.GroupList[j].GroupCode, 1);
-			Groups[j].Read(QQ.GroupList[j].GroupName, 4);
-			Groups[j].Read(QQ.GroupList[j].MemberCount, 19);
-			Groups[j].Read((int&)QQ.GroupList[j].MasterQQ, 23);
-		}
+				for (size_t j = 0; j < Groups.size(); j++)
+				{
+					Groups[j].Read((int&)QQ.GroupList[j].GroupCode, 1);
+					Groups[j].Read(QQ.GroupList[j].GroupName, 4);
+					Groups[j].Read(QQ.GroupList[j].MemberCount, 19);
+					Groups[j].Read((int&)QQ.GroupList[j].MasterQQ, 23);
+				}
 
-		delete[] Map[i].Key;
-		delete[] Map[i].Value;
-	}
-	delete[] sBuffer;
+				delete[] Map[i].Key;
+				delete[] Map[i].Value;
+			}
+			delete[] sBuffer;
 
-	Fun_Send_Sync_Release(sso_seq);
+		});
 }
 
 void Android::friendlist_getTroopMemberList(const uint Group)
@@ -1144,38 +1148,39 @@ void Android::friendlist_getTroopMemberList(const uint Group)
 	uint len = Jce.GetAll(bin);
 
 	LPBYTE sBuffer;
-	auto [sso_seq, BodyBin] = Fun_Send_Sync(11, 1, "friendlist.getTroopMemberList", Make_Body_Request_Packet(3, 0, "mqq.IMService.FriendListServiceServantObj", "GetFriendListReq", bin, len));
-	Unpack_Body_Request_Packet(BodyBin, sBuffer);
+	Fun_Send_Sync<void>(11, 1, "friendlist.getTroopMemberList", Make_Body_Request_Packet(3, 0, "mqq.IMService.FriendListServiceServantObj", "GetFriendListReq", bin, len),
+		[&](uint sso_seq, LPBYTE BodyBin) {
+			Unpack_Body_Request_Packet(BodyBin, sBuffer);
 
-	UnJce UnJce(sBuffer);
-	std::vector<JceStruct::Map<char*, LPBYTE>> Map;
-	UnJce.Read(Map, 0);
+			UnJce UnJce(sBuffer);
+			std::vector<JceStruct::Map<char*, LPBYTE>> Map;
+			UnJce.Read(Map, 0);
 
-	for (size_t i = 0; i < Map.size(); i++)
-	{
-		UnJce.Reset(Map[i].Value);
-		UnJce.Read(UnJce, 0);
+			for (size_t i = 0; i < Map.size(); i++)
+			{
+				UnJce.Reset(Map[i].Value);
+				UnJce.Read(UnJce, 0);
 
-		std::vector<::UnJce> Groups;
-		UnJce.Read(Groups, 3);
-		QQ.GroupList.resize(Groups.size());
+				std::vector<::UnJce> Groups;
+				UnJce.Read(Groups, 3);
+				QQ.GroupList.resize(Groups.size());
 
-		for (size_t j = 0; j < Groups.size(); j++)
-		{
-			/*
-			Groups[j].Read((int&)QQ.GroupList[j].GroupCode, 1);
-			Groups[j].Read(QQ.GroupList[j].GroupName, 4);
-			Groups[j].Read(QQ.GroupList[j].MemberCount, 19);
-			Groups[j].Read((int&)QQ.GroupList[j].MasterQQ, 23);
-			*/
-		}
+				for (size_t j = 0; j < Groups.size(); j++)
+				{
+					/*
+					Groups[j].Read((int&)QQ.GroupList[j].GroupCode, 1);
+					Groups[j].Read(QQ.GroupList[j].GroupName, 4);
+					Groups[j].Read(QQ.GroupList[j].MemberCount, 19);
+					Groups[j].Read((int&)QQ.GroupList[j].MasterQQ, 23);
+					*/
+				}
 
-		delete[] Map[i].Key;
-		delete[] Map[i].Value;
-	}
-	delete[] sBuffer;
+				delete[] Map[i].Key;
+				delete[] Map[i].Value;
+			}
+			delete[] sBuffer;
 
-	Fun_Send_Sync_Release(sso_seq);
+		});
 }
 
 bool Android::friendlist_ModifyGroupCardReq(const uint Group, const uint QQ, const char* NewGroupCard)
@@ -1205,10 +1210,12 @@ bool Android::friendlist_ModifyGroupCardReq(const uint Group, const uint QQ, con
 	delete[] bin;
 
 	uint len = Jce.GetAll(bin);
-	auto [sso_seq, BodyBin] = Fun_Send_Sync(11, 1, "friendlist.ModifyGroupCardReq", Make_Body_Request_Packet(3, 0, "mqq.IMService.FriendListServiceServantObj", "ModifyGroupCardReq", bin, len));
-	//Todo
-	Fun_Send_Sync_Release(sso_seq);
-	return true;
+	return Fun_Send_Sync<bool>(11, 1, "friendlist.ModifyGroupCardReq", Make_Body_Request_Packet(3, 0, "mqq.IMService.FriendListServiceServantObj", "ModifyGroupCardReq", bin, len),
+		[&](uint sso_seq, LPBYTE BodyBin)
+		->bool {
+			//Todo
+			return true;
+		});
 }
 
 void Android::SQQzoneSvc_getUndealCount()
@@ -1244,8 +1251,10 @@ void Android::SQQzoneSvc_getUndealCount()
 
 	]
 	*/
-	auto [sso_seq, BodyBin] = Fun_Send_Sync(10, 1, "SQQzoneSvc.getUndealCount", Jce.GetAll());
-	Fun_Send_Sync_Release(sso_seq);
+	Fun_Send_Sync<void>(10, 1, "SQQzoneSvc.getUndealCount", Jce.GetAll(),
+		[&](uint sso_seq, LPBYTE BodyBin) {
+
+		});
 }
 
 void Android::OnlinePush_RespPush(const LPBYTE protobuf, const int a)
@@ -1279,8 +1288,9 @@ void Android::OnlinePush_RespPush(const LPBYTE protobuf, const int a)
 	delete[] bin;
 
 	uint len = Jce.GetAll(bin);
-	auto [sso_seq, BodyBin] = Fun_Send_Sync(11, 1, "OnlinePush.RespPush", Make_Body_Request_Packet(3, 0, "OnlinePush", "SvcRespPushMsg", bin, len));
-	Fun_Send_Sync_Release(sso_seq);
+	Fun_Send_Sync<void>(11, 1, "OnlinePush.RespPush", Make_Body_Request_Packet(3, 0, "OnlinePush", "SvcRespPushMsg", bin, len),
+		[&](uint sso_seq, LPBYTE BodyBin) {
+		});
 }
 
 bool Android::VisitorSvc_ReqFavorite(const uint QQ, const int Times)
@@ -1308,30 +1318,32 @@ bool Android::VisitorSvc_ReqFavorite(const uint QQ, const int Times)
 	uint len = _Jce.GetAll(bin);
 
 	LPBYTE sBuffer;
-	auto [sso_seq, BodyBin] = Fun_Send_Sync(11, 1, "VisitorSvc.ReqFavorite", Make_Body_Request_Packet(3, 0, "VisitorSvc", "ReqFavorite", bin, len));
-	Unpack_Body_Request_Packet(BodyBin, sBuffer);
+	return Fun_Send_Sync<bool>(11, 1, "VisitorSvc.ReqFavorite", Make_Body_Request_Packet(3, 0, "VisitorSvc", "ReqFavorite", bin, len),
+		[&](uint sso_seq, LPBYTE BodyBin)
+		->bool {
+			Unpack_Body_Request_Packet(BodyBin, sBuffer);
 
-	UnJce UnJce(sBuffer);
-	std::vector<JceStruct::Map<char*, std::vector<JceStruct::Map<char*, LPBYTE>>>> Map;
-	UnJce.Read(Map, 0);
+			UnJce UnJce(sBuffer);
+			std::vector<JceStruct::Map<char*, std::vector<JceStruct::Map<char*, LPBYTE>>>> Map;
+			UnJce.Read(Map, 0);
 
-	for (size_t i = 0; i < Map.size(); i++)
-	{
-		for (size_t j = 0; j < Map[i].Value.size(); j++)
-		{
-			UnJce.Reset(Map[i].Value[j].Value);
-			UnJce.Read(UnJce, 0);
-			//Todo
-			delete[] Map[i].Value[j].Key;
-			delete[] Map[i].Value[j].Value;
-		}
+			for (size_t i = 0; i < Map.size(); i++)
+			{
+				for (size_t j = 0; j < Map[i].Value.size(); j++)
+				{
+					UnJce.Reset(Map[i].Value[j].Value);
+					UnJce.Read(UnJce, 0);
+					//Todo
+					delete[] Map[i].Value[j].Key;
+					delete[] Map[i].Value[j].Value;
+				}
 
-		delete[] Map[i].Key;
-	}
-	delete[] sBuffer;
+				delete[] Map[i].Key;
+			}
+			delete[] sBuffer;
+			return true;
 
-	Fun_Send_Sync_Release(sso_seq);
-	return true;
+		});
 }
 
 void Android::MessageSvc_PbGetMsg()
@@ -1357,235 +1369,236 @@ void Android::MessageSvc_PbGetMsg()
 	ProtobufStruct::TreeNode Node1{ nullptr,&Node2,1,ProtobufStruct::ProtobufStructType::VARINT,(void*)0 };
 
 	Protobuf PB;
-	auto [sso_seq, BodyBin] = Fun_Send_Sync(11, 1, "MessageSvc.PbGetMsg", PB.Pack(&Node1));
-	UnProtobuf UnPB(BodyBin);
+	Fun_Send_Sync<void>(11, 1, "MessageSvc.PbGetMsg", PB.Pack(&Node1),
+		[&](uint sso_seq, LPBYTE BodyBin) {
+			UnProtobuf UnPB(BodyBin);
 
-	QQ.SyncCookies = UnPB.GetBin(3);
-	UnPB.GetVarint(4);
-	while (UnPB.GetField() == 5)
-	{
-		UnPB.StepIn(5);
-		UnPB.GetVarint(3);
-		while (UnPB.GetField() == 4)
-		{
-			Event::PrivateMsg PrivateMsg;
-			UnPB.StepIn(4);
-			UnPB.StepIn(1);
-			PrivateMsg.FromQQ = UnPB.GetVarint(1);
-			uint MsgType = UnPB.GetVarint(3);
-			PrivateMsg.MsgType = UnPB.GetVarint(4);
-			PrivateMsg.MsgID = UnPB.GetVarint(5);
-			UnPB.StepOut();
-			switch (MsgType)
+			QQ.SyncCookies = UnPB.GetBin(3);
+			UnPB.GetVarint(4);
+			while (UnPB.GetField() == 5)
 			{
-			case 33:
-			{
-				UnPB.StepIn(3);
-				UnPack UnPack(UnPB.GetBin(2));
-				Event::NoticeEvent::NoticeEvent NoticeEvent{ Event::NoticeEvent::NoticeEventType::group_memberchange ,new Event::NoticeEvent::group_memberchange };
-				((Event::NoticeEvent::group_memberchange*)NoticeEvent.Information)->FromGroup = UnPack.GetInt();
-				UnPack.Skip(1);
-				((Event::NoticeEvent::group_memberchange*)NoticeEvent.Information)->FromQQ = UnPack.GetInt();
-				switch (UnPack.GetByte())
+				UnPB.StepIn(5);
+				UnPB.GetVarint(3);
+				while (UnPB.GetField() == 4)
 				{
-				case 130:
-					((Event::NoticeEvent::group_memberchange*)NoticeEvent.Information)->Type = 0;
-					break;
-				case 131:
-					((Event::NoticeEvent::group_memberchange*)NoticeEvent.Information)->Type = 0;
-					((Event::NoticeEvent::group_memberchange*)NoticeEvent.Information)->OperateQQ = UnPack.GetInt();
-					break;
-				}
-				UnPB.StepOut();
-				Event::OnNoticeMsg(&NoticeEvent);
-				Log::AddLog(Log::LogType::INFORMATION, Log::MsgType::OTHER, &NoticeEvent);
-			}
-			break;
-			case 34:
-			{
-				UnPB.StepIn(3);
-				UnPack UnPack(UnPB.GetBin(2));
-				Event::RequestEvent::RequestEvent RequestEvent{ Event::RequestEvent::RequestEventType::add_group ,new Event::RequestEvent::add_group };
-				((Event::RequestEvent::add_group*)RequestEvent.Information)->FromGroup = UnPack.GetInt();
-				UnPack.Skip(1);
-				((Event::RequestEvent::add_group*)RequestEvent.Information)->FromQQ = UnPack.GetInt();
-				switch (UnPack.GetByte())
-				{
-				case 130:
-					((Event::RequestEvent::add_group*)RequestEvent.Information)->Type = 0;
-					break;
-				}
-				UnPB.StepOut();
-				Event::OnRequestMsg(&RequestEvent);
-				Log::AddLog(Log::LogType::INFORMATION, Log::MsgType::OTHER, &RequestEvent);
-			}
-			break;
-			case 84:
-				break;
-			case 166:
-				UnPB.StepIn(3);
-				UnPB.StepIn(1);
-				UnPB.StepIn(1);
-				PrivateMsg.SendTime = UnPB.GetVarint(2);
-				PrivateMsg.MsgRand = UnPB.GetVarint(3);
-				UnPB.StepOut();
-				while (UnPB.GetField() == 2)
-				{
-					UnPB.StepIn(2);
-					Message::Msg* ThisMsg = nullptr;
-					switch (UnPB.GetField())
+					Event::PrivateMsg PrivateMsg;
+					UnPB.StepIn(4);
+					UnPB.StepIn(1);
+					PrivateMsg.FromQQ = UnPB.GetVarint(1);
+					uint MsgType = UnPB.GetVarint(3);
+					PrivateMsg.MsgType = UnPB.GetVarint(4);
+					PrivateMsg.MsgID = UnPB.GetVarint(5);
+					UnPB.StepOut();
+					switch (MsgType)
 					{
-					case 1:
-						UnPack1(&UnPB, ThisMsg != nullptr ? ThisMsg->NextPoint : ThisMsg);
-						if (ThisMsg->NextPoint == nullptr) { PrivateMsg.Msg = ThisMsg; }
-						else ThisMsg = ThisMsg->NextPoint;
-						break;
-					case 2://小黄豆
-						UnPack2(&UnPB, ThisMsg != nullptr ? ThisMsg->NextPoint : ThisMsg);
-						if (ThisMsg->NextPoint == nullptr) { PrivateMsg.Msg = ThisMsg; }
-						else ThisMsg = ThisMsg->NextPoint;
-						break;
-					case 4:
-						UnPB.StepIn(4);
-						if (ThisMsg != nullptr)	ThisMsg = ThisMsg->NextPoint = new Message::Msg{ Message::MsgType::picture,nullptr,new Message::picture };
-						else PrivateMsg.Msg = ThisMsg = new Message::Msg{ Message::MsgType::picture,nullptr,new Message::picture };
-						((Message::picture*)ThisMsg->Message)->Data.Length = UnPB.GetVarint(2);
-						UnPB.GetBin(((Message::picture*)ThisMsg->Message)->MD5, 7);
-						((Message::picture*)ThisMsg->Message)->Data.URL = UnPB.GetStr(15);
-						((Message::picture*)ThisMsg->Message)->Width = UnPB.GetVarint(21);
-						((Message::picture*)ThisMsg->Message)->Height = UnPB.GetVarint(22);
-						UnPB.StepOut();
-						break;
-					case 5://文件
-						break;
-					case 6://原创表情
-						UnPack6(&UnPB, ThisMsg != nullptr ? ThisMsg->NextPoint : ThisMsg);
-						if (ThisMsg->NextPoint == nullptr) { PrivateMsg.Msg = ThisMsg; }
-						else ThisMsg = ThisMsg->NextPoint;
-						break;
-					case 8://图片
-						UnPack8(&UnPB, ThisMsg != nullptr ? ThisMsg->NextPoint : ThisMsg);
-						if (ThisMsg->NextPoint == nullptr) { PrivateMsg.Msg = ThisMsg; }
-						else ThisMsg = ThisMsg->NextPoint;
-						break;
-					case 9://气泡消息
-						/*
-						4a 04 08 00 40 03
-						[
-						9 {
-						  1: 0
-						  8: 3
-						}
-						]
-						*/
-						break;
-					case 12://xml
-						UnPack12(&UnPB, ThisMsg != nullptr ? ThisMsg->NextPoint : ThisMsg);
-						if (ThisMsg->NextPoint == nullptr) { PrivateMsg.Msg = ThisMsg; }
-						else ThisMsg = ThisMsg->NextPoint;
-						break;
-					case 16:
-						/*
-						82 01 0b 0a 05 65 6d 6d 6d 63 18 01 28 01
-						[
-						16 {
-						  1 {
-							12: emmmc //发送人群名片
-						  }
-						  3: 1
-						  5: 1
-						}
-						]
-						*/
-						break;
-					case 24://红包
-						UnPB.StepIn(24);
-						UnPB.StepIn(1);
+					case 33:
+					{
+						UnPB.StepIn(3);
+						UnPack UnPack(UnPB.GetBin(2));
+						Event::NoticeEvent::NoticeEvent NoticeEvent{ Event::NoticeEvent::NoticeEventType::group_memberchange ,new Event::NoticeEvent::group_memberchange };
+						((Event::NoticeEvent::group_memberchange*)NoticeEvent.Information)->FromGroup = UnPack.GetInt();
+						UnPack.Skip(1);
+						((Event::NoticeEvent::group_memberchange*)NoticeEvent.Information)->FromQQ = UnPack.GetInt();
+						switch (UnPack.GetByte())
 						{
-							char8_t* listid = UnPB.GetStr(9);
-							char8_t* authkey = UnPB.GetStr(10);
-							uint channel = UnPB.GetVarint(19);
-							delete[] listid, authkey;
+						case 130:
+							((Event::NoticeEvent::group_memberchange*)NoticeEvent.Information)->Type = 0;
+							break;
+						case 131:
+							((Event::NoticeEvent::group_memberchange*)NoticeEvent.Information)->Type = 0;
+							((Event::NoticeEvent::group_memberchange*)NoticeEvent.Information)->OperateQQ = UnPack.GetInt();
+							break;
 						}
 						UnPB.StepOut();
+						Event::OnNoticeMsg(&NoticeEvent);
+						Log::AddLog(Log::LogType::INFORMATION, Log::MsgType::OTHER, &NoticeEvent);
+					}
+					break;
+					case 34:
+					{
+						UnPB.StepIn(3);
+						UnPack UnPack(UnPB.GetBin(2));
+						Event::RequestEvent::RequestEvent RequestEvent{ Event::RequestEvent::RequestEventType::add_group ,new Event::RequestEvent::add_group };
+						((Event::RequestEvent::add_group*)RequestEvent.Information)->FromGroup = UnPack.GetInt();
+						UnPack.Skip(1);
+						((Event::RequestEvent::add_group*)RequestEvent.Information)->FromQQ = UnPack.GetInt();
+						switch (UnPack.GetByte())
+						{
+						case 130:
+							((Event::RequestEvent::add_group*)RequestEvent.Information)->Type = 0;
+							break;
+						}
 						UnPB.StepOut();
+						Event::OnRequestMsg(&RequestEvent);
+						Log::AddLog(Log::LogType::INFORMATION, Log::MsgType::OTHER, &RequestEvent);
+					}
+					break;
+					case 84:
 						break;
-					case 33://小视频
-						break;
-					case 37:
-						/*
-						aa 02 3e 50 00 60 00 68 00 9a 01 35 08 07 20 cb
-						50 c8 01 00 f0 01 00 f8 01 00 90 02 00 98 03 00
-						a0 03 00 b0 03 00 c0 03 00 d0 03 00 e8 03 00 8a
-						04 02 10 02 90 04 80 40 b8 04 00 c0 04 00 ca 04
-						00
-						[
-						37 {
-						  10: 0
-						  12: 0
-						  13: 0
-						  19 {
-							1: 7
-							4: 10315
-							25: 0
-							30: 0
-							31: 0
-							34: 0
-							51: 0
-							52: 0
-							54: 0
-						   56: 0
-							58: 0
-							61: 0
-							65 {
-							  2: 2
+					case 166:
+						UnPB.StepIn(3);
+						UnPB.StepIn(1);
+						UnPB.StepIn(1);
+						PrivateMsg.SendTime = UnPB.GetVarint(2);
+						PrivateMsg.MsgRand = UnPB.GetVarint(3);
+						UnPB.StepOut();
+						while (UnPB.GetField() == 2)
+						{
+							UnPB.StepIn(2);
+							Message::Msg* ThisMsg = nullptr;
+							switch (UnPB.GetField())
+							{
+							case 1:
+								UnPack1(&UnPB, ThisMsg != nullptr ? ThisMsg->NextPoint : ThisMsg);
+								if (ThisMsg->NextPoint == nullptr) { PrivateMsg.Msg = ThisMsg; }
+								else ThisMsg = ThisMsg->NextPoint;
+								break;
+							case 2://小黄豆
+								UnPack2(&UnPB, ThisMsg != nullptr ? ThisMsg->NextPoint : ThisMsg);
+								if (ThisMsg->NextPoint == nullptr) { PrivateMsg.Msg = ThisMsg; }
+								else ThisMsg = ThisMsg->NextPoint;
+								break;
+							case 4:
+								UnPB.StepIn(4);
+								if (ThisMsg != nullptr)	ThisMsg = ThisMsg->NextPoint = new Message::Msg{ Message::MsgType::picture,nullptr,new Message::picture };
+								else PrivateMsg.Msg = ThisMsg = new Message::Msg{ Message::MsgType::picture,nullptr,new Message::picture };
+								((Message::picture*)ThisMsg->Message)->Data.Length = UnPB.GetVarint(2);
+								UnPB.GetBin(((Message::picture*)ThisMsg->Message)->MD5, 7);
+								((Message::picture*)ThisMsg->Message)->Data.URL = UnPB.GetStr(15);
+								((Message::picture*)ThisMsg->Message)->Width = UnPB.GetVarint(21);
+								((Message::picture*)ThisMsg->Message)->Height = UnPB.GetVarint(22);
+								UnPB.StepOut();
+								break;
+							case 5://文件
+								break;
+							case 6://原创表情
+								UnPack6(&UnPB, ThisMsg != nullptr ? ThisMsg->NextPoint : ThisMsg);
+								if (ThisMsg->NextPoint == nullptr) { PrivateMsg.Msg = ThisMsg; }
+								else ThisMsg = ThisMsg->NextPoint;
+								break;
+							case 8://图片
+								UnPack8(&UnPB, ThisMsg != nullptr ? ThisMsg->NextPoint : ThisMsg);
+								if (ThisMsg->NextPoint == nullptr) { PrivateMsg.Msg = ThisMsg; }
+								else ThisMsg = ThisMsg->NextPoint;
+								break;
+							case 9://气泡消息
+								/*
+								4a 04 08 00 40 03
+								[
+								9 {
+								  1: 0
+								  8: 3
+								}
+								]
+								*/
+								break;
+							case 12://xml
+								UnPack12(&UnPB, ThisMsg != nullptr ? ThisMsg->NextPoint : ThisMsg);
+								if (ThisMsg->NextPoint == nullptr) { PrivateMsg.Msg = ThisMsg; }
+								else ThisMsg = ThisMsg->NextPoint;
+								break;
+							case 16:
+								/*
+								82 01 0b 0a 05 65 6d 6d 6d 63 18 01 28 01
+								[
+								16 {
+								  1 {
+									12: emmmc //发送人群名片
+								  }
+								  3: 1
+								  5: 1
+								}
+								]
+								*/
+								break;
+							case 24://红包
+								UnPB.StepIn(24);
+								UnPB.StepIn(1);
+								{
+									char8_t* listid = UnPB.GetStr(9);
+									char8_t* authkey = UnPB.GetStr(10);
+									uint channel = UnPB.GetVarint(19);
+									delete[] listid, authkey;
+								}
+								UnPB.StepOut();
+								UnPB.StepOut();
+								break;
+							case 33://小视频
+								break;
+							case 37:
+								/*
+								aa 02 3e 50 00 60 00 68 00 9a 01 35 08 07 20 cb
+								50 c8 01 00 f0 01 00 f8 01 00 90 02 00 98 03 00
+								a0 03 00 b0 03 00 c0 03 00 d0 03 00 e8 03 00 8a
+								04 02 10 02 90 04 80 40 b8 04 00 c0 04 00 ca 04
+								00
+								[
+								37 {
+								  10: 0
+								  12: 0
+								  13: 0
+								  19 {
+									1: 7
+									4: 10315
+									25: 0
+									30: 0
+									31: 0
+									34: 0
+									51: 0
+									52: 0
+									54: 0
+								   56: 0
+									58: 0
+									61: 0
+									65 {
+									  2: 2
+									}
+									66: 8192
+									71: 0
+									72: 0
+									73: ""
+								  }
+								}
+								]
+								*/
+								break;
+							case 45://回复
+								UnPack45(&UnPB, ThisMsg != nullptr ? ThisMsg->NextPoint : ThisMsg);
+								if (ThisMsg->NextPoint == nullptr) { PrivateMsg.Msg = ThisMsg; }
+								else ThisMsg = ThisMsg->NextPoint;
+								break;
+							case 51://json
+								UnPack51(&UnPB, ThisMsg != nullptr ? ThisMsg->NextPoint : ThisMsg);
+								if (ThisMsg->NextPoint == nullptr) { PrivateMsg.Msg = ThisMsg; }
+								else ThisMsg = ThisMsg->NextPoint;
+								break;
+							case 53:
+								UnPB.StepIn(53);
+								UnPB.GetVarint(1);
+								//Todo 吃瓜等新表情,json等解析
+								UnPB.StepOut();
+								break;
+							default:
+								break;
 							}
-							66: 8192
-							71: 0
-							72: 0
-							73: ""
-						  }
+							UnPB.StepOut();
 						}
-						]
-						*/
-						break;
-					case 45://回复
-						UnPack45(&UnPB, ThisMsg != nullptr ? ThisMsg->NextPoint : ThisMsg);
-						if (ThisMsg->NextPoint == nullptr) { PrivateMsg.Msg = ThisMsg; }
-						else ThisMsg = ThisMsg->NextPoint;
-						break;
-					case 51://json
-						UnPack51(&UnPB, ThisMsg != nullptr ? ThisMsg->NextPoint : ThisMsg);
-						if (ThisMsg->NextPoint == nullptr) { PrivateMsg.Msg = ThisMsg; }
-						else ThisMsg = ThisMsg->NextPoint;
-						break;
-					case 53:
-						UnPB.StepIn(53);
-						UnPB.GetVarint(1);
-						//Todo 吃瓜等新表情,json等解析
 						UnPB.StepOut();
+						UnPB.StepOut();
+
+						if (PrivateMsg.Msg != nullptr) Event::OnPrivateMsg(&PrivateMsg);
+						Message::DestoryMsg(PrivateMsg.Msg);
 						break;
 					default:
+						throw "Unknow msgtype";
 						break;
 					}
 					UnPB.StepOut();
 				}
 				UnPB.StepOut();
-				UnPB.StepOut();
-
-				if (PrivateMsg.Msg != nullptr) Event::OnPrivateMsg(&PrivateMsg);
-				Message::DestoryMsg(PrivateMsg.Msg);
-				break;
-			default:
-				throw "Unknow msgtype";
-				break;
 			}
-			UnPB.StepOut();
-		}
-		UnPB.StepOut();
-	}
 
-	Fun_Send_Sync_Release(sso_seq);
+		});
 }
 
 /// <summary>
@@ -1695,19 +1708,22 @@ bool Android::MessageSvc_PbSendMsg(const uint ToNumber, const byte ToType, const
 	}
 
 	Protobuf PB;
-	auto [sso_seq, BodyBin] = Fun_Send_Sync(11, 1, "MessageSvc.PbSendMsg", PB.Pack(&Node1));
-	UnProtobuf UnPB(BodyBin);
+	return Fun_Send_Sync<bool>(11, 1, "MessageSvc.PbSendMsg", PB.Pack(&Node1),
+		[&](uint sso_seq, LPBYTE BodyBin)
+		-> bool {
+			UnProtobuf UnPB(BodyBin);
 
-	ProtobufStruct::TreeNode* tmp;
-	do
-	{
-		delete[] Node3_1_2->Data;
-		tmp = Node3_1_2->brother;
-		delete Node3_1_2;
-	} while ((Node3_1_2 = tmp) != nullptr);
+			ProtobufStruct::TreeNode* tmp;
+			do
+			{
+				delete[] Node3_1_2->Data;
+				tmp = Node3_1_2->brother;
+				delete Node3_1_2;
+			} while ((Node3_1_2 = tmp) != nullptr);
 
-	Fun_Send_Sync_Release(sso_seq);
-	return !UnPB.GetVarint(1);
+			return !UnPB.GetVarint(1);
+		}
+	);
 }
 
 bool Android::PbMessageSvc_PbMsgWithDraw(const uint Target, const uint MsgId, const uint MsgRand)
@@ -1724,26 +1740,25 @@ bool Android::PbMessageSvc_PbMsgWithDraw(const uint Target, const uint MsgId, co
 
 
 	Protobuf PB;
-	auto [sso_seq, BodyBin] = Fun_Send_Sync(11, 1, "PbMessageSvc.PbMsgWithDraw", PB.Pack(&Node2));
-	UnProtobuf UnPB(BodyBin);
-	UnPB.StepIn(2);
-	uint retcode = UnPB.GetVarint(1);
-	if (retcode != 0)
-	{
-		if (QQ.ErrorMsg != nullptr) delete[] QQ.ErrorMsg;
-		QQ.ErrorMsg = UnPB.GetStr(2);
-		UnPB.StepOut();
-
-		Fun_Send_Sync_Release(sso_seq);
-		return false;
-	}
-	else
-	{
-		UnPB.StepOut();
-
-		Fun_Send_Sync_Release(sso_seq);
-		return true;
-	}
+	return Fun_Send_Sync<bool>(11, 1, "PbMessageSvc.PbMsgWithDraw", PB.Pack(&Node2),
+		[&](uint sso_seq, LPBYTE BodyBin)
+		-> bool {
+			UnProtobuf UnPB(BodyBin);
+			UnPB.StepIn(2);
+			uint retcode = UnPB.GetVarint(1);
+			if (retcode != 0)
+			{
+				if (QQ.ErrorMsg != nullptr) delete[] QQ.ErrorMsg;
+				QQ.ErrorMsg = UnPB.GetStr(2);
+				UnPB.StepOut();
+				return false;
+			}
+			else
+			{
+				UnPB.StepOut();
+				return true;
+			}
+		});
 }
 
 void Android::ProfileService_Pb_ReqSystemMsgNew_Group()
@@ -1775,9 +1790,10 @@ void Android::ProfileService_Pb_ReqSystemMsgNew_Group()
 	ProtobufStruct::TreeNode Node1{ nullptr,&Node2,1,ProtobufStruct::ProtobufStructType::VARINT,(void*)20 };
 
 	Protobuf PB;
-	auto [sso_seq, BodyBin] = Fun_Send_Sync(11, 1, "ProfileService.Pb.ReqSystemMsgNew.Group", PB.Pack(&Node1));
-	UnProtobuf UnPB(BodyBin);
-	Fun_Send_Sync_Release(sso_seq);
+	Fun_Send_Sync<void>(11, 1, "ProfileService.Pb.ReqSystemMsgNew.Group", PB.Pack(&Node1),
+		[&](uint sso_seq, LPBYTE BodyBin) {
+			UnProtobuf UnPB(BodyBin);
+		});
 }
 
 std::tuple<uint, uint, uint, LPBYTE> Android::ImgStore_GroupPicUp(const uint Group, const LPBYTE ImageName, const LPBYTE ImageMD5, const uint ImageLength, const uint ImageWidth, const uint ImageHeight)
@@ -1806,30 +1822,32 @@ std::tuple<uint, uint, uint, LPBYTE> Android::ImgStore_GroupPicUp(const uint Gro
 	ProtobufStruct::TreeNode Node1{ nullptr,&Node2,1,ProtobufStruct::ProtobufStructType::VARINT,(void*)3 };
 
 	Protobuf PB;
-	auto [sso_seq, BodyBin] = Fun_Send_Sync(11, 1, "ImgStore.GroupPicUp", PB.Pack(&Node1));
-	UnProtobuf UnPB(BodyBin);
+	return Fun_Send_Sync<std::tuple<uint, uint, uint, LPBYTE>>(11, 1, "ImgStore.GroupPicUp", PB.Pack(&Node1),
+		[&](uint sso_seq, LPBYTE BodyBin)
+		-> std::tuple<uint, uint, uint, LPBYTE> {
 
-	delete V;
+			UnProtobuf UnPB(BodyBin);
 
-	LPBYTE sig;
-	uint IP, Port, ImageID;
-	UnPB.StepIn(3);
-	switch (UnPB.GetVarint(4))
-	{
-	case 0://需要上传
-		//IP PORT为数组,这里就取第一组
-		IP = UnPB.GetVarint(6);
-		Port = UnPB.GetVarint(7);
-		sig = UnPB.GetBin(8);
+			delete V;
 
-		Fun_Send_Sync_Release(sso_seq);
-		return { ImageID,IP,Port,sig };
-	case 1:
-		ImageID = UnPB.GetVarint(9);
+			LPBYTE sig;
+			uint IP, Port, ImageID;
+			UnPB.StepIn(3);
+			switch (UnPB.GetVarint(4))
+			{
+			case 0://需要上传
+				//IP PORT为数组,这里就取第一组
+				IP = UnPB.GetVarint(6);
+				Port = UnPB.GetVarint(7);
+				sig = UnPB.GetBin(8);
 
-		Fun_Send_Sync_Release(sso_seq);
-		return { ImageID,NULL,NULL,nullptr };
-	}
+				return { ImageID,IP,Port,sig };
+			case 1:
+				ImageID = UnPB.GetVarint(9);
+
+				return { ImageID,NULL,NULL,nullptr };
+			};
+		});
 }
 
 /// <summary>
@@ -1923,10 +1941,13 @@ void Android::OidbSvc_0x55c_1(const uint Group, const uint QQ, const bool Set)
 	ProtobufStruct::TreeNode Node1{ nullptr,nullptr,1,ProtobufStruct::ProtobufStructType::VARINT,(void*)1372 };
 
 	Protobuf PB;
-	auto [sso_seq, BodyBin] = Fun_Send_Sync(11, 1, "OidbSvc.0x55c_1", PB.Pack(&Node1));
-	UnProtobuf UnPB(BodyBin);
+	Fun_Send_Sync<bool>(11, 1, "OidbSvc.0x55c_1", PB.Pack(&Node1),
+		[&](uint sso_seq, LPBYTE BodyBin)
+		->bool {
 
-	Fun_Send_Sync_Release(sso_seq);
+			UnProtobuf UnPB(BodyBin);
+			return true;
+		});
 }
 
 /// <summary>
@@ -1949,10 +1970,13 @@ void Android::OidbSvc_0x570_8(const uint Group, const uint QQ, const  uint Time)
 
 
 	Protobuf PB;
-	auto [sso_seq, BodyBin] = Fun_Send_Sync(11, 1, "OidbSvc.0x570_8", PB.Pack(&Node1));
-	UnProtobuf UnPB(BodyBin);
+	Fun_Send_Sync<bool>(11, 1, "OidbSvc.0x570_8", PB.Pack(&Node1),
+		[&](uint sso_seq, LPBYTE BodyBin)
+		->bool {
+			UnProtobuf UnPB(BodyBin);
+			return true;
 
-	Fun_Send_Sync_Release(sso_seq);
+		});
 }
 
 /// <summary>
@@ -1972,22 +1996,24 @@ std::vector<uint>* Android::OidbSvc_0x899_0(const uint Group)
 	ProtobufStruct::TreeNode Node1{ nullptr,&Node2,1,ProtobufStruct::ProtobufStructType::VARINT,(void*)2201 };
 
 	Protobuf PB;
-	auto [sso_seq, BodyBin] = Fun_Send_Sync(11, 1, "OidbSvc.0x899_0", PB.Pack(&Node1));
-	UnProtobuf UnPB(BodyBin);
+	return Fun_Send_Sync<std::vector<uint>*>(11, 1, "OidbSvc.0x899_0", PB.Pack(&Node1),
+		[&](uint sso_seq, LPBYTE BodyBin)
+		->std::vector<uint>*{
+			UnProtobuf UnPB(BodyBin);
 
-	std::vector<uint> ManagerList;
+			std::vector<uint> ManagerList;
 
-	UnPB.StepIn(4);
-	while (UnPB.IsEnd())
-	{
-		UnPB.StepIn(4);
-		ManagerList.insert(ManagerList.end(), UnPB.GetVarint(1));
-		UnPB.StepOut();
-	}
-	UnPB.StepOut();
+			UnPB.StepIn(4);
+			while (UnPB.IsEnd())
+			{
+				UnPB.StepIn(4);
+				ManagerList.insert(ManagerList.end(), UnPB.GetVarint(1));
+				UnPB.StepOut();
+			}
+			UnPB.StepOut();
 
-	Fun_Send_Sync_Release(sso_seq);
-	return &ManagerList;
+			return &ManagerList;
+		});
 }
 
 /// <summary>
@@ -2006,10 +2032,13 @@ void Android::OidbSvc_0x89a_0(const uint Group, const bool Ban)
 	ProtobufStruct::TreeNode Node1{ nullptr,&Node2,1,ProtobufStruct::ProtobufStructType::VARINT,(void*)2202 };
 
 	Protobuf PB;
-	auto [sso_seq, BodyBin] = Fun_Send_Sync(11, 1, "OidbSvc.0x89a_0", PB.Pack(&Node1));
-	UnProtobuf UnPB(BodyBin);
+	Fun_Send_Sync<bool>(11, 1, "OidbSvc.0x89a_0", PB.Pack(&Node1),
+		[&](uint sso_seq, LPBYTE BodyBin)
+		->bool {
+			UnProtobuf UnPB(BodyBin);
+			return true;
 
-	Fun_Send_Sync_Release(sso_seq);
+		});
 }
 
 /// <summary>
@@ -2031,10 +2060,13 @@ void Android::OidbSvc_0x8a0_0(const uint Group, const  uint QQ, const  bool Fore
 	ProtobufStruct::TreeNode Node1{ nullptr,&Node2,1,ProtobufStruct::ProtobufStructType::VARINT,(void*)2208 };
 
 	Protobuf PB;
-	auto [sso_seq, BodyBin] = Fun_Send_Sync(11, 1, "OidbSvc.0x8a0_0", PB.Pack(&Node1));
-	UnProtobuf UnPB(BodyBin);
+	Fun_Send_Sync<bool>(11, 1, "OidbSvc.0x8a0_0", PB.Pack(&Node1),
+		[&](uint sso_seq, LPBYTE BodyBin)
+		->bool {
+			UnProtobuf UnPB(BodyBin);
+			return true;
 
-	Fun_Send_Sync_Release(sso_seq);
+		});
 }
 
 /// <summary>
@@ -2061,10 +2093,13 @@ void Android::OidbSvc_0x8fc_2(const uint Group, const  uint QQ, const  char* Tit
 	ProtobufStruct::TreeNode Node1{ nullptr,&Node2,1,ProtobufStruct::ProtobufStructType::VARINT,(void*)2300 };
 
 	Protobuf PB;
-	auto [sso_seq, BodyBin] = Fun_Send_Sync(11, 1, "OidbSvc.0x8fc_2", PB.Pack(&Node1));
-	UnProtobuf UnPB(BodyBin);
+	Fun_Send_Sync<bool>(11, 1, "OidbSvc.0x8fc_2", PB.Pack(&Node1),
+		[&](uint sso_seq, LPBYTE BodyBin)
+		->bool {
+			UnProtobuf UnPB(BodyBin);
+			return true;
 
-	Fun_Send_Sync_Release(sso_seq);
+		});
 }
 
 void Android::Un_Tlv_Get(const unsigned short cmd, const byte* bin, const uint len)
@@ -2379,9 +2414,9 @@ void Android::Unpack_Body_Request_Packet(const LPBYTE BodyBin, LPBYTE& sBuffer)
 	UnJce.Read(sBuffer, 7);
 }
 
-void Android::Unpack_wtlogin_login(const std::tuple<int, LPBYTE> tuple)
+void Android::Unpack_wtlogin_login(const LPBYTE BodyBin, const uint sso_seq)
 {
-	::UnPack UnPack(std::get<1>(tuple));
+	::UnPack UnPack(BodyBin);
 	UnPack.GetByte();
 	const uint len = UnPack.GetShort() - 1 - 2 - 2 - 2 - 2 - 4 - 2 - 1 - 1;
 	UnPack.GetShort();
@@ -2458,7 +2493,6 @@ void Android::Unpack_wtlogin_login(const std::tuple<int, LPBYTE> tuple)
 		throw "Unknown login result";
 		break;
 	}
-	Fun_Send_Sync_Release(std::get<0>(tuple));
 }
 
 void Android::Unpack_OnlinePush_PbPushGroupMsg(const LPBYTE BodyBin, const uint sso_seq)
