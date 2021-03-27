@@ -504,7 +504,7 @@ void Android::Fun_Receice(const LPBYTE bin)
 		std::unique_lock<std::mutex> ulock(lock);
 
 		SendList[sso_seq & 0x3F].BodyBin = BodyBin;
-		SendList[sso_seq & 0x3F].hThread = GetCurrentThread();
+		DuplicateHandle(GetCurrentProcess(), GetCurrentThread(), GetCurrentProcess(), &SendList[sso_seq & 0x3F].hThread, 0, 0, DUPLICATE_SAME_ACCESS);
 		SendList[sso_seq & 0x3F].cv.notify_one();
 
 		SuspendThread(SendList[sso_seq & 0x3F].hThread);
@@ -924,7 +924,7 @@ void Android::StatSvc_SimpleGet()
 {
 	Pack Pack(4, true);
 	Pack.SetLength();
-	Fun_Send_Sync<void>(10, 1, "StatSvc.SimpleGet", Pack.GetAll(),
+	Fun_Send_Sync<void>(10, 2, "StatSvc.SimpleGet", Pack.GetAll(),
 		[&](uint sso_seq, LPBYTE BodyBin) {
 			UnProtobuf UnPB(BodyBin);
 
@@ -2880,7 +2880,7 @@ byte Android::QQ_Login_Second()
 	Fun_Connect();
 
 	//StatSvc_SimpleGet();
-	//wtlogin_exchange_emp();
+	wtlogin_exchange_emp();
 	return QQ.Login->state;
 }
 

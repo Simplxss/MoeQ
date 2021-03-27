@@ -389,8 +389,8 @@ unsigned __int16 Tlv::Tlv525(byte* bin, const uint len, const uint QQ, const cha
 	{
 		Pack.SetByte(0x41);
 		Pack.SetByte(1);
-		Pack.SetByte(3);
-
+		Pack.SetByte(0); //ArrLegth
+		/*
 		Pack.SetInt(0);
 		Pack.SetInt(QQ);
 		Pack.SetByte(4);
@@ -411,7 +411,7 @@ unsigned __int16 Tlv::Tlv525(byte* bin, const uint len, const uint QQ, const cha
 		Pack.SetBin_(XBin::IP2Bin(IP), 4);
 		Pack.SetInt(Time);
 		Pack.SetInt(APPID);
-
+		*/
 	}
 	else
 	{

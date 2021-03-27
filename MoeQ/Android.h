@@ -170,14 +170,17 @@ private:
 		HANDLE hThread = SendList[SsoSeq & 0x3F].hThread;
 		try {
 			R ret = Function(SsoSeq, SendList[SsoSeq & 0x3F].BodyBin);
+
+			ResumeThread(hThread);
+			CloseHandle(hThread);
+
+			return ret;
 		}
 		catch (std::exception e)
 		{
-
+			ResumeThread(hThread);
+			CloseHandle(hThread);
 		}
-		ResumeThread(hThread);
-
-		return ret;
 	};
 	template<>
 	void Fun_Send_Sync<void>(const uint PacketType, const byte EncodeType, const char* ServiceCmd, LPBYTE Buffer, std::function<void(uint,LPBYTE)> Function)
@@ -197,6 +200,7 @@ private:
 
 		}
 		ResumeThread(hThread);
+		CloseHandle(hThread);
 	};
 	void Fun_Msg_Loop();
 	void Fun_Receice(LPBYTE bin);
