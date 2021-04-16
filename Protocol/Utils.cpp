@@ -532,14 +532,15 @@ std::wstring Iconv::Utf8ToUnicode(const char8_t *str, const int Length)
 
 std::u8string Iconv::UnicodeToUtf8(const wchar_t *str, const int Length)
 {
-    int utf8Length = ::WideCharToMultiByte(CP_ACP, 0, str, Length, nullptr, 0, nullptr, nullptr);
+    int utf8Length = ::WideCharToMultiByte(CP_UTF8, 0, str, Length, nullptr, 0, nullptr, nullptr);
 
     std::u8string utf8;
     utf8.resize(utf8Length);
+    ::WideCharToMultiByte(CP_UTF8, 0, str, Length, (LPSTR)&utf8[0], utf8Length, nullptr, nullptr);
     return utf8;
 }
 
-#endif()
+#endif
 
 #if defined(_LINUX_PLATFORM_)
 
@@ -587,7 +588,7 @@ std::u8string Iconv::UnicodeToUtf8(const wchar_t *str, const int Length)
     utf8.resize(utf8Length - 1);
 }
 
-#endif()
+#endif
 
 bool BigInteger::AddOne(byte *BigInteger, int len)
 {

@@ -8,11 +8,11 @@
 #if defined(_WIN_PLATFORM_)
 #include <windows.h>
 #include <tchar.h>
-#endif()
+#endif
 
 #if defined(_LINUX_PLATFORM_)
 #include <iconv.h>
-#endif()
+#endif
 
 #include <zlib.h>
 #include <sqlite3.h>

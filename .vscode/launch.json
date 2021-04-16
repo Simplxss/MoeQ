@@ -3,14 +3,13 @@
     "configurations": [
         {
             "name": "(gdb) Launch",
-            "preLaunchTask": "Build",
             "type": "cppdbg",
             "request": "launch",
             // Resolved by CMake Tools:
             "program": "${command:cmake.launchTargetPath}",
             "args": [],
             "stopAtEntry": false,
-            "cwd": "${workspaceFolder}\\build",
+            "cwd": "${workspaceFolder}",
             "environment": [],
             "externalConsole": true,
             "MIMode": "gdb",

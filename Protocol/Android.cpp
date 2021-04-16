@@ -3147,7 +3147,7 @@ byte Android::QQ_Login_Second()
     Fun_Connect();
 
     //StatSvc_SimpleGet();
-    wtlogin_exchange_emp();
+    //wtlogin_exchange_emp();
     return QQ.Login->state;
 }
 
