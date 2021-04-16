@@ -1,6 +1,6 @@
 #include "Pack.h"
 
-ByteInputStream::ByteInputStream(const byte* buffer)
+ByteInputStream::ByteInputStream(const byte *buffer)
 {
 	Buffer = buffer;
 	Offset = 0;
@@ -11,7 +11,7 @@ bool ByteInputStream::Check(const uint len, const uint i)
 	return len >= Offset + i;
 }
 
-void ByteInputStream::Set(const byte* buffer)
+void ByteInputStream::Set(const byte *buffer)
 {
 	Buffer = buffer;
 	Offset = 0;
@@ -44,7 +44,7 @@ unsigned __int32 ByteInputStream::GetInt()
 	i |= Buffer[++Offset] << 8;
 	i |= Buffer[++Offset];
 	++Offset;
-	return  i;
+	return i;
 }
 
 unsigned __int64 ByteInputStream::GetLong()
@@ -72,14 +72,14 @@ double ByteInputStream::GetDouble()
 	return 0.0;
 }
 
-const byte* ByteInputStream::GetBin(const uint len)
+const byte *ByteInputStream::GetBin(const uint len)
 {
 	uint tmp = Offset;
 	ByteInputStream::Skip(len);
 	return Buffer + tmp;
 }
 
-const byte* ByteInputStream::GetCurrentPoint()
+const byte *ByteInputStream::GetCurrentPoint()
 {
 	return Buffer + Offset;
 }
@@ -89,8 +89,7 @@ uint ByteInputStream::GetReadedLength()
 	return Offset;
 }
 
-
-void UnPack::Reset(const byte* buffer, const uint bufferlen)
+void UnPack::Reset(const byte *buffer, const uint bufferlen)
 {
 	ByteInputStream::Set(buffer);
 	BufferLen = bufferlen;
@@ -104,7 +103,7 @@ void UnPack::Reset(const LPBYTE buffer)
 	BufferLen = XBin::Bin2Int(buffer);
 }
 
-void UnPack::Reset(const std::vector<byte>* buffer)
+void UnPack::Reset(const std::vector<byte> *buffer)
 {
 	ByteInputStream::Set((*buffer).data());
 	BufferLen = (*buffer).size();
@@ -112,48 +111,57 @@ void UnPack::Reset(const std::vector<byte>* buffer)
 
 unsigned __int8 UnPack::GetByte()
 {
-	if (Check(BufferLen, 1)) return ByteInputStream::GetByte();
+	if (Check(BufferLen, 1))
+		return ByteInputStream::GetByte();
 }
 
 unsigned __int16 UnPack::GetShort()
 {
-	if (Check(BufferLen, 2)) return ByteInputStream::GetShort();
+	if (Check(BufferLen, 2))
+		return ByteInputStream::GetShort();
 }
 
 unsigned __int32 UnPack::GetInt()
 {
-	if (Check(BufferLen, 4)) return ByteInputStream::GetInt();
+	if (Check(BufferLen, 4))
+		return ByteInputStream::GetInt();
 }
 
 unsigned __int64 UnPack::GetLong()
 {
-	if (Check(BufferLen, 8)) return ByteInputStream::GetLong();
+	if (Check(BufferLen, 8))
+		return ByteInputStream::GetLong();
 }
 
 float UnPack::GetFloat()
 {
-	if (Check(BufferLen, 4)) return ByteInputStream::GetFloat();
+	if (Check(BufferLen, 4))
+		return ByteInputStream::GetFloat();
 }
 
 double UnPack::GetDouble()
 {
-	if (Check(BufferLen, 8)) return ByteInputStream::GetDouble();
+	if (Check(BufferLen, 8))
+		return ByteInputStream::GetDouble();
 }
 
-const char* UnPack::GetStr(const uint len)
+const char *UnPack::GetStr(const uint len)
 {
-	if (Check(BufferLen, len)) return (const char*)ByteInputStream::GetBin(len);
+	if (Check(BufferLen, len))
+		return (const char *)ByteInputStream::GetBin(len);
 }
 
-const byte* UnPack::GetBin(const uint len)
+const byte *UnPack::GetBin(const uint len)
 {
-	if (Check(BufferLen, len)) return ByteInputStream::GetBin(len);
+	if (Check(BufferLen, len))
+		return ByteInputStream::GetBin(len);
 }
 
 const LPBYTE UnPack::GetBin()
 {
 	uint len = UnPack::GetInt() - 4;
-	if (Check(BufferLen, len)) return (const LPBYTE)(ByteInputStream::GetBin(len) - 4);
+	if (Check(BufferLen, len))
+		return (const LPBYTE)(ByteInputStream::GetBin(len) - 4);
 }
 
 uint UnPack::GetLeftLength()
@@ -161,8 +169,7 @@ uint UnPack::GetLeftLength()
 	return BufferLen - ByteInputStream::GetReadedLength();
 }
 
-
-ByteOutputStream::ByteOutputStream(byte* buffer)
+ByteOutputStream::ByteOutputStream(byte *buffer)
 {
 	Buffer = buffer;
 	Offset = 0;
@@ -178,7 +185,7 @@ void ByteOutputStream::Reset()
 	Offset = 0;
 }
 
-void ByteOutputStream::Set(byte* buffer)
+void ByteOutputStream::Set(byte *buffer)
 {
 	Buffer = buffer;
 }
@@ -244,7 +251,7 @@ void ByteOutputStream::SetDouble(const double i)
 	++Offset;
 }
 
-void ByteOutputStream::SetBin(const byte* bin, const uint len)
+void ByteOutputStream::SetBin(const byte *bin, const uint len)
 {
 	memcpy(Buffer + Offset, bin, len);
 	Offset += len;
@@ -257,7 +264,13 @@ void ByteOutputStream::SetBin(const LPBYTE bin)
 	Offset += XBin::Bin2Int(bin);
 }
 
-byte* ByteOutputStream::GetCurrentPoint()
+void ByteOutputStream::SetMD5(const byte *bin, const size_t length)
+{
+	Utils::MD5(bin, length, Buffer + Offset);
+	Offset += 16;
+}
+
+byte *ByteOutputStream::GetCurrentPoint()
 {
 	return Buffer + Offset;
 }
@@ -267,27 +280,27 @@ uint ByteOutputStream::Length()
 	return Offset;
 }
 
-byte* ByteOutputStream::GetAll()
+byte *ByteOutputStream::GetAll()
 {
 	return Buffer;
 }
 
-uint ByteOutputStream::GetAll(byte*& buf)
+uint ByteOutputStream::GetAll(byte *&buf)
 {
 	buf = Buffer;
 	return Offset;
 }
 
-
 void Pack::CheckBufferLen(uint len)
 {
-	if (!Check(BufferLen, len)) Expansion(!Check(BufferLen + 300, len) ? len : 300);
+	if (!Check(BufferLen, len))
+		Expansion(!Check(BufferLen + 300, len) ? len : 300);
 }
 
 void Pack::SetLength()
 {
 	uint len = ByteOutputStream::Length();
-	byte* Buffer = ByteOutputStream::GetAll();
+	byte *Buffer = ByteOutputStream::GetAll();
 	Buffer[0] = len >> 24;
 	Buffer[1] = len >> 16;
 	Buffer[2] = len >> 8;
@@ -297,7 +310,7 @@ void Pack::SetLength()
 void Pack::Expansion(uint len)
 {
 	BufferLen += len;
-	byte* tmp = new byte[BufferLen];
+	byte *tmp = new byte[BufferLen];
 	memcpy(tmp, ByteOutputStream::GetAll(), ByteOutputStream::Length());
 	delete[] ByteOutputStream::GetAll();
 	ByteOutputStream::Set(tmp);
@@ -306,7 +319,8 @@ void Pack::Expansion(uint len)
 void Pack::Reset(bool Length = false)
 {
 	Reset();
-	if (Length) ByteOutputStream::Skip(4);
+	if (Length)
+		ByteOutputStream::Skip(4);
 }
 
 void Pack::SetByte(const unsigned __int8 i)
@@ -345,22 +359,22 @@ void Pack::SetDouble(const double i)
 	ByteOutputStream::SetDouble(i);
 }
 
-void Pack::SetStr(const char* str)
+void Pack::SetStr(const char *str)
 {
 	unsigned int len = strlen(str);
 	CheckBufferLen(len);
-	ByteOutputStream::SetBin((byte*)str, len);
+	ByteOutputStream::SetBin((byte *)str, len);
 }
 
-void Pack::SetStr_(const char* str)
+void Pack::SetStr_(const char *str)
 {
 	unsigned int len = strlen(str);
 	CheckBufferLen(len);
-	ByteOutputStream::SetBin((byte*)str, len);
+	ByteOutputStream::SetBin((byte *)str, len);
 	delete str;
 }
 
-void Pack::SetBin(const byte* bin, const uint len)
+void Pack::SetBin(const byte *bin, const uint len)
 {
 	CheckBufferLen(len);
 	ByteOutputStream::SetBin(bin, len);
@@ -373,7 +387,7 @@ void Pack::SetBin(const LPBYTE bin)
 	ByteOutputStream::SetBin(bin);
 }
 
-void Pack::SetBin(const std::vector<byte>* bin)
+void Pack::SetBin(const std::vector<byte> *bin)
 {
 	uint len = (*bin).size();
 	CheckBufferLen(len);
@@ -381,7 +395,7 @@ void Pack::SetBin(const std::vector<byte>* bin)
 }
 
 //会自动delete参数
-void Pack::SetBin_(const byte* bin, const uint len)
+void Pack::SetBin_(const byte *bin, const uint len)
 {
 	CheckBufferLen(len);
 	ByteOutputStream::SetBin(bin, len);
@@ -397,22 +411,24 @@ void Pack::SetBin_(const LPBYTE bin)
 }
 
 //申请新的内存返回且清空
-byte* Pack::GetAll_(bool Length)
+byte *Pack::GetAll_(bool Length)
 {
-	byte* bin = new byte[ByteOutputStream::Length()];
+	byte *bin = new byte[ByteOutputStream::Length()];
 	memcpy(bin, ByteOutputStream::GetAll(), ByteOutputStream::Length());
 	ByteOutputStream::Reset();
-	if (Length) ByteOutputStream::Skip(4);
+	if (Length)
+		ByteOutputStream::Skip(4);
 	return bin;
 }
 
-uint Pack::GetAll_(byte*& bin, bool Length)
+uint Pack::GetAll_(byte *&bin, bool Length)
 {
 	uint len = ByteOutputStream::Length();
 	bin = new byte[len];
 	memcpy(bin, ByteOutputStream::GetAll(), len);
 	ByteOutputStream::Reset();
-	if (Length) ByteOutputStream::Skip(4);
+	if (Length)
+		ByteOutputStream::Skip(4);
 	return len;
 }
 
@@ -421,70 +437,86 @@ uint Pack::GetLeftSpace()
 	return BufferLen - ByteOutputStream::Length();
 }
 
-
 void TlvPack::SetByte(const unsigned __int8 i)
 {
-	if (Check(BufferLen, 1)) ByteOutputStream::SetByte(i);
+	if (Check(BufferLen, 1))
+		ByteOutputStream::SetByte(i);
 }
 
 void TlvPack::SetShort(const unsigned __int16 i)
 {
-	if (Check(BufferLen, 2)) ByteOutputStream::SetShort(i);
+	if (Check(BufferLen, 2))
+		ByteOutputStream::SetShort(i);
 }
 
 void TlvPack::SetInt(const unsigned __int32 i)
 {
-	if (Check(BufferLen, 4)) ByteOutputStream::SetInt(i);
+	if (Check(BufferLen, 4))
+		ByteOutputStream::SetInt(i);
 }
 
 void TlvPack::SetLong(const unsigned __int64 i)
 {
-	if (Check(BufferLen, 8)) ByteOutputStream::SetLong(i);
+	if (Check(BufferLen, 8))
+		ByteOutputStream::SetLong(i);
 }
 
-void TlvPack::SetStr(const char* str)
+void TlvPack::SetStr(const char *str)
 {
-	if (Check(BufferLen, strlen(str))) ByteOutputStream::SetBin((byte*)str, strlen(str));
+	if (Check(BufferLen, strlen(str)))
+		ByteOutputStream::SetBin((byte *)str, strlen(str));
 }
 
-void TlvPack::SetBin(const byte* bin, const uint len)
+void TlvPack::SetBin(const byte *bin, const uint len)
 {
-	if (Check(BufferLen, len)) ByteOutputStream::SetBin(bin, len);
+	if (Check(BufferLen, len))
+		ByteOutputStream::SetBin(bin, len);
 }
 
 void TlvPack::SetBin(const LPBYTE bin)
 {
-	if (Check(BufferLen, XBin::Bin2Int(bin))) ByteOutputStream::SetBin(bin, XBin::Bin2Int(bin));
+	if (Check(BufferLen, XBin::Bin2Int(bin)))
+		ByteOutputStream::SetBin(bin, XBin::Bin2Int(bin));
 }
 
-void TlvPack::SetBin(const std::vector<byte>* bin)
+void TlvPack::SetBin(const std::vector<byte> *bin)
 {
 	uint len = (*bin).size();
-	if (Check(BufferLen, len)) ByteOutputStream::SetBin((*bin).data(), len);
+	if (Check(BufferLen, len))
+		ByteOutputStream::SetBin((*bin).data(), len);
 }
 
-void TlvPack::SetBin_(const byte* bin, const uint len)
+void TlvPack::SetBin_(const byte *bin, const uint len)
 {
-	if (Check(BufferLen, len)) ByteOutputStream::SetBin(bin, len);
+	if (Check(BufferLen, len))
+		ByteOutputStream::SetBin(bin, len);
 	delete[] bin;
 }
 
 void TlvPack::SetBin_(const LPBYTE bin)
 {
-	if (Check(BufferLen, XBin::Bin2Int(bin))) ByteOutputStream::SetBin(bin, XBin::Bin2Int(bin));
+	if (Check(BufferLen, XBin::Bin2Int(bin)))
+		ByteOutputStream::SetBin(bin, XBin::Bin2Int(bin));
 	delete[] bin;
 }
 
 void TlvPack::SetBinEx_(const LPBYTE bin)
 {
-	if (Check(BufferLen, XBin::Bin2Int(bin) - 4)) ByteOutputStream::SetBin(bin + 4, XBin::Bin2Int(bin) - 4);
+	if (Check(BufferLen, XBin::Bin2Int(bin) - 4))
+		ByteOutputStream::SetBin(bin + 4, XBin::Bin2Int(bin) - 4);
 	delete[] bin;
+}
+
+void TlvPack::SetMD5(const byte *bin, const size_t length)
+{
+	if (Check(BufferLen, 16))
+		ByteOutputStream::SetMD5(bin, length);
 }
 
 unsigned __int16 TlvPack::Pack(const unsigned short cmd)
 {
 	uint len = ByteOutputStream::Length() - 4; //去掉头
-	byte* Buffer = ByteOutputStream::GetAll();
+	byte *Buffer = ByteOutputStream::GetAll();
 	Buffer[0] = cmd >> 8;
 	Buffer[1] = cmd;
 	Buffer[2] = len >> 8;

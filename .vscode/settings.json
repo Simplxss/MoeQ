@@ -68,7 +68,8 @@
         "xstring": "cpp",
         "queue": "cpp",
         "locale": "cpp",
-        "regex": "cpp"
+        "regex": "cpp",
+        "iomanip": "cpp"
     },
     "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools"
 }

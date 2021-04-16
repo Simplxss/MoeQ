@@ -4,8 +4,14 @@ std::atomic_int Semaphore = 0;
 std::condition_variable cv;
 std::queue<Log::Log> LogQueue;
 
-
+#if defined(_WIN_PLATFORM_)
 extern wchar_t DataPath[261];
+#endif
+
+#if defined(_LINUX_PLATFORM_)
+extern char DataPath[261];
+#endif
+
 sqlite3* Database_Data, * Database_Log = nullptr;
 
 
@@ -150,16 +156,47 @@ void Message::DestoryMsg(Message::Msg* Msg)
 
 void Database::Init()
 {
+    #if defined(_WIN_PLATFORM_)
     char* zErrMsg = nullptr;
     wchar_t DatabaseFilePath[261], DatabaseLogPath[261] = { 0 };
 
     wcscpy(DatabaseLogPath, DataPath);
     wcscat(DatabaseLogPath, L"log.db");
-    if (sqlite3_open_v2((const char*)(Iconv::Unicode2Utf8(DatabaseLogPath).c_str()), &Database_Log, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, NULL) != SQLITE_OK)
+    if (sqlite3_open_v2((const char*)(Iconv::UnicodeToUtf8(DatabaseLogPath).c_str()), &Database_Log, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, NULL) != SQLITE_OK)
     {
         Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"Open Datebase 'log.db' error", zErrMsg);
         sqlite3_free(zErrMsg);
     };
+
+    wcscpy(DatabaseFilePath, DataPath);
+    wcscat(DatabaseFilePath, L"data.db");
+    if (sqlite3_open_v2((const char*)(Iconv::UnicodeToUtf8(DatabaseFilePath).c_str()), &Database_Data, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, NULL) != SQLITE_OK)
+    {
+        Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"Open Datebase 'data.db' error", zErrMsg);
+        sqlite3_free(zErrMsg);
+    }
+    #endif
+
+    #if defined(_LINUX_PLATFORM_)
+    char* zErrMsg = nullptr;
+    char DatabaseFilePath[261], DatabaseLogPath[261] = { 0 };
+
+    strcpy(DatabaseLogPath, DataPath);
+    strcat(DatabaseLogPath, L"log.db");
+    if (sqlite3_open_v2(DatabaseLogPath, &Database_Log, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, NULL) != SQLITE_OK)
+    {
+        Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"Open Datebase 'log.db' error", zErrMsg);
+        sqlite3_free(zErrMsg);
+    };
+
+    strcpy(DatabaseFilePath, DataPath);
+    strcat(DatabaseFilePath, L"data.db");
+    if (sqlite3_open_v2(DatabaseFilePath, &Database_Data, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, NULL) != SQLITE_OK)
+    {
+        Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"Open Datebase 'data.db' error", zErrMsg);
+        sqlite3_free(zErrMsg);
+    }
+    #endif
 
     if (sqlite3_exec(Database_Log,
         "CREATE TABLE IF NOT EXISTS Log("  \
@@ -170,15 +207,6 @@ void Database::Init()
         , 0, 0, &zErrMsg) != SQLITE_OK)
     {
         Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"Create table 'Log' error", zErrMsg);
-        sqlite3_free(zErrMsg);
-    }
-
-
-    wcscpy(DatabaseFilePath, DataPath);
-    wcscat(DatabaseFilePath, L"data.db");
-    if (sqlite3_open_v2((const char*)(Iconv::Unicode2Utf8(DatabaseFilePath).c_str()), &Database_Data, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, NULL) != SQLITE_OK)
-    {
-        Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"Open Datebase 'data.db' error", zErrMsg);
         sqlite3_free(zErrMsg);
     }
 
@@ -481,52 +509,46 @@ void Log::DesplayThread()
         {
             Log Log_ = LogQueue.front();
             LogQueue.pop();
-            /*
-            CListCtrl* LogList = (CListCtrl*)((CDialog*)hwnd)->GetDlgItem(IDC_LOG);
-            int Index = LogList->InsertItem(0, L"");
-            if (Index < 0)	continue;
-            LogQueue.pop();
             switch (Log_.LogType) {
             case LogType::__DEBUG:
-                LogList->SetItemText(Index, 0, L"Debug");
+                std::wcout << L"Debug";
                 break;
             case LogType::INFORMATION:
-                LogList->SetItemText(Index, 0, L"Information");
+                std::wcout << L"Information";
                 break;
             case LogType::NOTICE:
-                LogList->SetItemText(Index, 0, L"Notice");
+                std::wcout << L"Notice";
                 break;
             case LogType::WARNING:
-                LogList->SetItemText(Index, 0, L"Warning");
+                std::wcout << L"Warning";
                 break;
             case LogType::_ERROR:
-                LogList->SetItemText(Index, 0, L"Error");
+                std::wcout << L"Error";
                 break;
             }
+            std::wcout << L" ";
             switch (Log_.MsgType)
             {
             case MsgType::OTHER:
-                LogList->SetItemText(Index, 1, L"Other");
+                std::wcout << L"Other";
                 break;
             case MsgType::_GROUP:
-                LogList->SetItemText(Index, 1, L"Group");
+                std::wcout << L"Group";
                 break;
             case MsgType::PRIVATE:
-                LogList->SetItemText(Index, 1, L"Private");
+                std::wcout << L"Private";
                 break;
             case MsgType::PROGRAM:
-                LogList->SetItemText(Index, 1, L"Program");
+                std::wcout << L"Program";
                 break;
             case MsgType::SERVER:
-                LogList->SetItemText(Index, 1, L"Server");
+                std::wcout << L"Server";
                 break;
             default:
                 throw "Known MsgType";
                 break;
             }
-            LogList->SetItemText(Index, 2, Log_.Type);
-            LogList->SetItemText(Index, 3, Log_.Msg);
-            */
+            std::cout << " " << (char*)Log_.Type.c_str() << " " << (char*)Log_.Msg.c_str() << std::endl;
 
             Database::AddLog(Log_.LogType, Log_.MsgType, Log_.Type.c_str(), Log_.Msg.c_str());
             --Semaphore;
@@ -542,28 +564,28 @@ void Log::Init()
 
 void Log::AddLog(const LogType LogType, const MsgType MsgType, const char* Type, const char* Msg)
 {
-    LogQueue.push(Log({LogType,MsgType,Iconv::Ansi2Utf8(Type),Iconv::Ansi2Utf8(Msg)}));
+    LogQueue.push(Log({LogType,MsgType,Iconv::AnsiToUtf8(Type),Iconv::AnsiToUtf8(Msg)}));
     ++Semaphore;
     cv.notify_one();
 }
 
 void Log::AddLog(const LogType LogType, const MsgType MsgType, const char* Type, const char8_t* Msg)
 {
-    LogQueue.push(Log({LogType,MsgType,Iconv::Ansi2Utf8(Type),Msg}));
+    LogQueue.push(Log({LogType,MsgType,Iconv::AnsiToUtf8(Type),Msg}));
     ++Semaphore;
     cv.notify_one();
 }
 
 void Log::AddLog(const LogType LogType, const MsgType MsgType, const char8_t* Type, const char* Msg)
 {
-    LogQueue.push(Log({LogType,MsgType,Type,Iconv::Ansi2Utf8(Msg)}));
+    LogQueue.push(Log({LogType,MsgType,Type,Iconv::AnsiToUtf8(Msg)}));
     ++Semaphore;
     cv.notify_one();
 }
 
 void Log::AddLog(const LogType LogType, const MsgType MsgType, const wchar_t* Type, const wchar_t* Msg)
 {
-    LogQueue.push(Log({LogType,MsgType,Iconv::Unicode2Utf8(Type),Iconv::Unicode2Utf8(Msg)}));
+    LogQueue.push(Log({LogType,MsgType,Iconv::UnicodeToUtf8(Type),Iconv::UnicodeToUtf8(Msg)}));
     ++Semaphore;
     cv.notify_one();
 }

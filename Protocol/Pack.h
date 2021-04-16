@@ -73,6 +73,7 @@ public:
 	void SetDouble(const double i);
 	void SetBin(const byte* bin, const uint len);
 	void SetBin(const LPBYTE bin);
+	void SetMD5(const byte *bin, const size_t length);
 	byte* GetCurrentPoint();
 	uint Length();
 	byte* GetAll();
@@ -134,5 +135,6 @@ public:
 	void SetBin_(const byte* bin, const uint len);
 	void SetBin_(const LPBYTE bin);
 	void SetBinEx_(const LPBYTE bin);
+	void SetMD5(const byte *bin, const size_t length);
 	unsigned __int16 Pack(const unsigned short cmd);
 };

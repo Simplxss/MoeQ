@@ -329,7 +329,7 @@ bool Android::Fun_Connect(const wchar_t *IP, const unsigned short Port)
         {
             wchar_t *IP;
             TCP.DomainGetIP(L"msfwifi.3g.qq.com", IP);
-            if (!TCP.Connect(Iconv::Unicode2Ansi(IP).c_str(), 8080))
+            if (!TCP.Connect(Iconv::UnicodeToAnsi(IP).c_str(), 8080))
             {
                 delete[] IP;
                 return false;
@@ -349,7 +349,7 @@ bool Android::Fun_Connect(const wchar_t *IP, const unsigned short Port)
     {
         if (Connected)
             TCP.Close();
-        if (!TCP.Connect(Iconv::Unicode2Ansi(IP).c_str(), Port))
+        if (!TCP.Connect(Iconv::UnicodeToAnsi(IP).c_str(), Port))
             return false;
         Connected = true;
     }
@@ -555,8 +555,7 @@ void Android::Fun_Receice(const LPBYTE bin)
         break;
     }
 
-    OutputDebugString(std::to_wstring(sso_seq).c_str());
-    Log::AddLog(Log::LogType::__DEBUG, Log::MsgType::OTHER, u8"serviceCmd", ServiceCmd);
+    Log::AddLog(Log::LogType::__DEBUG, Log::MsgType::OTHER, u8"serviceCmd", (char8_t*)ServiceCmd);
 
     if (sso_seq > 0)
     {
@@ -692,9 +691,9 @@ LPBYTE Android::Make_Body_PC(byte *Buffer, const uint BufferLen, const bool emp)
         }
         else
         {
-            byte key[16] = {0};
-            memcpy(key, Utils::MD5(QQ.Login->ECDH.sharekey, 24), 16);
+            byte *key = Utils::MD5(QQ.Login->ECDH.sharekey, 24);
             Tea::encrypt(key, Buffer, BufferLen, data);
+            delete[] key;
         }
         delete[] Buffer;
         Pack.SetBin(&data);
@@ -2663,18 +2662,19 @@ void Android::Unpack_wtlogin_login(const LPBYTE BodyBin, const uint sso_seq)
 
     const byte *Buffer = nullptr;
     Buffer = UnPack.GetBin(len);
-    byte key[16] = {0};
-    memcpy(key, Utils::MD5(QQ.Login->ECDH.sharekey, 24), 16);
+    byte *key = Utils::MD5(QQ.Login->ECDH.sharekey, 24);
     std::vector<byte> data;
     Tea::decrypt(key, Buffer, len, data);
+    delete[] key;
     UnPack.Reset(&data);
     const byte *publickey = nullptr;
     publickey = UnPack.GetBin(UnPack.GetShort());
     const byte *sharekey = Utils::Ecdh_CountSharekey(QQ.Login->ECDH.prikey, publickey);
-    memcpy(key, Utils::MD5(sharekey, 24), 16);
+    key = Utils::MD5(sharekey, 24);
     delete[] sharekey;
     std::vector<byte> buffer;
     Tea::decrypt(key, UnPack.GetCurrentPoint(), UnPack.GetLeftLength(), buffer);
+    delete[] key;
     UnPack.Reset(&buffer);
     UnPack.GetShort();
     UnPack.GetByte();
@@ -3108,15 +3108,17 @@ void Android::QQ_Init(const char *Account)
 /// <returns>LOGIN_</returns>
 byte Android::QQ_Login(const char *Password)
 {
-    QQ.Token.md5 = new byte[16];
-    QQ.Token.md52 = new byte[16];
-    memcpy(QQ.Token.md5, Utils::MD5((byte *)Password, strlen(Password)), 16);
+    if (QQ.Token.md5 != nullptr)
+        delete[] QQ.Token.md5;
+    QQ.Token.md5 = Utils::MD5((byte *)Password, strlen(Password));
     byte tmp[24] = {0};
     memcpy(tmp, QQ.Token.md5, 16);
     byte *bin = XBin::Int2Bin(QQ.QQ);
     memcpy(tmp + 20, bin, 4);
     delete[] bin;
-    memcpy(QQ.Token.md52, Utils::MD5(tmp, 24), 16);
+    if (QQ.Token.md52 != nullptr)
+        delete[] QQ.Token.md52;
+    QQ.Token.md52 = Utils::MD5(tmp, 24);
     QQ.Token.TGTkey = Utils::GetRandomBin(16);
     QQ.Login = new Login;
     QQ.Login->RandKey = Utils::GetRandomBin(16);
@@ -3133,13 +3135,14 @@ byte Android::QQ_Login(const char *Password)
 
 byte Android::QQ_Login_Second()
 {
-    QQ.Token.md52 = new byte[16];
     byte tmp[24] = {0};
     memcpy(tmp, QQ.Token.md5, 16);
     byte *bin = XBin::Int2Bin(QQ.QQ);
     memcpy(tmp + 20, bin, 4);
     delete[] bin;
-    memcpy(QQ.Token.md52, Utils::MD5(tmp, 24), 16);
+    if (QQ.Token.md52 != nullptr)
+        delete[] QQ.Token.md52;
+    QQ.Token.md52 = Utils::MD5(tmp, 24);
     QQ.Login = new Login;
     Fun_Connect();
 
@@ -3234,13 +3237,14 @@ void Android::QQ_Heart_Beat()
 
 void Android::QQ_SyncCookie()
 {
-    QQ.Token.md52 = new byte[16];
     byte tmp[24] = {0};
     memcpy(tmp, QQ.Token.md5, 16);
     byte *bin = XBin::Int2Bin(QQ.QQ);
     memcpy(tmp + 20, bin, 4);
     delete[] bin;
-    memcpy(QQ.Token.md52, Utils::MD5(tmp, 24), 16);
+    if (QQ.Token.md52 != nullptr)
+        delete[] QQ.Token.md52;
+    QQ.Token.md52 = Utils::MD5(tmp, 24);
     QQ.Login = new Login;
     wtlogin_exchange_emp();
 }

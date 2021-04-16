@@ -145,7 +145,7 @@ void PluginSystem::Load(
                 PluginList[i].Appid = new char8_t[d["appid"].GetStringLength() + 1];
                 memcpy(PluginList[i].Appid, d["appid"].GetString(), d["appid"].GetStringLength());
                 PluginList[i].Appid[d["appid"].GetStringLength()] = 0;
-                if (wcscmp(Iconv::Utf82Unicode(PluginList[i].Appid).c_str(), fileinfo.name))
+                if (wcscmp(Iconv::Utf8ToUnicode(PluginList[i].Appid).c_str(), fileinfo.name))
                 {
                     printf("Appid is not same");
                     d.Clear();
@@ -155,7 +155,7 @@ void PluginSystem::Load(
                 wchar_t enable[5];
                 wcscpy(SettingFilePath, DataPath);
                 wcscat(SettingFilePath, L"setting.ini");
-                GetPrivateProfileString(Iconv::Utf82Unicode(PluginList[i].Appid).c_str(), L"enable", NULL, enable, 12, SettingFilePath);
+                GetPrivateProfileString(Iconv::Utf8ToUnicode(PluginList[i].Appid).c_str(), L"enable", NULL, enable, 12, SettingFilePath);
                 if (!wcscmp(enable, L"1"))
                 {
                     PluginList[i].Enable = true;

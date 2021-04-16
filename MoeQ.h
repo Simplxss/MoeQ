@@ -6,4 +6,6 @@
 #include <unistd.h>
 #endif
 
+#include <filesystem>
+
 #include "Protocol/ExportFunction.h"

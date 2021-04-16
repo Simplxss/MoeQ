@@ -3,11 +3,16 @@
 #include <vector>
 #include <chrono>
 #include <random>
-#include <locale>
-#include <codecvt>
 #include <iostream>
 
+#if defined(_WIN_PLATFORM_)
+#include <windows.h>
 #include <tchar.h>
+#endif()
+
+#if defined(_LINUX_PLATFORM_)
+#include <iconv.h>
+#endif()
 
 #include <zlib.h>
 #include <sqlite3.h>
@@ -31,6 +36,7 @@ namespace Utils
 	char *GetRandomLetter(const uint length);
 	byte *GetRandomBin(const uint length);
 
+    void MD5(const byte *bin, const size_t length, byte* md5);
 	byte *MD5(const byte *bin, const size_t length);
 	LPBYTE MD5EX(const byte *bin, const size_t length);
 	byte *Sha256(const byte *bin, const size_t length);
@@ -63,42 +69,72 @@ namespace XBin
 
 namespace Iconv
 {
-	std::u8string Ansi2Utf8(const std::string *str);
-	std::string Utf82Ansi(const std::u8string *str);
-	std::wstring Ansi2Unicode(const std::string *str);
-	std::string Unicode2Ansi(const std::wstring *str);
-	std::wstring Utf82Unicode(const std::u8string *str);
-	std::u8string Unicode2Utf8(const std::wstring *str);
+	std::wstring AnsiToUnicode(const char *str, const int Length);
+	std::string UnicodeToAnsi(const wchar_t *str, const int Length);
+	std::wstring Utf8ToUnicode(const char8_t *str, const int Length);
+	std::u8string UnicodeToUtf8(const wchar_t *str, const int Length);
 
-    inline std::u8string Ansi2Utf8(const char *str)
+	inline std::wstring AnsiToUnicode(const char *str)
 	{
-		std::string temp(str);
-		return Ansi2Utf8(&temp);
+		return AnsiToUnicode(str, strlen(str));
+	}
+	inline std::string UnicodeToAnsi(const wchar_t *str)
+	{
+		return UnicodeToAnsi(str, wcslen(str));
+	}
+	inline std::wstring Utf8ToUnicode(const char8_t *str)
+	{
+		return Utf8ToUnicode(str, strlen((char *)str));
+	}
+	inline std::u8string UnicodeToUtf8(const wchar_t *str)
+	{
+		return UnicodeToUtf8(str, wcslen(str));
+	}
+
+	inline std::wstring AnsiToUnicode(const std::string *str)
+	{
+		return AnsiToUnicode(str->c_str(), str->length());
+	}
+	inline std::string UnicodeToAnsi(const std::wstring *str)
+	{
+		return UnicodeToAnsi(str->c_str(), str->length());
 	};
-	inline std::string Utf82Ansi(const char8_t *str)
+	inline std::wstring Utf8ToUnicode(const std::u8string *str)
 	{
-		std::u8string temp(str);
-		return Utf82Ansi(&temp);
+		return Utf8ToUnicode(str->c_str(), str->length());
 	};
-	inline std::wstring Ansi2Unicode(const char *str)
+	inline std::u8string UnicodeToUtf8(const std::wstring *str)
 	{
-		std::string temp(str);
-		return Ansi2Unicode(&temp);
+		return UnicodeToUtf8(str->c_str(), str->length());
 	};
-	inline std::string Unicode2Ansi(const wchar_t *str)
+
+	inline std::string Utf8ToAnsi(const char8_t *str, const int Length)
 	{
-		std::wstring temp(str);
-		return Unicode2Ansi(&temp);
+		std::wstring temp = Utf8ToUnicode(str, Length);
+		return UnicodeToAnsi(&temp);
+	}
+	inline std::u8string AnsiToUtf8(const char *str, const int Length)
+	{
+		std::wstring temp = AnsiToUnicode(str, Length);
+		return UnicodeToUtf8(&temp);
+	}
+
+	inline std::string Utf8ToAnsi(const char8_t *str)
+	{
+		return Utf8ToAnsi(str, strlen((char*)str));
 	};
-	inline std::wstring Utf82Unicode(const char8_t *str)
+	inline std::u8string AnsiToUtf8(const char *str)
 	{
-		std::u8string temp(str);
-		return Utf82Unicode(&temp);
+		return AnsiToUtf8(str, strlen(str));
 	};
-	inline std::u8string Unicode2Utf8(const wchar_t *str)
+
+	inline std::string Utf8ToAnsi(const std::u8string *str)
 	{
-		std::wstring temp(str);
-		return Unicode2Utf8(&temp);
+		return Utf8ToAnsi(str->c_str(), str->length());
+	};
+	inline std::u8string AnsiToUtf8(const std::string *str)
+	{
+		return AnsiToUtf8(str->c_str(), str->length());
 	};
 }
 
