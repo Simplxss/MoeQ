@@ -36,7 +36,12 @@ private:
 
 	struct Menu
 	{
+#if defined(_WIN_PLATFORM_)
+		typedef void(__stdcall *Munu)(const uint ID);
+#endif
+#if defined(_LINUX_PLATFORM_)
 		typedef void (*Munu)(const uint ID);
+#endif
 		Munu function;
 		std::vector<char8_t *> CaptionList;
 	};
@@ -59,6 +64,20 @@ private:
 
 	std::vector<Plugin> PluginList;
 
+#if defined(_WIN_PLATFORM_)
+	typedef void(__stdcall *LifeCycleEvent)(const ::Event::LifeCycleEvent::LifeCycleEventType);
+	std::vector<LifeCycleEvent> LifeCycleEventList[4]; //4 subevents
+
+	typedef ::Event::ReturnType(__stdcall *MessageEvent)(const ::Target::Target *, const ::Message::Msg *, const uint64_t);
+	std::vector<MessageEvent> MessageEventList[3]; //3 subevents
+
+	typedef ::Event::ReturnType(__stdcall *NoticeEvent)(const ::Event::NoticeEvent::NoticeEvent *);
+	std::vector<NoticeEvent> NoticeEventList[4]; //4 subevents
+
+	typedef ::Event::RequestEvent::ReturnType(__stdcall *RequestEvent)(const ::Event::RequestEvent::RequestEvent *RequestEvent, const uint64_t responseFlag);
+	std::vector<RequestEvent> RequestEventList[2]; //2 subevents
+#endif
+#if defined(_LINUX_PLATFORM_)
 	typedef void (*LifeCycleEvent)(const ::Event::LifeCycleEvent::LifeCycleEventType);
 	std::vector<LifeCycleEvent> LifeCycleEventList[4]; //4 subevents
 
@@ -70,6 +89,7 @@ private:
 
 	typedef ::Event::RequestEvent::ReturnType (*RequestEvent)(const ::Event::RequestEvent::RequestEvent *RequestEvent, const uint64_t responseFlag);
 	std::vector<RequestEvent> RequestEventList[2]; //2 subevents
+#endif
 public:
 	void Load(
 #if defined(_WIN_PLATFORM_)

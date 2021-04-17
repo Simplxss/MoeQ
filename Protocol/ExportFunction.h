@@ -4,7 +4,13 @@
 extern Android Sdk;
 extern PluginSystem Plugin;
 
+#if defined(_WIN_PLATFORM_)
 #define FUNC(ReturnType, FuncName, ...) extern "C" __declspec(dllexport) ReturnType __stdcall FuncName(__VA_ARGS__)
+#endif
+
+#if defined(_LINUX_PLATFORM_)
+#define FUNC(ReturnType, FuncName, ...) extern "C" __attribute__ ((visibility("default"))) ReturnType FuncName(__VA_ARGS__)
+#endif
 
 FUNC(char *, getCookies, const uint64_t AuthCode, const char *Host)
 {
@@ -119,7 +125,7 @@ FUNC(bool, setGroupBan, const uint64_t AuthCode, const uint Group, const uint QQ
 		if (QQ == 0)
 			return Sdk.QQ_SetGroupBan(Group, Time);
 		else
-			Sdk.QQ_SetGroupMemberBan(Group, QQ, Time);
+			return Sdk.QQ_SetGroupMemberBan(Group, QQ, Time);
 	}
 	else
 	{
@@ -164,7 +170,7 @@ FUNC(bool, setGroupMemberTitle, const uint64_t AuthCode, const uint Group, const
 FUNC(bool, setGroupMemberCard, const uint64_t AuthCode, const uint Group, const uint QQ, const char *Card)
 {
 	if (Plugin.VieryAuth(AuthCode, 13))
-		Sdk.QQ_SetGroupMemberCard(Group, QQ, Card);
+		return Sdk.QQ_SetGroupMemberCard(Group, QQ, Card);
 	else
 	{
 		Log::AddLog(Log::LogType::WARNING, Log::MsgType::PROGRAM, Plugin.AuthCode2Name(AuthCode), u8"Plugin called setGroupMemberCard which it don't have right.");
@@ -209,13 +215,13 @@ FUNC(LPBYTE, getFriendList, const uint64_t AuthCode)
 		for (size_t i = 0; i < FriendList->size(); i++)
 		{
 			Pack.SetInt((*FriendList)[i].QQ);
-#if _WIN64
+#if X64
 			Pack.SetLong((long long)(*FriendList)[i].Nick);
 #else
 			Pack.SetLong((int)(*FriendList)[i].Nick);
 #endif
 			Pack.SetInt((*FriendList)[i].status);
-#if _WIN64
+#if X64
 			Pack.SetLong((long long)(*FriendList)[i].Remark);
 #else
 			Pack.SetLong((int)(*FriendList)[i].Remark);
@@ -241,7 +247,7 @@ FUNC(LPBYTE, getGroupList, const uint64_t AuthCode)
 		for (size_t i = 0; i < GroupList->size(); i++)
 		{
 			Pack.SetInt((*GroupList)[i].GroupCode);
-#if _WIN64
+#if X64
 			Pack.SetLong((long long)(*GroupList)[i].GroupName);
 #else
 			Pack.SetLong((int)(*GroupList)[i].GroupName);
@@ -264,17 +270,19 @@ FUNC(LPBYTE, getGroupMemberList, const uint64_t AuthCode, uint group_code)
 {
 	if (Plugin.VieryAuth(AuthCode, 19))
 	{
-		/*
 		const std::vector<Android::GroupMemberInfo>* GroupMemberList = Sdk.QQ_GetGroupMemberList(group_code);
+		if(GroupMemberList == nullptr) return (LPBYTE) "\0\0\0\0";
+
 		Pack Pack(GroupMemberList->size() *  + 8, true);
 		Pack.SetInt(GroupMemberList->size());
 		for (size_t i = 0; i < GroupMemberList->size(); i++)
 		{
-			//
+			Pack.SetInt((*GroupMemberList)[i].QQ);
+			Pack.SetInt(strlen((*GroupMemberList)[i].Nick));
+			Pack.SetStr((*GroupMemberList)[i].Nick);
 		}
 		Pack.SetLength();
 		return Pack.GetAll();
-		*/
 	}
 	else
 	{
@@ -304,7 +312,7 @@ FUNC(LPBYTE, getGroupAdminList, const uint64_t AuthCode, uint group_code)
 	}
 };
 
-FUNC(void, addLog, const uint64_t AuthCode, const Log::LogType LogType, const Log::MsgType MsgType, const wchar_t *Type, const wchar_t *Msg)
+FUNC(void, addLog, const uint64_t AuthCode, const Log::LogType LogType, const Log::MsgType MsgType, const char8_t *Type, const char8_t *Msg)
 {
 	Log::AddLog(LogType, MsgType, Type, Msg);
 };

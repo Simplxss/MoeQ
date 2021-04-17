@@ -91,7 +91,7 @@ private:
         char *skey = nullptr;
         char *vkey = nullptr;
         char *superKey = nullptr;
-        std::vector<p_skey> p_skey;
+        std::vector<Android::p_skey> p_skey;
     };
     struct QQ
     {
@@ -132,7 +132,7 @@ private:
     struct SenderInfo
     {
         std::condition_variable cv;
-        HANDLE hThread;
+        std::condition_variable *condition_variable;
         LPBYTE BodyBin;
     };
 
@@ -148,7 +148,7 @@ public:
     Android(const char *IMEI, const char IMSI[16], const byte GUID[16], const byte MAC[6], const char *_device, const char *Brand);
 
 private:
-    bool Fun_Connect(const wchar_t *IP = nullptr, const unsigned short Port = 0);
+    bool Fun_Connect(const char *IP = nullptr, const unsigned short Port = 0);
     int Fun_Send(const uint PacketType, const byte EncodeType, const char *ServiceCmd, LPBYTE Buffer);
     /// <summary>
     /// Send package synchronously
@@ -161,7 +161,7 @@ private:
     /// <param name="Function"></param>
     /// <returns></returns>
     template <typename R>
-    requires (std::is_same<R,void>::value == false) R Fun_Send_Sync(const uint PacketType, const byte EncodeType, const char *ServiceCmd, LPBYTE Buffer, std::function<R(uint,LPBYTE)> Function)
+    std::enable_if<!std::is_void<R>::value, R>::type Fun_Send_Sync(const uint PacketType, const byte EncodeType, const char *ServiceCmd, LPBYTE Buffer, std::function<R(uint, LPBYTE)> Function)
     {
         std::mutex lock;
         std::unique_lock<std::mutex> ulock(lock);
@@ -169,23 +169,20 @@ private:
         int SsoSeq = Fun_Send(PacketType, EncodeType, ServiceCmd, Buffer);
 
         SendList[SsoSeq & 0x3F].cv.wait(ulock);
-        HANDLE hThread = SendList[SsoSeq & 0x3F].hThread;
+        std::condition_variable* condition_variable = SendList[SsoSeq & 0x3F].condition_variable;
         try
         {
             R ret = Function(SsoSeq, SendList[SsoSeq & 0x3F].BodyBin);
 
-            ResumeThread(hThread);
-            CloseHandle(hThread);
-
+            condition_variable->notify_one();
             return ret;
         }
         catch (std::exception e)
         {
-            ResumeThread(hThread);
-            CloseHandle(hThread);
+            condition_variable->notify_one();
         }
     };
-    void Fun_Send_Sync(const uint PacketType, const byte EncodeType, const char *ServiceCmd, LPBYTE Buffer, std::function<void(uint,LPBYTE)> Function)
+    void Fun_Send_Sync(const uint PacketType, const byte EncodeType, const char *ServiceCmd, LPBYTE Buffer, std::function<void(uint, LPBYTE)> Function)
     {
         std::mutex lock;
         std::unique_lock<std::mutex> ulock(lock);
@@ -193,16 +190,15 @@ private:
         int SsoSeq = Fun_Send(PacketType, EncodeType, ServiceCmd, Buffer);
 
         SendList[SsoSeq & 0x3F].cv.wait(ulock);
-        HANDLE hThread = SendList[SsoSeq & 0x3F].hThread;
+        std::condition_variable* condition_variable = SendList[SsoSeq & 0x3F].condition_variable;
         try
         {
             Function(SsoSeq, SendList[SsoSeq & 0x3F].BodyBin);
         }
         catch (std::exception e)
-        {
-        }
-        ResumeThread(hThread);
-        CloseHandle(hThread);
+        {}
+            condition_variable->notify_one();
+        
     };
     void Fun_Msg_Loop();
     void Fun_Receice(LPBYTE bin);

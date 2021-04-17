@@ -41,9 +41,8 @@ namespace Log
 	void AddLog(const LogType LogType, const MsgType MsgType, const wchar_t *Type, const wchar_t *Msg);
 
 	#endif
-	
-	void AddLog(const LogType LogType, const MsgType MsgType, const char8_t *Type, const char8_t *Msg);
-	void AddLog(const LogType LogType, const MsgType MsgType, const char8_t *Type, ...);
+
+	void AddLog(const LogType LogType, const MsgType MsgType, const char8_t* Type, const char8_t* MsgFormat, ...);
 	void AddLog(const LogType LogType, const MsgType MsgType, const Event::NoticeEvent::NoticeEvent *NoticeEvent);
 	void AddLog(const LogType LogType, const MsgType MsgType, const Event::RequestEvent::RequestEvent *RequestEvent);
 };

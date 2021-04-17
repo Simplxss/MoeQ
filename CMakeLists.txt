@@ -6,11 +6,10 @@ set(TARGET_NAME MoeQ)
 set(CMAKE_CXX_STANDARD 20)
 
 
-if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-    link_libraries(ws2_32 wsock32)
-    
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")    
     if ("${CMAKE_SYSTEM_NAME}" STREQUAL "Windows")
     set(VCPKG_TARGET_TRIPLET x64-mingw-static)
+    link_libraries(ws2_32 wsock32)
     endif()
 
     if ("${CMAKE_SYSTEM_NAME}" STREQUAL "Linux")

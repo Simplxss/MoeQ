@@ -5,7 +5,7 @@ wchar_t DataPath[MAX_PATH + 1];
 #endif
 
 #if defined(_LINUX_PLATFORM_)
-char DataPath[MAX_PATH + 1];
+char DataPath[PATH_MAX + 1];
 #endif
 
 bool DevMode = true;
@@ -23,7 +23,7 @@ void Debug()
 int main()
 {
 #if defined(_WIN_PLATFORM_)
-    SetConsoleOutputCP (65001);
+    SetConsoleOutputCP(65001);
     wchar_t szFilePath[MAX_PATH + 1], DataFilePath[MAX_PATH + 1], DllFilePath[MAX_PATH + 1] = {0};
     _wgetcwd(szFilePath, MAX_PATH);
     wcscpy(DataPath, szFilePath);
@@ -97,11 +97,11 @@ int main()
     Database::Init();
     Plugin.Load(szFilePath);
 
-    wchar_t _QQ[12];
-    wchar_t str[256];
+    char _QQ[12];
+    char str[256];
     strcpy(DataFilePath, DataPath);
     strcat(DataFilePath, "data.ini");
-
+    /*
     try
     {
         GetPrivateProfileString("Token", "QQ", NULL, _QQ, 50, DataFilePath);
@@ -145,11 +145,17 @@ int main()
     catch (std::exception e)
     {
     }
+    */
 #endif
 
     if (true)
     {
+#if defined(_WIN_PLATFORM_)
         Sdk.QQ_Init(Iconv::UnicodeToAnsi(_QQ).c_str());
+#endif
+#if defined(_LINUX_PLATFORM_)
+        Sdk.QQ_Init(_QQ);
+#endif
         Sdk.QQ_Set_Token(&Token);
         Sdk.QQ_Login_Second();
         Sdk.QQ_Login_Finish();
@@ -182,7 +188,7 @@ int main()
             strcpy(notice, "Send Sms to ");
             strcat(notice, Sdk.QQ_Get_Viery_PhoneNumber());
             strcat(notice, " ?");
-
+            /*
             switch (MessageBoxA(nullptr, notice, "Driver Lock", MB_OKCANCEL))
             {
             case IDOK:
@@ -191,12 +197,13 @@ int main()
                 state = Sdk.QQ_Viery_Sms(SmsCode);
                 break;
             case IDCANCEL:
-                return TRUE;
+                return 0;
             }
+            */
         case LOGIN_ERROR:
             Log::AddLog(Log::LogType::INFORMATION, Log::MsgType::OTHER, u8"Login", u8"Login failed");
             Log::AddLog(Log::LogType::INFORMATION, Log::MsgType::OTHER, u8"Login", Sdk.QQ_GetErrorMsg());
-            return TRUE;
+            return 0;
         default:
             break;
         }
@@ -219,6 +226,7 @@ int main()
 #endif
 
 #if defined(_LINUX_PLATFORM_)
+        /*
         WritePrivateProfileString("Token", "QQ", Iconv::AnsiToUnicode(QQ).c_str(), DataFilePath);
         WritePrivateProfileString("Token", "A2", Iconv::AnsiToUnicode(XBin::Bin2HexEx(Token.A2, 64)).c_str(), DataFilePath);
         WritePrivateProfileString("Token", "TGT", Iconv::AnsiToUnicode(XBin::Bin2HexEx(Token.TGT, 72)).c_str(), DataFilePath);
@@ -229,6 +237,7 @@ int main()
         WritePrivateProfileString("Token", "md5", Iconv::AnsiToUnicode(XBin::Bin2HexEx(Token.md5, 16)).c_str(), DataFilePath);
         WritePrivateProfileString("Token", "TGTkey", Iconv::AnsiToUnicode(XBin::Bin2HexEx(Token.TGTkey, 16)).c_str(), DataFilePath);
         WritePrivateProfileString("Token", "ksid", Iconv::AnsiToUnicode(XBin::Bin2HexEx(Token.ksid, 16)).c_str(), DataFilePath);
+        */
 #endif
     }
 
@@ -239,6 +248,5 @@ int main()
     char a[99];
     std::cin >> a;
 
-    return TRUE; // return TRUE unless you set the focus to a control
-                 // EXCEPTION: OCX Property Pages should return FALSE
+    return 0;
 }

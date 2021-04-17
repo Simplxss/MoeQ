@@ -326,7 +326,7 @@ Android::Android(const char *IMEI, const char IMSI[16], const byte GUID[16], con
 #endif
 }
 
-bool Android::Fun_Connect(const wchar_t *IP, const unsigned short Port)
+bool Android::Fun_Connect(const char *IP, const unsigned short Port)
 {
     if (IP == nullptr || Port == 0)
     {
@@ -334,6 +334,7 @@ bool Android::Fun_Connect(const wchar_t *IP, const unsigned short Port)
             TCP.Close();
         try
         {
+#if defined(_WIN_PLATFORM_)
             wchar_t *IP;
             TCP.DomainGetIP(L"msfwifi.3g.qq.com", IP);
             if (!TCP.Connect(Iconv::UnicodeToAnsi(IP).c_str(), 8080))
@@ -341,11 +342,24 @@ bool Android::Fun_Connect(const wchar_t *IP, const unsigned short Port)
                 delete[] IP;
                 return false;
             };
+            delete[] IP;
             Connected = true;
+#endif
+#if defined(_LINUX_PLATFORM_)
+            char *IP;
+            TCP.DomainGetIP("msfwifi.3g.qq.com", IP);
+            if (!TCP.Connect(IP, 8080))
+            {
+                delete[] IP;
+                return false;
+            };
+            delete[] IP;
+            Connected = true;
+#endif
         }
         catch (...)
         {
-            if (!TCP.Connect("1l3.96.l3.79", 8080))
+            if (!TCP.Connect("113.96.l3.79", 8080))
             {
                 return false;
             };
@@ -356,7 +370,7 @@ bool Android::Fun_Connect(const wchar_t *IP, const unsigned short Port)
     {
         if (Connected)
             TCP.Close();
-        if (!TCP.Connect(Iconv::UnicodeToAnsi(IP).c_str(), Port))
+        if (!TCP.Connect(IP, Port))
             return false;
         Connected = true;
     }
@@ -566,12 +580,12 @@ void Android::Fun_Receice(const LPBYTE bin)
     {
         std::mutex lock;
         std::unique_lock<std::mutex> ulock(lock);
+        std::condition_variable condition_variable;
 
         SendList[sso_seq & 0x3F].BodyBin = BodyBin;
-        DuplicateHandle(GetCurrentProcess(), GetCurrentThread(), GetCurrentProcess(), &SendList[sso_seq & 0x3F].hThread, 0, 0, DUPLICATE_SAME_ACCESS);
+        SendList[sso_seq & 0x3F].condition_variable = &condition_variable;
         SendList[sso_seq & 0x3F].cv.notify_one();
-
-        SuspendThread(SendList[sso_seq & 0x3F].hThread);
+        condition_variable.wait(ulock);
     }
     else
     {
@@ -586,8 +600,14 @@ void Android::Fun_Receice(const LPBYTE bin)
 void Android::Fun_Handle(char *serviceCmd, const LPBYTE BodyBin, const uint sso_seq)
 {
     char *buf;
+#if defined(_WIN_PLATFORM_)
     char *first = strtok_s(serviceCmd, ".", &buf);
     char *second = strtok_s(NULL, ".", &buf);
+#endif
+#if defined(_LINUX_PLATFORM_)
+    char *first = strtok_r(serviceCmd, ".", &buf);
+    char *second = strtok_r(NULL, ".", &buf);
+#endif
     if (!strcmp(first, "OnlinePush"))
     {
         if (!strcmp(second, "PbPushGroupMsg"))
@@ -623,7 +643,13 @@ void Android::Fun_Life_Event()
     uint time = 1;
     do
     {
+#if defined(_WIN_PLATFORM_)
+        Sleep(45000);
+#endif
+
+#if defined(_LINUX_PLATFORM_)
         sleep(45000);
+#endif
         StatSvc_Register();
         if (!(time % 1919))
             QQ_SyncCookie(); //提前45s防止plugin用了失效的cookie
@@ -916,8 +942,8 @@ void Android::StatSvc_Register(const byte state)
     Jce.Write(state == 21 ? 0 : 7, 1);               //lBid
     Jce.Write(0, 2);                                 //cConnType
     Jce.Write("", 3);                                //sOther
-    Jce.Write(state == NULL ? QQ.Status : state, 4); //iStatus
-    Jce.Write(state == NULL, 5);                     //bOnlinePush
+    Jce.Write(state == 0 ? QQ.Status : state, 4); //iStatus
+    Jce.Write(state == 0, 5);                     //bOnlinePush
     Jce.Write(false, 6);                             //bIsOnline
     Jce.Write(false, 7);                             //bIsShowOnline
     Jce.Write(false, 8);                             //bKikPC''''
@@ -1006,8 +1032,8 @@ void Android::StatSvc_SetStatusFromClient(const byte state)
     Jce.Write(state == 21 ? 0 : 7, 1);               //lBid
     Jce.Write(0, 2);                                 //cConnType
     Jce.Write("", 3);                                //sOther
-    Jce.Write(state == NULL ? QQ.Status : state, 4); //iStatus
-    Jce.Write(state == NULL, 5);                     //bOnlinePush
+    Jce.Write(state == 0 ? QQ.Status : state, 4); //iStatus
+    Jce.Write(state == 0, 5);                     //bOnlinePush
     Jce.Write(0, 6);                                 //bIsOnline
     Jce.Write(0, 7);                                 //bIsShowOnline
     Jce.Write(false, 8);                             //bKikPC''''
