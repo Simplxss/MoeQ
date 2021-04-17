@@ -182,7 +182,7 @@ void Database::Init()
     char DatabaseFilePath[261], DatabaseLogPath[261] = { 0 };
 
     strcpy(DatabaseLogPath, DataPath);
-    strcat(DatabaseLogPath, L"log.db");
+    strcat(DatabaseLogPath, "log.db");
     if (sqlite3_open_v2(DatabaseLogPath, &Database_Log, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, NULL) != SQLITE_OK)
     {
         Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"Open Datebase 'log.db' error", zErrMsg);
@@ -190,7 +190,7 @@ void Database::Init()
     };
 
     strcpy(DatabaseFilePath, DataPath);
-    strcat(DatabaseFilePath, L"data.db");
+    strcat(DatabaseFilePath, "data.db");
     if (sqlite3_open_v2(DatabaseFilePath, &Database_Data, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, NULL) != SQLITE_OK)
     {
         Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"Open Datebase 'data.db' error", zErrMsg);
@@ -299,7 +299,6 @@ uint64_t Database::AddPrivateMsg(const Event::PrivateMsg* PrivateMsg)
     uint MsgID = sqlite3_last_insert_rowid(Database_Data);
     sqlite3_finalize(pStmt);
 
-    //std::wstring_convert<std::codecvt_utf8<wchar_t>> conv;
     Log::AddLog(Log::LogType::INFORMATION, Log::MsgType::PRIVATE, u8"Simple Message", Msg.c_str());
 
     return(MsgID);
@@ -562,6 +561,8 @@ void Log::Init()
     Thread.detach();
 }
 
+#if defined(_WIN_PLATFORM_)
+
 void Log::AddLog(const LogType LogType, const MsgType MsgType, const char* Type, const char* Msg)
 {
     LogQueue.push(Log({LogType,MsgType,Iconv::AnsiToUtf8(Type),Iconv::AnsiToUtf8(Msg)}));
@@ -590,8 +591,24 @@ void Log::AddLog(const LogType LogType, const MsgType MsgType, const wchar_t* Ty
     cv.notify_one();
 }
 
+#endif
+
 void Log::AddLog(const LogType LogType, const MsgType MsgType, const char8_t* Type, const char8_t* Msg)
 {
+    LogQueue.push(Log({LogType,MsgType,Type,Msg}));
+    ++Semaphore;
+    cv.notify_one();
+}
+
+void Log::AddLog(const LogType LogType, const MsgType MsgType, const char8_t* Type, const char8_t* MsgFormat, ...)
+{
+    char8_t* Msg;
+    va_list args;
+
+    va_start(args, MsgFormat);
+    vsprintf((char*)Msg, (char*)MsgFormat, args);
+    va_end(args);
+
     LogQueue.push(Log({LogType,MsgType,Type,Msg}));
     ++Semaphore;
     cv.notify_one();
