@@ -359,7 +359,7 @@ bool Android::Fun_Connect(const char *IP, const unsigned short Port)
         }
         catch (...)
         {
-            if (!TCP.Connect("113.96.l3.79", 8080))
+            if (!TCP.Connect("113.96.13.79", 8080))
             {
                 return false;
             };

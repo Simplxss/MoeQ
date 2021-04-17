@@ -161,7 +161,7 @@ void Database::Init()
     wchar_t DatabaseFilePath[261], DatabaseLogPath[261] = {0};
 
     wcscpy(DatabaseLogPath, DataPath);
-    wcscat(DatabaseLogPath, L"log.db");
+    wcscat(DatabaseLogPath, "log.db");
     if (sqlite3_open_v2((const char *)(Iconv::UnicodeToUtf8(DatabaseLogPath).c_str()), &Database_Log, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, NULL) != SQLITE_OK)
     {
         Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"Open Datebase 'log.db' error", (const char8_t *)zErrMsg);
@@ -169,7 +169,7 @@ void Database::Init()
     };
 
     wcscpy(DatabaseFilePath, DataPath);
-    wcscat(DatabaseFilePath, L"data.db");
+    wcscat(DatabaseFilePath, "data.db");
     if (sqlite3_open_v2((const char *)(Iconv::UnicodeToUtf8(DatabaseFilePath).c_str()), &Database_Data, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, NULL) != SQLITE_OK)
     {
         Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"Open Datebase 'data.db' error", (const char8_t *)zErrMsg);
@@ -522,38 +522,38 @@ void Log::DesplayThread()
             switch (Log_.LogType)
             {
             case LogType::__DEBUG:
-                std::wcout << L"Debug";
+                std::cout << "Debug";
                 break;
             case LogType::INFORMATION:
-                std::wcout << L"Information";
+                std::cout << "Information";
                 break;
             case LogType::NOTICE:
-                std::wcout << L"Notice";
+                std::cout << "Notice";
                 break;
             case LogType::WARNING:
-                std::wcout << L"Warning";
+                std::cout << "Warning";
                 break;
             case LogType::_ERROR:
-                std::wcout << L"Error";
+                std::cout << "Error";
                 break;
             }
-            std::wcout << L" ";
+            std::cout << " ";
             switch (Log_.MsgType)
             {
             case MsgType::OTHER:
-                std::wcout << L"Other";
+                std::cout << "Other";
                 break;
             case MsgType::_GROUP:
-                std::wcout << L"Group";
+                std::cout << "Group";
                 break;
             case MsgType::PRIVATE:
-                std::wcout << L"Private";
+                std::cout << "Private";
                 break;
             case MsgType::PROGRAM:
-                std::wcout << L"Program";
+                std::cout << "Program";
                 break;
             case MsgType::SERVER:
-                std::wcout << L"Server";
+                std::cout << "Server";
                 break;
             default:
                 throw "Known MsgType";
@@ -605,16 +605,21 @@ void Log::AddLog(const LogType LogType, const MsgType MsgType, const wchar_t *Ty
 
 #endif
 
-void Log::AddLog(const LogType LogType, const MsgType MsgType, const char8_t *Type, const char8_t *MsgFormat, ...)
+void Log::AddLog(const LogType LogType, const MsgType MsgType, const char8_t *Type, const char8_t *MsgFormat, const bool Format, ...)
 {
     char8_t *Msg;
-    
-    va_list args;
-    va_start(args, MsgFormat);
-    vsprintf((char *)Msg, (char *)MsgFormat, args);
-    va_end(args);
 
-    LogQueue.push(Log({LogType, MsgType, Type, Msg}));
+    if (Format)
+    {
+        va_list args;
+        va_start(args, Format);
+        vsprintf((char *)Msg, (char *)MsgFormat, args);
+        va_end(args);
+        LogQueue.push(Log({LogType, MsgType, Type, Msg}));
+    }
+    else
+        LogQueue.push(Log({LogType, MsgType, Type, MsgFormat}));
+
     ++Semaphore;
     cv.notify_one();
 }

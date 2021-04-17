@@ -38,48 +38,62 @@ int main()
 
     wchar_t _QQ[12];
     wchar_t str[256];
+    char Json[10000] = {'0'};
     wcscpy(DataFilePath, DataPath);
     wcscat(DataFilePath, L"data.ini");
 
+    std::ifstream input;
+    input.open(DataFilePath);
+    if (!input.is_open())
+    {
+        Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"LoadData", u8"Read Json error");
+        goto login;
+    }
+    input.read(Json, 10000);
+    if (input.gcount() == 10000)
+    {
+        Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"LoadData", u8"Json is too big");
+        input.close();
+        goto login;
+    }
+    input.close();
+
     try
     {
-        GetPrivateProfileString(L"Token", L"QQ", NULL, _QQ, 50, DataFilePath);
+        rapidjson::Document d;
+        d.Parse<rapidjson::kParseCommentsFlag>(Json);
 
-        GetPrivateProfileString(L"Token", L"A2", NULL, str, 256, DataFilePath);
-        if (XBin::Hex2BinEx(Iconv::UnicodeToAnsi(str).c_str(), Token.A2) != 64)
-            throw "A2 len error";
+        if (!d.HasParseError())
+        {
+            memcpy(_QQ, d["QQ"].GetString(), d["QQ"].GetStringLength());
 
-        GetPrivateProfileString(L"Token", L"TGT", NULL, str, 256, DataFilePath);
-        if (XBin::Hex2BinEx(Iconv::UnicodeToAnsi(str).c_str(), Token.TGT) != 72)
-            throw "TGT len error";
+            if (XBin::Hex2BinEx(d["A2"].GetString(), Token.A2) != 64)
+                throw "A2 len error";
 
-        GetPrivateProfileString(L"Token", L"D2Key", NULL, str, 256, DataFilePath);
-        if (XBin::Hex2BinEx(Iconv::UnicodeToAnsi(str).c_str(), Token.D2Key) != 16)
-            throw "D2Key len error";
+            if (XBin::Hex2BinEx(d["TGT"].GetString(), Token.TGT) != 72)
+                throw "TGT len error";
 
-        GetPrivateProfileString(L"Token", L"wtSessionTicket", NULL, str, 256, DataFilePath);
-        if (XBin::Hex2BinEx(Iconv::UnicodeToAnsi(str).c_str(), Token.wtSessionTicket) != 48)
-            throw "wtSessionTicket len error";
+            if (XBin::Hex2BinEx(d["D2Key"].GetString(), Token.D2Key) != 16)
+                throw "D2Key len error";
 
-        GetPrivateProfileString(L"Token", L"wtSessionTicketKey", NULL, str, 256, DataFilePath);
-        if (XBin::Hex2BinEx(Iconv::UnicodeToAnsi(str).c_str(), Token.wtSessionTicketKey) != 16)
-            throw "wtSessionTicketKey len error";
+            if (XBin::Hex2BinEx(d["wtSessionTicket"].GetString(), Token.wtSessionTicket) != 48)
+                throw "wtSessionTicket len error";
 
-        GetPrivateProfileString(L"Token", L"token_16A", NULL, str, 256, DataFilePath);
-        if (XBin::Hex2BinEx(Iconv::UnicodeToAnsi(str).c_str(), Token.token_16A) != 56)
-            throw "token_16A len error";
+            if (XBin::Hex2BinEx(d["wtSessionTicketKey"].GetString(), Token.wtSessionTicketKey) != 16)
+                throw "wtSessionTicketKey len error";
 
-        GetPrivateProfileString(L"Token", L"md5", NULL, str, 256, DataFilePath);
-        if (XBin::Hex2BinEx(Iconv::UnicodeToAnsi(str).c_str(), Token.md5) != 16)
-            throw "md5 len error";
+            if (XBin::Hex2BinEx(d["token_16A"].GetString(), Token.token_16A) != 56)
+                throw "token_16A len error";
 
-        GetPrivateProfileString(L"Token", L"TGTkey", NULL, str, 256, DataFilePath);
-        if (XBin::Hex2BinEx(Iconv::UnicodeToAnsi(str).c_str(), Token.TGTkey) != 16)
-            throw "TGTkey len error";
+            if (XBin::Hex2BinEx(d["md5"].GetString(), Token.md5) != 16)
+                throw "md5 len error";
 
-        GetPrivateProfileString(L"Token", L"ksid", NULL, str, 256, DataFilePath);
-        if (XBin::Hex2BinEx(Iconv::UnicodeToAnsi(str).c_str(), Token.ksid) != 16)
-            throw "ksid len error";
+            if (XBin::Hex2BinEx(d["TGTkey"].GetString(), Token.TGTkey) != 16)
+                throw "TGTkey len error";
+
+            if (XBin::Hex2BinEx(d["ksid"].GetString(), Token.ksid) != 16)
+                throw "ksid len error";
+        }
     }
     catch (...)
     {
@@ -91,7 +105,10 @@ int main()
     char szFilePath[PATH_MAX + 1], DataFilePath[PATH_MAX + 1], DllFilePath[PATH_MAX + 1] = {0};
     getcwd(szFilePath, PATH_MAX);
     strcpy(DataPath, szFilePath);
-    strcat(DataPath, "data\\");
+    strcat(DataPath, "/data/");
+
+    if (!std::filesystem::exists(DataPath))
+        std::filesystem::create_directory(DataPath);
 
     Log::Init();
     Database::Init();
@@ -99,53 +116,66 @@ int main()
 
     char _QQ[12];
     char str[256];
+    char Json[10000] = {'0'};
     strcpy(DataFilePath, DataPath);
-    strcat(DataFilePath, "data.ini");
-    /*
+    strcat(DataFilePath, "data.json");
+
+    std::ifstream input;
+    input.open(DataFilePath);
+    if (!input.is_open())
+    {
+        Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"LoadData", u8"Read Json error");
+        goto login;
+    }
+    input.read(Json, 10000);
+    if (input.gcount() == 10000)
+    {
+        Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"LoadData", u8"Json is too big");
+        input.close();
+        goto login;
+    }
+    input.close();
+
     try
     {
-        GetPrivateProfileString("Token", "QQ", NULL, _QQ, 50, DataFilePath);
+        rapidjson::Document d;
+        d.Parse<rapidjson::kParseCommentsFlag>(Json);
 
-        GetPrivateProfileString("Token", "A2", NULL, str, 256, DataFilePath);
-        if (XBin::Hex2BinEx(Iconv::UnicodeToAnsi(str).c_str(), Token.A2) != 64)
-            throw "A2 len error";
+        if (!d.HasParseError())
+        {
+            memcpy(_QQ, d["QQ"].GetString(), d["QQ"].GetStringLength());
 
-        GetPrivateProfileString("Token", "TGT", NULL, str, 256, DataFilePath);
-        if (XBin::Hex2BinEx(Iconv::UnicodeToAnsi(str).c_str(), Token.TGT) != 72)
-            throw "TGT len error";
+            if (XBin::Hex2BinEx(d["A2"].GetString(), Token.A2) != 64)
+                throw "A2 len error";
 
-        GetPrivateProfileString("Token", "D2Key", NULL, str, 256, DataFilePath);
-        if (XBin::Hex2BinEx(Iconv::UnicodeToAnsi(str).c_str(), Token.D2Key) != 16)
-            throw "D2Key len error";
+            if (XBin::Hex2BinEx(d["TGT"].GetString(), Token.TGT) != 72)
+                throw "TGT len error";
 
-        GetPrivateProfileString("Token", "wtSessionTicket", NULL, str, 256, DataFilePath);
-        if (XBin::Hex2BinEx(Iconv::UnicodeToAnsi(str).c_str(), Token.wtSessionTicket) != 48)
-            throw "wtSessionTicket len error";
+            if (XBin::Hex2BinEx(d["D2Key"].GetString(), Token.D2Key) != 16)
+                throw "D2Key len error";
 
-        GetPrivateProfileString("Token", "wtSessionTicketKey", NULL, str, 256, DataFilePath);
-        if (XBin::Hex2BinEx(Iconv::UnicodeToAnsi(str).c_str(), Token.wtSessionTicketKey) != 16)
-            throw "wtSessionTicketKey len error";
+            if (XBin::Hex2BinEx(d["wtSessionTicket"].GetString(), Token.wtSessionTicket) != 48)
+                throw "wtSessionTicket len error";
 
-        GetPrivateProfileString("Token", "token_16A", NULL, str, 256, DataFilePath);
-        if (XBin::Hex2BinEx(Iconv::UnicodeToAnsi(str).c_str(), Token.token_16A) != 56)
-            throw "token_16A len error";
+            if (XBin::Hex2BinEx(d["wtSessionTicketKey"].GetString(), Token.wtSessionTicketKey) != 16)
+                throw "wtSessionTicketKey len error";
 
-        GetPrivateProfileString("Token", "md5", NULL, str, 256, DataFilePath);
-        if (XBin::Hex2BinEx(Iconv::UnicodeToAnsi(str).c_str(), Token.md5) != 16)
-            throw "md5 len error";
+            if (XBin::Hex2BinEx(d["token_16A"].GetString(), Token.token_16A) != 56)
+                throw "token_16A len error";
 
-        GetPrivateProfileString("Token", "TGTkey", NULL, str, 256, DataFilePath);
-        if (XBin::Hex2BinEx(Iconv::UnicodeToAnsi(str).c_str(), Token.TGTkey) != 16)
-            throw "TGTkey len error";
+            if (XBin::Hex2BinEx(d["md5"].GetString(), Token.md5) != 16)
+                throw "md5 len error";
 
-        GetPrivateProfileString("Token", "ksid", NULL, str, 256, DataFilePath);
-        if (XBin::Hex2BinEx(Iconv::UnicodeToAnsi(str).c_str(), Token.ksid) != 16)
-            throw "ksid len error";
+            if (XBin::Hex2BinEx(d["TGTkey"].GetString(), Token.TGTkey) != 16)
+                throw "TGTkey len error";
+
+            if (XBin::Hex2BinEx(d["ksid"].GetString(), Token.ksid) != 16)
+                throw "ksid len error";
+        }
     }
-    catch (std::exception e)
+    catch (...)
     {
     }
-    */
 #endif
 
     if (true)
