@@ -6,11 +6,10 @@ set(TARGET_NAME MoeQ)
 set(CMAKE_CXX_STANDARD 20)
 
 
-if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-    link_libraries(ws2_32 wsock32)
-    
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")    
     if ("${CMAKE_SYSTEM_NAME}" STREQUAL "Windows")
     set(VCPKG_TARGET_TRIPLET x64-mingw-static)
+    link_libraries(ws2_32 wsock32)
     endif()
 
     if ("${CMAKE_SYSTEM_NAME}" STREQUAL "Linux")
@@ -26,7 +25,15 @@ if ("${CMAKE_SYSTEM_NAME}" STREQUAL "Linux")
     add_definitions(-D _LINUX_PLATFORM_)
 endif()
 
-add_definitions(-D DEBUG -D UNICODE -D X64)
+if ("${DCMAKE_BUILD_TYPE}" STREQUAL "Debug")
+    add_definitions(-D DEBUG)
+endif()
+
+if ("${DCMAKE_BUILD_TYPE}" STREQUAL "Release")
+    add_definitions(-D RELEASE)
+endif()
+
+add_definitions(-D UNICODE -D X64)
 
 find_package(ZLIB REQUIRED)
 find_package(OpenSSL REQUIRED)
