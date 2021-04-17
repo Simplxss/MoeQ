@@ -313,10 +313,17 @@ Android::Android(const char *IMEI, const char IMSI[16], const byte GUID[16], con
     QQ.SsoSeq = Utils::GetRandom(1231123, 99999999);
     QQ.MsgCookie = Utils::GetRandomBin(4);
 
+#if defined(_WIN_PLATFORM_)
     SYSTEM_INFO sysInfo;
     GetSystemInfo(&sysInfo);
     HandleThreads.init(sysInfo.dwNumberOfProcessors * 2);
     HandleThreads.start();
+#endif
+
+#if defined(_LINUX_PLATFORM_)
+    HandleThreads.init(sysconf(_SC_NPROCESSORS_CONF) * 2);
+    HandleThreads.start();
+#endif
 }
 
 bool Android::Fun_Connect(const wchar_t *IP, const unsigned short Port)
@@ -362,7 +369,6 @@ int Android::Fun_Send(const uint PacketType, const byte EncodeType, const char *
 {
     ::Pack Pack(XBin::Bin2Int(Buffer) + 100, true);
     int SsoSeq = QQ.SsoSeq.fetch_add(1);
-    OutputDebugString(std::to_wstring(SsoSeq).c_str());
 
     switch (PacketType)
     {
@@ -555,8 +561,7 @@ void Android::Fun_Receice(const LPBYTE bin)
         break;
     }
 
-    Log::AddLog(Log::LogType::__DEBUG, Log::MsgType::OTHER, u8"serviceCmd", (char8_t*)ServiceCmd);
-
+    Log::AddLog(Log::LogType::__DEBUG, Log::MsgType::OTHER, u8"serviceCmd", (char8_t *)ServiceCmd);
     if (sso_seq > 0)
     {
         std::mutex lock;
@@ -618,7 +623,7 @@ void Android::Fun_Life_Event()
     uint time = 1;
     do
     {
-        Sleep(45000);
+        sleep(45000);
         StatSvc_Register();
         if (!(time % 1919))
             QQ_SyncCookie(); //提前45s防止plugin用了失效的cookie
@@ -1755,8 +1760,8 @@ bool Android::MessageSvc_PbSendMsg(const uint ToNumber, const byte ToType, const
             memcpy(T + 4, XBin::Bin2HexEx(((Message::picture *)Msg->Message)->MD5, 16), 32);
             memcpy(T + 36, ".gif", 4);
 
-            auto [ImageID, IP, Port, sig] = ImgStore_GroupPicUp(ToType == 1 ? ToNumber : NULL, T, B, ((Message::picture *)Msg->Message)->Data.Length, ((Message::picture *)Msg->Message)->Width, ((Message::picture *)Msg->Message)->Height);
-            if (IP != NULL && Port != NULL && sig != nullptr)
+            auto [ImageID, IP, Port, sig] = ImgStore_GroupPicUp(ToType == 1 ? ToNumber : 0, T, B, ((Message::picture *)Msg->Message)->Data.Length, ((Message::picture *)Msg->Message)->Width, ((Message::picture *)Msg->Message)->Height);
+            if (IP != 0 && Port != 0 && sig != nullptr)
             {
                 PicUp_DataUp(ToType == 1 ? ToNumber : NULL, ((Message::picture *)Msg->Message)->Data.Contain, ((Message::picture *)Msg->Message)->Data.Length, ((Message::picture *)Msg->Message)->MD5, 2, IP, Port, sig);
             }
@@ -2025,11 +2030,13 @@ bool Android::PicUp_DataUp(const uint Group, const byte *TotalData, const uint T
 {
     Socket TCP;
 
-    if (!TCP.Connect(XBin::Int2IP(IP), Port))
+    char *ip = XBin::Int2IP(IP);
+    if (!TCP.Connect(ip, Port))
     {
         Log::AddLog(Log::LogType::NOTICE, Log::MsgType::OTHER, u8"Upload", u8"Connect upload server false");
         return false;
     };
+    delete[] ip;
 
     //文件分片发送
     uint Offset = 0, DataLength, Length;
@@ -3289,6 +3296,11 @@ void Android::QQ_Set_Token(Android::Token *_Token)
 const Android::Token *Android::QQ_Get_Token()
 {
     return &QQ.Token;
+}
+
+const uint Android::QQ_Get_Account()
+{
+    return QQ.QQ;
 }
 
 /// <summary>

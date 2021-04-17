@@ -2,7 +2,6 @@
 
 #if defined(_WIN_PLATFORM_)
 #include <WS2tcpip.h>
-#pragma comment(lib, "ws2_32.lib")
 #endif
 
 #if defined(_LINUX_PLATFORM_)

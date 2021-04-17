@@ -7,7 +7,7 @@ extern wchar_t DataPath[MAX_PATH + 1];
 #endif
 
 #if defined(_LINUX_PLATFORM_)
-extern char DataPath[MAX_PATH + 1];
+extern char DataPath[PATH_MAX + 1];
 #endif
 
 extern PluginSystem Plugin;
@@ -49,14 +49,14 @@ void PluginSystem::Load(
     wcscpy(PluginPath, szFilePath);
     wcscat(PluginPath, L"app\\*.mpk");
     long long handle;
-    _wfinddata64_t fileinfo;
-    handle = _wfindfirsti64(PluginPath, &fileinfo);
+    _wfinddata64_t dirent;
+    handle = _wfindfirsti64(PluginPath, &dirent);
     if (handle != -1)
     {
         do
         {
-            fileinfo.name;
-        } while (!_wfindnexti64(handle, &fileinfo));
+            dirent->d_name;
+        } while (!_wfindnexti64(handle, &dirent));
         _findclose(handle);
     }
 
@@ -67,21 +67,21 @@ void PluginSystem::Load(
         wcscat(PluginPath, L"dev\\");
         wcscpy(PluginPath_, PluginPath);
         wcscat(PluginPath, L"*");
-        handle = _wfindfirsti64(PluginPath, &fileinfo);
+        handle = _wfindfirsti64(PluginPath, &dirent);
         if (handle == -1)
             return;
         uint i = PluginList.size();
         do
         {
             PluginList.resize(i + 1);
-            if (fileinfo.attrib == _A_SUBDIR)
+            if (dirent->attrib == _A_SUBDIR)
             {
-                if (!wcscmp(fileinfo.name, L"."))
+                if (!wcscmp(dirent->d_name, L"."))
                     continue;
-                if (!wcscmp(fileinfo.name, L".."))
+                if (!wcscmp(dirent->d_name, L".."))
                     continue;
                 wchar_t PluginPath__[MAX_PATH + 1];
-                wcscat(PluginPath_, fileinfo.name);
+                wcscat(PluginPath_, dirent->d_name);
                 wcscat(PluginPath_, L"\\");
                 wcscpy(PluginPath__, PluginPath_);
                 wcscat(PluginPath_, L"app.dll");
@@ -90,14 +90,14 @@ void PluginSystem::Load(
                 HMODULE Handle = LoadLibrary(PluginPath_);
                 if (Handle == NULL)
                 {
-                    printf("LoadLibrary fail, GetLastError:%d", GetLastError());
+                    ("LoadLibrary fail, GetLastError:%d", GetLastError());("LoadLibrary fail, GetLastError:%d", GetLastError());
                     continue;
                 }
                 typedef int(__stdcall * Initialize)(const uint64_t);
                 Initialize _Initialize = (Initialize)GetProcAddress(Handle, "Initialize");
                 if (_Initialize == NULL)
                 {
-                    printf("Can't get address of function Initialize");
+                    Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"LoadPlugin", u8"Can't get address of function Initialize");
                     continue;
                 }
 
@@ -105,14 +105,14 @@ void PluginSystem::Load(
                 input.open(PluginPath__);
                 if (!input.is_open())
                 {
-                    printf("Read Json error");
+                    Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"LoadPlugin", u8"Read Json error");
                     continue;
                 }
                 char Json[10000] = {'0'};
                 input.read(Json, 10000);
                 if (input.gcount() == 10000)
                 {
-                    printf("Json is too big");
+                    Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"LoadPlugin", u8"Json is too big");;
                     input.close();
                     continue;
                 }
@@ -123,13 +123,13 @@ void PluginSystem::Load(
 
                 if (d.HasParseError())
                 {
-                    printf("Parse Json fail, ParseErrorCode:%d, ErrorOffset:%u", d.GetParseError(), d.GetErrorOffset());
+                    Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"LoadPlugin", u8"Parse Json fail, ParseErrorCode:%d, ErrorOffset:%u", d.GetParseError(), d.GetErrorOffset());
                     return;
                 }
 
                 if (!d.HasMember("name"))
                 {
-                    printf("Json is incomplete");
+                    Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"LoadPlugin", u8"Json is incomplete");
                     d.Clear();
                     return;
                 }
@@ -138,16 +138,16 @@ void PluginSystem::Load(
                 PluginList[i].Name[d["name"].GetStringLength()] = 0;
                 if (!d.HasMember("appid"))
                 {
-                    printf("Json is incomplete");
+                    ("Json is incomplete");
                     d.Clear();
                     return;
                 }
                 PluginList[i].Appid = new char8_t[d["appid"].GetStringLength() + 1];
                 memcpy(PluginList[i].Appid, d["appid"].GetString(), d["appid"].GetStringLength());
                 PluginList[i].Appid[d["appid"].GetStringLength()] = 0;
-                if (wcscmp(Iconv::Utf8ToUnicode(PluginList[i].Appid).c_str(), fileinfo.name))
+                if (wcscmp(Iconv::Utf8ToUnicode(PluginList[i].Appid).c_str(), dirent->d_name))
                 {
-                    printf("Appid is not same");
+                    Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"LoadPlugin", u8"Appid is not same");
                     d.Clear();
                     return;
                 }
@@ -162,7 +162,7 @@ void PluginSystem::Load(
                 }
                 if (!d.HasMember("version"))
                 {
-                    printf("Json is incomplete");
+                    Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"LoadPlugin", u8"Json is incomplete");
                     d.Clear();
                     return;
                 }
@@ -171,7 +171,7 @@ void PluginSystem::Load(
                 PluginList[i].Version[d["version"].GetStringLength()] = 0;
                 if (!d.HasMember("author"))
                 {
-                    printf("Json is incomplete");
+                    Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"LoadPlugin", u8"Json is incomplete");
                     d.Clear();
                     return;
                 }
@@ -180,7 +180,7 @@ void PluginSystem::Load(
                 PluginList[i].Author[d["author"].GetStringLength()] = 0;
                 if (!d.HasMember("description"))
                 {
-                    printf("Json is incomplete");
+                    Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"LoadPlugin", u8"Json is incomplete");
                     d.Clear();
                     return;
                 }
@@ -197,7 +197,7 @@ void PluginSystem::Load(
                     {
                         if (!v.HasMember("type"))
                         {
-                            printf("Json is incomplete");
+                            Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"LoadPlugin", u8"Json is incomplete");
                             d.Clear();
                             error = true;
                             break;
@@ -205,22 +205,22 @@ void PluginSystem::Load(
                         PluginList[i].EventList[j].type = v["type"].GetInt();
                         if (!v.HasMember("function"))
                         {
-                            printf("Json is incomplete");
+                            Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"LoadPlugin", u8"Json is incomplete");
                             d.Clear();
                             error = true;
                             break;
                         }
-                        PluginList[i].EventList[j].function = (void*)GetProcAddress(Handle, v["function"].GetString());
+                        PluginList[i].EventList[j].function = (void *)GetProcAddress(Handle, v["function"].GetString());
                         if (PluginList[i].EventList[j].function == NULL)
                         {
-                            printf("GetProcAddress error, function name:%s", v["function"].GetString());
+                            Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"LoadPlugin", u8"GetProcAddress error, function name:%s", v["function"].GetString());
                             d.Clear();
                             error = true;
                             break;
                         }
                         if (!v.HasMember("subevent"))
                         {
-                            printf("Json is incomplete");
+                            Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"LoadPlugin", u8"Json is incomplete");
                             d.Clear();
                             error = true;
                             break;
@@ -230,7 +230,7 @@ void PluginSystem::Load(
                         {
                             if (!v_.HasMember("id"))
                             {
-                                printf("Json is incomplete");
+                                Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"LoadPlugin", u8"Json is incomplete");
                                 d.Clear();
                                 error = true;
                                 break;
@@ -238,7 +238,7 @@ void PluginSystem::Load(
                             PluginList[i].EventList[j].subevent |= 1 << v_["id"].GetInt();
                             if (!v_.HasMember("priority"))
                             {
-                                printf("Json is incomplete");
+                                Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"LoadPlugin", u8"Json is incomplete");
                                 d.Clear();
                                 error = true;
                                 break;
@@ -270,20 +270,20 @@ void PluginSystem::Load(
                 {
                     if (!d["menu"].HasMember("function"))
                     {
-                        printf("Json is incomplete");
+                        Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"LoadPlugin", u8"Json is incomplete");
                         d.Clear();
                         return;
                     }
                     PluginList[i].Menu.function = (PluginSystem::Menu::Munu)GetProcAddress(Handle, d["menu"]["function"].GetString());
                     if (PluginList[i].Menu.function == NULL)
                     {
-                        printf("GetProcAddress error, function name:%s", d["menu"]["function"].GetString());
+                        Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"LoadPlugin", u8"GetProcAddress error, function name:%s", d["menu"]["function"].GetString());
                         d.Clear();
                         return;
                     }
                     if (!d["menu"].HasMember("caption"))
                     {
-                        printf("Json is incomplete");
+                        Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"LoadPlugin", u8"Json is incomplete");
                         d.Clear();
                         return;
                     }
@@ -308,65 +308,66 @@ void PluginSystem::Load(
                 _Initialize(PluginList[i].AuthCode);
             }
             i++;
-        } while (!_wfindnexti64(handle, &fileinfo));
+        } while (!_wfindnexti64(handle, &dirent));
         _findclose(handle);
     }
 #endif
 
 #if defined(_LINUX_PLATFORM_)
-    char PluginPath[MAX_PATH + 1];
+    char PluginPath[PATH_MAX + 1];
+    DIR *dir;
+    dirent *dirent;
     strcpy(PluginPath, szFilePath);
-    strcat(PluginPath, "app\\*.mpk");
-    long long handle;
-    _finddata_t fileinfo;
-    handle = _findfirst(PluginPath, &fileinfo);
-    if (handle != -1)
+    strcat(PluginPath, "app\\");
+    dir = opendir(PluginPath);
+    if (dir != 0)
     {
-        do
+        std::regex reg_obj(".*.mpk", std::regex::icase);
+        while ((dirent = readdir(dir)) != NULL)
         {
-            fileinfo.name;
-        } while (!_findnext(handle, &fileinfo));
-        _findclose(handle);
+            if (std::regex_match(dirent->d_name, reg_obj)) // regex_match()匹配
+            {
+                dirent->d_name;
+            }
+        }
+        closedir(dir);
     }
 
     if (DevMode)
     {
-        char PluginPath_[MAX_PATH + 1];
+        char PluginPath_[PATH_MAX + 1];
         strcpy(PluginPath, szFilePath);
         strcat(PluginPath, "dev\\");
         strcpy(PluginPath_, PluginPath);
-        strcat(PluginPath, "*");
-        handle = _findfirst(PluginPath, &fileinfo);
-        if (handle == -1)
-            return;
+        dir = opendir(PluginPath);
         uint i = PluginList.size();
-        do
+        while ((dirent = readdir(dir)) != NULL)
         {
             PluginList.resize(i + 1);
-            if (fileinfo.attrib == _A_SUBDIR)
+            if (dirent->d_type == DT_DIR)
             {
-                if (!strcmp(fileinfo.name, "."))
+                if (!strcmp(dirent->d_name, "."))
                     continue;
-                if (!strcmp(fileinfo.name, ".."))
+                if (!strcmp(dirent->d_name, ".."))
                     continue;
-                char PluginPath__[MAX_PATH + 1];
-                strcat(PluginPath_, fileinfo.name);
+                char PluginPath__[PATH_MAX + 1];
+                strcat(PluginPath_, dirent->d_name);
                 strcat(PluginPath_, "\\");
                 strcpy(PluginPath__, PluginPath_);
-                strcat(PluginPath_, "app.dl");
+                strcat(PluginPath_, "app.so");
                 strcat(PluginPath__, "app.json");
 
-                HMODULE Handle = LoadLibraryA(PluginPath_);
+                void *Handle = dlopen(PluginPath_, RTLD_NOW);
                 if (Handle == NULL)
                 {
-                    printf("LoadLibrary fail, GetLastError:%d", GetLastError());
+                    Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"LoadPlugin", u8"dlopen fail, GetLastError:%d", dlerror());
                     continue;
                 }
-                typedef int(__stdcall * Initialize)(const uint64_t);
-                Initialize _Initialize = (Initialize)GetProcAddress(Handle, "Initialize");
+                typedef int (*Initialize)(const uint64_t);
+                Initialize _Initialize = (Initialize)dlsym(Handle, "Initialize");
                 if (_Initialize == NULL)
                 {
-                    printf("Can't get address of function Initialize");
+                    Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"LoadPlugin", u8"Can't get address of function Initialize");
                     continue;
                 }
 
@@ -374,14 +375,14 @@ void PluginSystem::Load(
                 input.open(PluginPath__);
                 if (!input.is_open())
                 {
-                    printf("Read Json error");
+                    Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"LoadPlugin", u8"Read Json error");
                     continue;
                 }
                 char Json[10000] = {'0'};
                 input.read(Json, 10000);
                 if (input.gcount() == 10000)
                 {
-                    printf("Json is too big");
+                    Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"LoadPlugin", u8"Json is too big");
                     input.close();
                     continue;
                 }
@@ -392,13 +393,13 @@ void PluginSystem::Load(
 
                 if (d.HasParseError())
                 {
-                    printf("Parse Json fail, ParseErrorCode:%d, ErrorOffset:%u", d.GetParseError(), d.GetErrorOffset());
+                    Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"LoadPlugin", u8"Parse Json fail, ParseErrorCode:%d, ErrorOffset:%ul", d.GetParseError(), d.GetErrorOffset()));
                     return;
                 }
 
                 if (!d.HasMember("name"))
                 {
-                    printf("Json is incomplete");
+                    Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"LoadPlugin", u8"Json is incomplete");
                     d.Clear();
                     return;
                 }
@@ -407,20 +408,21 @@ void PluginSystem::Load(
                 PluginList[i].Name[d["name"].GetStringLength()] = 0;
                 if (!d.HasMember("appid"))
                 {
-                    printf("Json is incomplete");
+                    Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"LoadPlugin", u8"Json is incomplete");
                     d.Clear();
                     return;
                 }
                 PluginList[i].Appid = new char8_t[d["appid"].GetStringLength() + 1];
                 memcpy(PluginList[i].Appid, d["appid"].GetString(), d["appid"].GetStringLength());
                 PluginList[i].Appid[d["appid"].GetStringLength()] = 0;
-                if (strcmp(PluginList[i].Appid, fileinfo.name))
+                if (strcmp((const char*)PluginList[i].Appid, dirent->d_name))
                 {
-                    printf("Appid is not same");
+                    Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"LoadPlugin", u8"Appid is not same");
                     d.Clear();
                     return;
                 }
-                char SettingFilePath[MAX_PATH + 1];
+                /*
+                char SettingFilePath[PATH_MAX + 1];
                 char enable[5];
                 strcpy(SettingFilePath, DataPath);
                 strcat(SettingFilePath, "setting.ini");
@@ -429,9 +431,10 @@ void PluginSystem::Load(
                 {
                     PluginList[i].Enable = true;
                 }
+                */
                 if (!d.HasMember("version"))
                 {
-                    printf("Json is incomplete");
+                    Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"LoadPlugin", u8"Json is incomplete");
                     d.Clear();
                     return;
                 }
@@ -440,7 +443,7 @@ void PluginSystem::Load(
                 PluginList[i].Version[d["version"].GetStringLength()] = 0;
                 if (!d.HasMember("author"))
                 {
-                    printf("Json is incomplete");
+                    Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"LoadPlugin", u8"Json is incomplete");
                     d.Clear();
                     return;
                 }
@@ -449,7 +452,7 @@ void PluginSystem::Load(
                 PluginList[i].Author[d["author"].GetStringLength()] = 0;
                 if (!d.HasMember("description"))
                 {
-                    printf("Json is incomplete");
+                    Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"LoadPlugin", u8"Json is incomplete");
                     d.Clear();
                     return;
                 }
@@ -466,7 +469,7 @@ void PluginSystem::Load(
                     {
                         if (!v.HasMember("type"))
                         {
-                            printf("Json is incomplete");
+                            Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"LoadPlugin", u8"Json is incomplete");
                             d.Clear();
                             error = true;
                             break;
@@ -474,22 +477,22 @@ void PluginSystem::Load(
                         PluginList[i].EventList[j].type = v["type"].GetInt();
                         if (!v.HasMember("function"))
                         {
-                            printf("Json is incomplete");
+                            Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"LoadPlugin", u8"Json is incomplete");
                             d.Clear();
                             error = true;
                             break;
                         }
-                        PluginList[i].EventList[j].function = GetProcAddress(Handle, v["function"].GetString());
+                        PluginList[i].EventList[j].function = dlsym(Handle, v["function"].GetString());
                         if (PluginList[i].EventList[j].function == NULL)
                         {
-                            printf("GetProcAddress error, function name:%s", v["function"].GetString());
+                            Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"LoadPlugin", u8"GetProcAddress error, function name:%s", v["function"].GetString());
                             d.Clear();
                             error = true;
                             break;
                         }
                         if (!v.HasMember("subevent"))
                         {
-                            printf("Json is incomplete");
+                            Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"LoadPlugin", u8"Json is incomplete");
                             d.Clear();
                             error = true;
                             break;
@@ -499,7 +502,7 @@ void PluginSystem::Load(
                         {
                             if (!v_.HasMember("id"))
                             {
-                                printf("Json is incomplete");
+                                Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"LoadPlugin", u8"Json is incomplete");
                                 d.Clear();
                                 error = true;
                                 break;
@@ -507,7 +510,7 @@ void PluginSystem::Load(
                             PluginList[i].EventList[j].subevent |= 1 << v_["id"].GetInt();
                             if (!v_.HasMember("priority"))
                             {
-                                printf("Json is incomplete");
+                                Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"LoadPlugin", u8"Json is incomplete");
                                 d.Clear();
                                 error = true;
                                 break;
@@ -539,20 +542,20 @@ void PluginSystem::Load(
                 {
                     if (!d["menu"].HasMember("function"))
                     {
-                        printf("Json is incomplete");
+                        Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"LoadPlugin", u8"Json is incomplete");
                         d.Clear();
                         return;
                     }
-                    PluginList[i].Menu.function = (PluginSystem::Menu::Munu)GetProcAddress(Handle, d["menu"]["function"].GetString());
+                    PluginList[i].Menu.function = (PluginSystem::Menu::Munu)dlsym(Handle, d["menu"]["function"].GetString());
                     if (PluginList[i].Menu.function == NULL)
                     {
-                        printf("GetProcAddress error, function name:%s", d["menu"]["function"].GetString());
+                        Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"LoadPlugin", u8"GetProcAddress error, function name:%s", d["menu"]["function"].GetString());
                         d.Clear();
                         return;
                     }
                     if (!d["menu"].HasMember("caption"))
                     {
-                        printf("Json is incomplete");
+                        Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"LoadPlugin", u8"Json is incomplete");
                         d.Clear();
                         return;
                     }
@@ -577,10 +580,11 @@ void PluginSystem::Load(
                 _Initialize(PluginList[i].AuthCode);
             }
             i++;
-        } while (!_wfindnexti64(handle, &fileinfo));
-        _findclose(handle);
+        }
+        closedir(dir);
     }
 #endif
+
     LoadEvent();
 
     BroadcastLifeCycleEvent(::Event::LifeCycleEvent::LifeCycleEventType::StartUp);
@@ -729,7 +733,7 @@ void PluginSystem::BroadcastLifeCycleEvent(const ::Event::LifeCycleEvent::LifeCy
     }
 }
 
-void PluginSystem::BroadcastMessageEvent(const ::Target::Target *Target, const ::Message::Msg *Msg, const uint64_t MsgID)
+void PluginSystem::BroadcastMessageEvent(::Target::Target *Target, const ::Message::Msg *Msg, const uint64_t MsgID)
 {
     for (size_t i = 0; i < MessageEventList[static_cast<int>(Target->TargetType)].size(); i++)
     {

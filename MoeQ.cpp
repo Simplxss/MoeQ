@@ -88,8 +88,8 @@ int main()
 #endif
 
 #if defined(_LINUX_PLATFORM_)
-    char szFilePath[MAX_PATH + 1], DataFilePath[MAX_PATH + 1], DllFilePath[MAX_PATH + 1] = {0};
-    getcwd(szFilePath, MAX_PATH);
+    char szFilePath[PATH_MAX + 1], DataFilePath[PATH_MAX + 1], DllFilePath[PATH_MAX + 1] = {0};
+    getcwd(szFilePath, PATH_MAX);
     strcpy(DataPath, szFilePath);
     strcat(DataPath, "data\\");
 

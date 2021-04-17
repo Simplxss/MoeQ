@@ -275,6 +275,7 @@ public:
     const char8_t *QQ_GetErrorMsg();
     void QQ_Set_Token(Android::Token *_Token);
     const Android::Token *QQ_Get_Token();
+    const uint QQ_Get_Account();
     char *QQ_GetCookies(const char *Host);
     bool QQ_SendLike(const uint QQ, const int Times);
     bool QQ_SendGroupMsg(const uint Group, const Message::Msg *Msg);

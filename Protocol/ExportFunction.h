@@ -6,18 +6,21 @@ extern PluginSystem Plugin;
 
 #define FUNC(ReturnType, FuncName, ...) extern "C" __declspec(dllexport) ReturnType __stdcall FuncName(__VA_ARGS__)
 
-FUNC(char*, getCookies,const uint64_t AuthCode, const char* Host)
+FUNC(char *, getCookies, const uint64_t AuthCode, const char *Host)
 {
-	if (Plugin.VieryAuth(AuthCode, 1)) return Sdk.QQ_GetCookies(Host);
+	if (Plugin.VieryAuth(AuthCode, 1))
+		return Sdk.QQ_GetCookies(Host);
 	else
 	{
 		Log::AddLog(Log::LogType::WARNING, Log::MsgType::PROGRAM, Plugin.AuthCode2Name(AuthCode), u8"Plugin called getCookies which it don't have right.");
+		return nullptr;
 	}
 };
 
 FUNC(bool, sendLike, const uint64_t AuthCode, const uint QQ, const int Times)
 {
-	if (Plugin.VieryAuth(AuthCode, 2)) return Sdk.QQ_SendLike(QQ, Times);
+	if (Plugin.VieryAuth(AuthCode, 2))
+		return Sdk.QQ_SendLike(QQ, Times);
 	else
 	{
 		Log::AddLog(Log::LogType::WARNING, Log::MsgType::PROGRAM, Plugin.AuthCode2Name(AuthCode), u8"Plugin called sendLike which it don't have right.");
@@ -29,14 +32,10 @@ FUNC(bool, setGroupLeave, const uint64_t AuthCode, const uint group_code)
 
 {
 	if (Plugin.VieryAuth(AuthCode, 3))
-	{
-		return false;
-	}
+		return Sdk.QQ_KickGroupMember(group_code, Sdk.QQ_Get_Account(), false);
 	else
-	{
 		Log::AddLog(Log::LogType::WARNING, Log::MsgType::PROGRAM, Plugin.AuthCode2Name(AuthCode), u8"Plugin called setGroupLeave which it don't have right.");
-		return false;
-	}
+	return false;
 };
 
 FUNC(bool, setDiscussLeave, const uint64_t AuthCode, const uint group_code)
@@ -52,9 +51,10 @@ FUNC(bool, setDiscussLeave, const uint64_t AuthCode, const uint group_code)
 	}
 };
 
-FUNC(bool, sendPrivateMsg, const uint64_t AuthCode, const uint QQ, const Message::Msg* Msg)
+FUNC(bool, sendPrivateMsg, const uint64_t AuthCode, const uint QQ, const Message::Msg *Msg)
 {
-	if (Plugin.VieryAuth(AuthCode, 5)) return Sdk.QQ_SendPrivateMsg(QQ, Msg);
+	if (Plugin.VieryAuth(AuthCode, 5))
+		return Sdk.QQ_SendPrivateMsg(QQ, Msg);
 	else
 	{
 		Log::AddLog(Log::LogType::WARNING, Log::MsgType::PROGRAM, Plugin.AuthCode2Name(AuthCode), u8"Plugin called sendPrivateMsg which it don't have right.");
@@ -62,9 +62,10 @@ FUNC(bool, sendPrivateMsg, const uint64_t AuthCode, const uint QQ, const Message
 	}
 };
 
-FUNC(bool, sendGroupMsg, const uint64_t AuthCode, const uint Group, const Message::Msg* Msg)
+FUNC(bool, sendGroupMsg, const uint64_t AuthCode, const uint Group, const Message::Msg *Msg)
 {
-	if (Plugin.VieryAuth(AuthCode, 6)) return Sdk.QQ_SendGroupMsg(Group, Msg);
+	if (Plugin.VieryAuth(AuthCode, 6))
+		return Sdk.QQ_SendGroupMsg(Group, Msg);
 	else
 	{
 		Log::AddLog(Log::LogType::WARNING, Log::MsgType::PROGRAM, Plugin.AuthCode2Name(AuthCode), u8"Plugin called sendGroupMsg which it don't have right.");
@@ -72,9 +73,10 @@ FUNC(bool, sendGroupMsg, const uint64_t AuthCode, const uint Group, const Messag
 	}
 };
 
-FUNC(bool, sendDisscussMsg, const uint64_t AuthCode, const uint Disscuss, const Message::Msg* Msg)
+FUNC(bool, sendDisscussMsg, const uint64_t AuthCode, const uint Disscuss, const Message::Msg *Msg)
 {
-	if (Plugin.VieryAuth(AuthCode, 7)) return Sdk.QQ_SendDisscussMsg(Disscuss, Msg);
+	if (Plugin.VieryAuth(AuthCode, 7))
+		return Sdk.QQ_SendDisscussMsg(Disscuss, Msg);
 	else
 	{
 		Log::AddLog(Log::LogType::WARNING, Log::MsgType::PROGRAM, Plugin.AuthCode2Name(AuthCode), u8"Plugin called sendGroupMsg which it don't have right.");
@@ -114,8 +116,10 @@ FUNC(bool, setGroupBan, const uint64_t AuthCode, const uint Group, const uint QQ
 {
 	if (Plugin.VieryAuth(AuthCode, 9))
 	{
-		if (QQ == 0) return Sdk.QQ_SetGroupBan(Group, Time);
-		else Sdk.QQ_SetGroupMemberBan(Group, QQ, Time);
+		if (QQ == 0)
+			return Sdk.QQ_SetGroupBan(Group, Time);
+		else
+			Sdk.QQ_SetGroupMemberBan(Group, QQ, Time);
 	}
 	else
 	{
@@ -126,7 +130,8 @@ FUNC(bool, setGroupBan, const uint64_t AuthCode, const uint Group, const uint QQ
 
 FUNC(bool, setGroupKick, const uint64_t AuthCode, const uint Group, const uint QQ, const bool Forever)
 {
-	if (Plugin.VieryAuth(AuthCode, 10))	return Sdk.QQ_KickGroupMember(Group,QQ, Forever);
+	if (Plugin.VieryAuth(AuthCode, 10))
+		return Sdk.QQ_KickGroupMember(Group, QQ, Forever);
 	else
 	{
 		Log::AddLog(Log::LogType::WARNING, Log::MsgType::PROGRAM, Plugin.AuthCode2Name(AuthCode), u8"Plugin called setGroupKick which it don't have right.");
@@ -136,7 +141,8 @@ FUNC(bool, setGroupKick, const uint64_t AuthCode, const uint Group, const uint Q
 
 FUNC(bool, setGroupAdmin, const uint64_t AuthCode, const uint Group, const uint QQ, const bool Set)
 {
-	if (Plugin.VieryAuth(AuthCode, 11))	return Sdk.QQ_SetGroupAdmin(Group, QQ, Set);
+	if (Plugin.VieryAuth(AuthCode, 11))
+		return Sdk.QQ_SetGroupAdmin(Group, QQ, Set);
 	else
 	{
 		Log::AddLog(Log::LogType::WARNING, Log::MsgType::PROGRAM, Plugin.AuthCode2Name(AuthCode), u8"Plugin called setGroupAdmin which it don't have right.");
@@ -144,9 +150,10 @@ FUNC(bool, setGroupAdmin, const uint64_t AuthCode, const uint Group, const uint 
 	}
 };
 
-FUNC(bool, setGroupMemberTitle, const uint64_t AuthCode, const uint Group, const uint QQ, const char* Title)
+FUNC(bool, setGroupMemberTitle, const uint64_t AuthCode, const uint Group, const uint QQ, const char *Title)
 {
-	if (Plugin.VieryAuth(AuthCode, 12)) return Sdk.QQ_SetGroupMemberTitle(Group, QQ, Title);
+	if (Plugin.VieryAuth(AuthCode, 12))
+		return Sdk.QQ_SetGroupMemberTitle(Group, QQ, Title);
 	else
 	{
 		Log::AddLog(Log::LogType::WARNING, Log::MsgType::PROGRAM, Plugin.AuthCode2Name(AuthCode), u8"Plugin called setGroupMemberTitle which it don't have right.");
@@ -154,9 +161,10 @@ FUNC(bool, setGroupMemberTitle, const uint64_t AuthCode, const uint Group, const
 	}
 };
 
-FUNC(bool, setGroupMemberCard, const uint64_t AuthCode, const uint Group, const uint QQ, const char* Card)
+FUNC(bool, setGroupMemberCard, const uint64_t AuthCode, const uint Group, const uint QQ, const char *Card)
 {
-	if (Plugin.VieryAuth(AuthCode, 13)) Sdk.QQ_SetGroupMemberCard(Group,QQ, Card);
+	if (Plugin.VieryAuth(AuthCode, 13))
+		Sdk.QQ_SetGroupMemberCard(Group, QQ, Card);
 	else
 	{
 		Log::AddLog(Log::LogType::WARNING, Log::MsgType::PROGRAM, Plugin.AuthCode2Name(AuthCode), u8"Plugin called setGroupMemberCard which it don't have right.");
@@ -164,8 +172,8 @@ FUNC(bool, setGroupMemberCard, const uint64_t AuthCode, const uint Group, const 
 	}
 };
 
-FUNC(void, getGroupMemberInfo, const uint64_t AuthCode, const uint Group, const uint QQ)
-{/*
+FUNC(void, getGroupMemberInfo, const uint64_t AuthCode, const uint Group, const uint QQ){
+	/*
 	if (Plugin.VieryAuth(AuthCode, 14)) Sdk.QQ_GetGroupMemberInfo(Group, QQ);
 	else
 	{
@@ -173,8 +181,8 @@ FUNC(void, getGroupMemberInfo, const uint64_t AuthCode, const uint Group, const 
 	}*/
 };
 
-FUNC(void, getStrangerInfo, const uint64_t AuthCode, const uint QQ)
-{/*
+FUNC(void, getStrangerInfo, const uint64_t AuthCode, const uint QQ){
+	/*
 	if (Plugin.VieryAuth(AuthCode, 15)) Sdk.QQ_GetStrangerInfo(QQ);
 	else
 	{
@@ -182,8 +190,8 @@ FUNC(void, getStrangerInfo, const uint64_t AuthCode, const uint QQ)
 	}*/
 };
 
-FUNC(void, getGroupInfo, const uint64_t AuthCode, const uint Group)
-{/*
+FUNC(void, getGroupInfo, const uint64_t AuthCode, const uint Group){
+	/*
 	if (Plugin.VieryAuth(AuthCode, 16)) Sdk.QQ_GetGroupInfo(Group);
 	else
 	{
@@ -195,7 +203,7 @@ FUNC(LPBYTE, getFriendList, const uint64_t AuthCode)
 {
 	if (Plugin.VieryAuth(AuthCode, 17))
 	{
-		const std::vector<Android::FriendInfo>* FriendList = Sdk.QQ_GetFriendList();
+		const std::vector<Android::FriendInfo> *FriendList = Sdk.QQ_GetFriendList();
 		Pack Pack(FriendList->size() * 24 + 8, true);
 		Pack.SetInt(FriendList->size());
 		for (size_t i = 0; i < FriendList->size(); i++)
@@ -219,7 +227,7 @@ FUNC(LPBYTE, getFriendList, const uint64_t AuthCode)
 	else
 	{
 		Log::AddLog(Log::LogType::WARNING, Log::MsgType::PROGRAM, Plugin.AuthCode2Name(AuthCode), u8"Plugin called getFriendList which it don't have right.");
-		return (LPBYTE)"\0\0\0\0";
+		return (LPBYTE) "\0\0\0\0";
 	}
 };
 
@@ -227,7 +235,7 @@ FUNC(LPBYTE, getGroupList, const uint64_t AuthCode)
 {
 	if (Plugin.VieryAuth(AuthCode, 18))
 	{
-		const std::vector<Android::GroupInfo>* GroupList = Sdk.QQ_GetGroupList();
+		const std::vector<Android::GroupInfo> *GroupList = Sdk.QQ_GetGroupList();
 		Pack Pack(GroupList->size() * 19 + 8, true);
 		Pack.SetInt(GroupList->size());
 		for (size_t i = 0; i < GroupList->size(); i++)
@@ -248,7 +256,7 @@ FUNC(LPBYTE, getGroupList, const uint64_t AuthCode)
 	else
 	{
 		Log::AddLog(Log::LogType::WARNING, Log::MsgType::PROGRAM, Plugin.AuthCode2Name(AuthCode), u8"Plugin called getGroupList which it don't have right.");
-		return (LPBYTE)"\0\0\0\0";
+		return (LPBYTE) "\0\0\0\0";
 	}
 };
 
@@ -271,7 +279,7 @@ FUNC(LPBYTE, getGroupMemberList, const uint64_t AuthCode, uint group_code)
 	else
 	{
 		Log::AddLog(Log::LogType::WARNING, Log::MsgType::PROGRAM, Plugin.AuthCode2Name(AuthCode), u8"Plugin called getGroupMemberList which it don't have right.");
-		return (LPBYTE)"\0\0\0\0";
+		return (LPBYTE) "\0\0\0\0";
 	}
 };
 
@@ -279,7 +287,7 @@ FUNC(LPBYTE, getGroupAdminList, const uint64_t AuthCode, uint group_code)
 {
 	if (Plugin.VieryAuth(AuthCode, 20))
 	{
-		const std::vector<uint>* AdminList = Sdk.QQ_GetGroupAdminList(group_code);
+		const std::vector<uint> *AdminList = Sdk.QQ_GetGroupAdminList(group_code);
 		Pack Pack(AdminList->size() * 4 + 8, true);
 		Pack.SetInt(AdminList->size());
 		for (size_t i = 0; i < AdminList->size(); i++)
@@ -292,12 +300,11 @@ FUNC(LPBYTE, getGroupAdminList, const uint64_t AuthCode, uint group_code)
 	else
 	{
 		Log::AddLog(Log::LogType::WARNING, Log::MsgType::PROGRAM, Plugin.AuthCode2Name(AuthCode), u8"Plugin called getGroupList which it don't have right.");
-		return (LPBYTE)"\0\0\0\0";
+		return (LPBYTE) "\0\0\0\0";
 	}
 };
 
-
-FUNC(void, addLog, const uint64_t AuthCode, const Log::LogType LogType, const Log::MsgType MsgType, const wchar_t* Type, const wchar_t* Msg)
+FUNC(void, addLog, const uint64_t AuthCode, const Log::LogType LogType, const Log::MsgType MsgType, const wchar_t *Type, const wchar_t *Msg)
 {
 	Log::AddLog(LogType, MsgType, Type, Msg);
 };

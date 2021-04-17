@@ -6,6 +6,12 @@
 #include <io.h>
 #endif
 
+#if defined(_LINUX_PLATFORM_)
+#include <regex>
+#include <dirent.h>
+#include <dlfcn.h>
+#endif
+
 #include "Log.h"
 #include "Socket.h"
 
@@ -23,14 +29,14 @@ private:
 	struct Event
 	{
 		char type;
-		void* function;
+		void *function;
 		char subevent;
 		byte priority;
 	};
 
 	struct Menu
 	{
-		typedef void(__stdcall *Munu)(const uint ID);
+		typedef void (*Munu)(const uint ID);
 		Munu function;
 		std::vector<char8_t *> CaptionList;
 	};
@@ -53,16 +59,16 @@ private:
 
 	std::vector<Plugin> PluginList;
 
-	typedef void(__stdcall *LifeCycleEvent)(const ::Event::LifeCycleEvent::LifeCycleEventType);
+	typedef void (*LifeCycleEvent)(const ::Event::LifeCycleEvent::LifeCycleEventType);
 	std::vector<LifeCycleEvent> LifeCycleEventList[4]; //4 subevents
 
-	typedef ::Event::ReturnType(__stdcall *MessageEvent)(const ::Target::Target *, const ::Message::Msg *, const uint64_t);
+	typedef ::Event::ReturnType (*MessageEvent)(const ::Target::Target *, const ::Message::Msg *, const uint64_t);
 	std::vector<MessageEvent> MessageEventList[3]; //3 subevents
 
-	typedef ::Event::ReturnType(__stdcall *NoticeEvent)(const ::Event::NoticeEvent::NoticeEvent *);
+	typedef ::Event::ReturnType (*NoticeEvent)(const ::Event::NoticeEvent::NoticeEvent *);
 	std::vector<NoticeEvent> NoticeEventList[4]; //4 subevents
 
-	typedef ::Event::RequestEvent::ReturnType(__stdcall *RequestEvent)(const ::Event::RequestEvent::RequestEvent *RequestEvent, const uint64_t responseFlag);
+	typedef ::Event::RequestEvent::ReturnType (*RequestEvent)(const ::Event::RequestEvent::RequestEvent *RequestEvent, const uint64_t responseFlag);
 	std::vector<RequestEvent> RequestEventList[2]; //2 subevents
 public:
 	void Load(
@@ -77,7 +83,7 @@ public:
 	bool VieryAuth(const uint64_t auth_code, const int auth);
 	const char8_t *AuthCode2Name(const uint64_t auth_code);
 	void BroadcastLifeCycleEvent(const ::Event::LifeCycleEvent::LifeCycleEventType LifeCycleEventType);
-	void BroadcastMessageEvent(const ::Target::Target *Target, const ::Message::Msg *Msg, const uint64_t MsgID);
+	void BroadcastMessageEvent(::Target::Target *Target, const ::Message::Msg *Msg, const uint64_t MsgID);
 	void BroadcastNoticeEvent(const ::Event::NoticeEvent::NoticeEvent *NoticeEvent);
 	void BroadcastRequestEvent(const ::Event::RequestEvent::RequestEvent *RequestEvent, const uint64_t responseFlag);
 };
