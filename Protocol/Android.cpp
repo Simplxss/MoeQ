@@ -648,7 +648,7 @@ void Android::Fun_Life_Event()
 #endif
 
 #if defined(_LINUX_PLATFORM_)
-        sleep(45000);
+        sleep(45);
 #endif
         StatSvc_Register();
         if (!(time % 1919))
