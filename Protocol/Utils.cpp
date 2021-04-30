@@ -37,7 +37,7 @@ byte *Utils::GetRandomBin(const uint length)
     return tmp;
 }
 
-void Utils::MD5(const byte *bin, const size_t length, byte* md5)
+void Utils::MD5(const byte *bin, const size_t length, byte *md5)
 {
     MD5_CTX ctx;
 
@@ -72,7 +72,7 @@ LPBYTE Utils::MD5EX(const byte *bin, const size_t length)
 byte *Utils::Sha256(const byte *bin, const size_t length)
 {
     SHA256_CTX ctx;
-    byte sha256[32];
+    byte *sha256 = new byte[32];
     SHA256_Init(&ctx);
     SHA256_Update(&ctx, bin, length);
     SHA256_Final(sha256, &ctx);
@@ -315,8 +315,8 @@ void XBin::Int2Bin(const uint i, byte *bin)
 
 char *XBin::Int2IP(const uint i)
 {
-    char IP[16] = {};
-    printf(IP, "%d.%d.%d.%d", ((i & 0xff000000) >> 24), ((i & 0xff0000) >> 16), ((i & 0xff00) >> 8), (i & 0xff));
+    char *IP = new char[16];
+    sprintf(IP, "%d.%d.%d.%d", ((i & 0xff000000) >> 24), ((i & 0xff0000) >> 16), ((i & 0xff00) >> 8), (i & 0xff));
     return IP;
 }
 
@@ -436,7 +436,8 @@ uint XBin::Hex2BinEx(const char *hex, byte *&bin)
     const byte Table1[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
     const byte Table2[] = {0xa, 0xb, 0xc, 0xd, 0xe, 0xf};
     uint len = strlen(hex);
-    if (len == 0) throw "empty string";
+    if (len == 0)
+        throw "empty string";
     if (len & 0x1)
         throw "len error";
     else
@@ -543,7 +544,7 @@ std::u8string Iconv::UnicodeToUtf8(const wchar_t *str, const int Length)
 #endif
 
 #if defined(_LINUX_PLATFORM_)
-
+/*
 std::wstring Iconv::AnsiToUnicode(const char *str, const int Length)
 {
     int utf16Length = ::MultiByteToWideChar(936, 0, str, Length, nullptr, 0);
@@ -553,6 +554,19 @@ std::wstring Iconv::AnsiToUnicode(const char *str, const int Length)
     ::MultiByteToWideChar(936, 0, str, Length, &utf16[0], utf16Length);
     // Resize down the string to avoid bogus double-NUL-terminated strings
     utf16.resize(utf16Length - 1);
+
+    iconv_t cd;
+    int rc;
+    char **pin = &inbuf;
+    char **pout = &outbuf;
+
+    cd = iconv_open("utf-8", from_charset);
+    if (cd == 0)
+        return -1;
+    memset(outbuf, 0, outlen);
+    if (iconv(cd, pin, &inlen, pout, &outlen) == -1)
+        return -1;
+    iconv_close(cd);
 }
 
 std::string Iconv::UnicodeToAnsi(const wchar_t *str, const int Length)
@@ -587,6 +601,7 @@ std::u8string Iconv::UnicodeToUtf8(const wchar_t *str, const int Length)
     // Resize down the string to avoid bogus double-NUL-terminated strings
     utf8.resize(utf8Length - 1);
 }
+*/
 
 #endif
 

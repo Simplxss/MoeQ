@@ -29,7 +29,7 @@ namespace Message
 
 	struct Msg
 	{
-		MsgType MsgType;
+		Message::MsgType MsgType;
 		Msg* NextPoint = nullptr;
 		void* Message = nullptr;
 	};
@@ -56,13 +56,13 @@ namespace Message
 		uint Width = 0;
 		uint Height = 0;
 		byte* MD5 = nullptr;
-		Data Data;
+		Message::Data Data;
 	};
 
 	struct voice
 	{
 		byte* MD5 = nullptr;
-		Data Data;
+		Message::Data Data;
 	};
 
 	struct xml
@@ -95,7 +95,7 @@ namespace Target
 
 	struct Target
 	{
-		TargetType TargetType;
+		::Target::TargetType TargetType;
 		void* Sender;
 	};
 
@@ -279,8 +279,8 @@ namespace Log
 	};
 
 	struct Log {
-		LogType LogType;
-		MsgType MsgType;
+		::Log::LogType LogType;
+		::Log::MsgType MsgType;
 		const std::u8string Type;
 		const std::u8string Msg;
 	};

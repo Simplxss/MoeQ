@@ -6,8 +6,8 @@
 #include <iostream>
 
 #if defined(_WIN_PLATFORM_)
-#include <windows.h>
 #include <tchar.h>
+#include <stringapiset.h>
 #endif
 
 #if defined(_LINUX_PLATFORM_)
@@ -16,11 +16,11 @@
 
 #include <zlib.h>
 #include <sqlite3.h>
-#include <openssl\sha.h>
-#include <openssl\md5.h>
-#include <openssl\ecdh.h>
-#include <openssl\des.h>
-#include "..\include\rapidjson\document.h"
+#include <openssl/sha.h>
+#include <openssl/md5.h>
+#include <openssl/ecdh.h>
+#include <openssl/des.h>
+#include "../include/rapidjson/document.h"
 
 #include "Defined.h"
 
@@ -69,6 +69,8 @@ namespace XBin
 
 namespace Iconv
 {
+	#if defined(_WIN_PLATFORM_)
+
 	std::wstring AnsiToUnicode(const char *str, const int Length);
 	std::string UnicodeToAnsi(const wchar_t *str, const int Length);
 	std::wstring Utf8ToUnicode(const char8_t *str, const int Length);
@@ -136,6 +138,8 @@ namespace Iconv
 	{
 		return AnsiToUtf8(str->c_str(), str->length());
 	};
+
+	#endif
 }
 
 namespace BigInteger

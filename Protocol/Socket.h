@@ -2,11 +2,11 @@
 
 #if defined(_WIN_PLATFORM_)
 #include <WS2tcpip.h>
-#pragma comment(lib, "ws2_32.lib")
 #endif
 
 #if defined(_LINUX_PLATFORM_)
 #include <arpa/inet.h>
+#include <netdb.h>
 #endif
 
 #include "Utils.h"
@@ -14,8 +14,12 @@
 class Socket
 {
 private:
+#if defined(_WIN_PLATFORM_)
     SOCKET Client;
-
+#endif
+#if defined(_LINUX_PLATFORM_)
+    int Client;
+#endif
 public:
     Socket();
 
@@ -25,5 +29,19 @@ public:
     void Send(const byte *data, const uint length);
     void Send(const LPBYTE buffer);
     LPBYTE Receive();
-    void DomainGetIP(const wchar_t *Domain, wchar_t *&szHostaddress);
+    void DomainGetIP(const
+#if defined(_WIN_PLATFORM_)
+                     wchar_t
+#endif
+#if defined(_LINUX_PLATFORM_)
+                     char
+#endif
+                         *Domain,
+#if defined(_WIN_PLATFORM_)
+                     wchar_t
+#endif
+#if defined(_LINUX_PLATFORM_)
+                     char
+#endif
+                         *&szHostaddress);
 };

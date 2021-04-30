@@ -43,7 +43,7 @@ class UnProtobuf
 private:
 	struct LinkList
 	{
-		UnPack UnPack;
+		::UnPack UnPack;
 		LinkList* Superior = nullptr;
 	};
 	LinkList* List;

@@ -1,4 +1,3 @@
-
 #include "Protobuf.h"
 
 long long int UnProtobuf::GetVarint()
@@ -8,7 +7,8 @@ long long int UnProtobuf::GetVarint()
 	{
 		byte b = List->UnPack.GetByte();
 		l |= (b & 0x7f) << (7 * i);
-		if ((b & 0x80) != 0x80) goto end;
+		if ((b & 0x80) != 0x80)
+			goto end;
 	}
 	throw "len is too long";
 end:
@@ -44,8 +44,10 @@ ProtobufStruct::ProtobufStructType UnProtobuf::SkipToField(const byte Field)
 			SkipField(static_cast<ProtobufStruct::ProtobufStructType>(key & 0x07));
 			continue;
 		}
-		else if ((key >> 3) == Field) return static_cast<ProtobufStruct::ProtobufStructType>(key & 0x07);
-		else throw "Field not find";
+		else if ((key >> 3) == Field)
+			return static_cast<ProtobufStruct::ProtobufStructType>(key & 0x07);
+		else
+			throw "Field not find";
 	}
 }
 
@@ -62,7 +64,7 @@ void UnProtobuf::StepIn(const byte Field)
 	if (SkipToField(Field) == ProtobufStruct::ProtobufStructType::LENGTH)
 	{
 		uint len = GetVarint();
-		LinkList* tmp = new LinkList{ {List->UnPack.GetCurrentPoint(),len}, List };
+		LinkList *tmp = new LinkList{{List->UnPack.GetCurrentPoint(), len}, List};
 		List->UnPack.Skip(len);
 		List = tmp;
 	}
@@ -72,7 +74,7 @@ void UnProtobuf::StepOut()
 {
 	if (List->Superior != nullptr)
 	{
-		LinkList* tmp = List->Superior;
+		LinkList *tmp = List->Superior;
 		delete List;
 		List = tmp;
 	}
@@ -85,22 +87,25 @@ bool UnProtobuf::IsEnd()
 
 long long int UnProtobuf::GetVarint(const byte Field)
 {
-	if (SkipToField(Field) == ProtobufStruct::ProtobufStructType::VARINT) return GetVarint();
+	if (SkipToField(Field) == ProtobufStruct::ProtobufStructType::VARINT)
+		return GetVarint();
+	return 0;
 }
 
-char8_t* UnProtobuf::GetStr(const byte Field)
+char8_t *UnProtobuf::GetStr(const byte Field)
 {
 	if (SkipToField(Field) == ProtobufStruct::ProtobufStructType::LENGTH)
 	{
 		uint len = GetVarint();
-		char8_t* str = new char8_t[len + 1];
+		char8_t *str = new char8_t[len + 1];
 		memcpy(str, List->UnPack.GetStr(len), len);
 		str[len] = 0;
 		return str;
 	}
+	return nullptr;
 }
 
-uint UnProtobuf::GetBin(byte*& bin, const byte Field)
+uint UnProtobuf::GetBin(byte *&bin, const byte Field)
 {
 	if (SkipToField(Field) == ProtobufStruct::ProtobufStructType::LENGTH)
 	{
@@ -109,6 +114,7 @@ uint UnProtobuf::GetBin(byte*& bin, const byte Field)
 		memcpy(bin, List->UnPack.GetBin(len), len);
 		return len;
 	}
+	return 0;
 }
 
 LPBYTE UnProtobuf::GetBin(const byte Field)
@@ -121,6 +127,7 @@ LPBYTE UnProtobuf::GetBin(const byte Field)
 		memcpy(bin + 4, List->UnPack.GetBin(len), len);
 		return bin;
 	}
+	return (LPBYTE)"\0\0\0\4";
 }
 
 void Protobuf::SetBin(LPBYTE bin)
@@ -166,17 +173,17 @@ LPBYTE Protobuf::Field2Key(int Field, ProtobufStruct::ProtobufStructType Protobu
 	return Int2Varint(Field << 3 | static_cast<int>(ProtobufStructType));
 }
 
-uint Protobuf::FirstProcess(ProtobufStruct::TreeNode* First)
+uint Protobuf::FirstProcess(ProtobufStruct::TreeNode *First)
 {
 	uint size = 0;
-	ProtobufStruct::TreeNode* This = First;
+	ProtobufStruct::TreeNode *This = First;
 	while (This != nullptr)
 	{
 		if (This->child != nullptr)
 		{
 			uint s = FirstProcess(This->child);
 			This->Data = Int2Varint(s);
-			size += XBin::Bin2Int((byte*)This->Data) - 4;
+			size += XBin::Bin2Int((byte *)This->Data) - 4;
 			size += s;
 		}
 		else
@@ -185,14 +192,14 @@ uint Protobuf::FirstProcess(ProtobufStruct::TreeNode* First)
 			{
 			case ProtobufStruct::ProtobufStructType::VARINT:
 				This->Data = Int2Varint((long long int)This->Data);
-				size += XBin::Bin2Int((byte*)This->Data) - 4;
+				size += XBin::Bin2Int((byte *)This->Data) - 4;
 				break;
 			case ProtobufStruct::ProtobufStructType::FIX64:
 				size += 8;
 				break;
 			case ProtobufStruct::ProtobufStructType::LENGTH:
 			{
-				int len = XBin::Bin2Int((byte*)This->Data) - 4;
+				int len = XBin::Bin2Int((byte *)This->Data) - 4;
 				size += Int2Varint_len(len);
 				size += len;
 			}
@@ -203,15 +210,15 @@ uint Protobuf::FirstProcess(ProtobufStruct::TreeNode* First)
 			}
 		}
 		This->Field = (long long int)Field2Key(This->Field, This->ProtobufStructType);
-		size += XBin::Bin2Int((byte*)This->Field) - 4;
+		size += XBin::Bin2Int((byte *)This->Field) - 4;
 		This = This->brother;
 	}
 	return size;
 }
 
-void Protobuf::SecondProcess(ProtobufStruct::TreeNode* First)
+void Protobuf::SecondProcess(ProtobufStruct::TreeNode *First)
 {
-	ProtobufStruct::TreeNode* This = First;
+	ProtobufStruct::TreeNode *This = First;
 	while (This != nullptr)
 	{
 		SetBin_((LPBYTE)This->Field);
@@ -228,14 +235,14 @@ void Protobuf::SecondProcess(ProtobufStruct::TreeNode* First)
 				SetBin_((LPBYTE)This->Data);
 				break;
 			case ProtobufStruct::ProtobufStructType::FIX64:
-				SetLong((unsigned __int64)This->Data);
+				SetLong((uint64_t)This->Data);
 				break;
 			case ProtobufStruct::ProtobufStructType::LENGTH:
-				SetBin_(Int2Varint(XBin::Bin2Int((byte*)This->Data) - 4));
+				SetBin_(Int2Varint(XBin::Bin2Int((byte *)This->Data) - 4));
 				SetBin((LPBYTE)This->Data);
 				break;
 			case ProtobufStruct::ProtobufStructType::FIX32:
-				SetInt((unsigned __int64)This->Data);
+				SetInt((uint64_t)This->Data);
 				break;
 			}
 		}
@@ -243,7 +250,7 @@ void Protobuf::SecondProcess(ProtobufStruct::TreeNode* First)
 	}
 }
 
-LPBYTE Protobuf::Pack(ProtobufStruct::TreeNode* First)
+LPBYTE Protobuf::Pack(ProtobufStruct::TreeNode *First)
 {
 	Expansion(FirstProcess(First));
 	SecondProcess(First);
