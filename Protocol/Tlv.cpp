@@ -1,6 +1,6 @@
 #include "Tlv.h"
 
-unsigned __int16 Tlv::Tlv001(byte *bin, uint len, uint QQ, uint Time)
+uint16_t Tlv::Tlv001(byte *bin, uint len, uint QQ, uint Time)
 {
 	::TlvPack Pack(bin, len);
 	Pack.SetShort(1);
@@ -11,7 +11,7 @@ unsigned __int16 Tlv::Tlv001(byte *bin, uint len, uint QQ, uint Time)
 	return Pack.Pack(0x0001);
 }
 
-unsigned __int16 Tlv::Tlv002(byte *bin, const uint len, const char *code, const char VieryToken1[4])
+uint16_t Tlv::Tlv002(byte *bin, const uint len, const char *code, const char VieryToken1[4])
 {
 	::TlvPack Pack(bin, len);
 	Pack.SetInt(strlen(code));
@@ -21,14 +21,14 @@ unsigned __int16 Tlv::Tlv002(byte *bin, const uint len, const char *code, const 
 	return Pack.Pack(0x0002);
 }
 
-unsigned __int16 Tlv::Tlv008(byte *bin, const uint len)
+uint16_t Tlv::Tlv008(byte *bin, const uint len)
 {
 	::TlvPack Pack(bin, len);
 	Pack.SetLong(0x08040000);
 	return Pack.Pack(0x0008);
 }
 
-unsigned __int16 Tlv::Tlv018(byte *bin, const uint len, const uint QQ)
+uint16_t Tlv::Tlv018(byte *bin, const uint len, const uint QQ)
 {
 	::TlvPack Pack(bin, len);
 	Pack.SetBin((const unsigned char *)"\0\1\0\0\6\0\0\0\0\x10\0\0\0\0", 14);
@@ -37,7 +37,7 @@ unsigned __int16 Tlv::Tlv018(byte *bin, const uint len, const uint QQ)
 	return Pack.Pack(0x0018);
 }
 
-unsigned __int16 Tlv::Tlv100(byte *bin, const uint len, const uint APPID, const bool IsFreshSkey)
+uint16_t Tlv::Tlv100(byte *bin, const uint len, const uint APPID, const bool IsFreshSkey)
 {
 	::TlvPack Pack(bin, len);
 	Pack.SetShort(1);
@@ -49,7 +49,7 @@ unsigned __int16 Tlv::Tlv100(byte *bin, const uint len, const uint APPID, const 
 	return Pack.Pack(0x0100);
 }
 
-unsigned __int16 Tlv::Tlv104(byte *bin, const uint len, const byte VieryToken2[36])
+uint16_t Tlv::Tlv104(byte *bin, const uint len, const byte VieryToken2[36])
 {
 	::TlvPack Pack(bin, len);
 	Pack.SetBin(VieryToken2, 36);
@@ -57,7 +57,7 @@ unsigned __int16 Tlv::Tlv104(byte *bin, const uint len, const byte VieryToken2[3
 	;
 }
 
-unsigned __int16 Tlv::Tlv106(byte *bin, const uint len, const uint QQ, const char *QQ_Str, const byte md5[16], const byte md52[16], const byte TGTKey[16], const byte GUID[16], const uint Time, const uint APPID, bool emp)
+uint16_t Tlv::Tlv106(byte *bin, const uint len, const uint QQ, const char *QQ_Str, const byte md5[16], const byte md52[16], const byte TGTKey[16], const byte GUID[16], const uint Time, const uint APPID, bool emp)
 {
 	::Pack _Pack;
 	_Pack.SetShort(4); //_TGTGTVer
@@ -90,7 +90,7 @@ unsigned __int16 Tlv::Tlv106(byte *bin, const uint len, const uint QQ, const cha
 	;
 }
 
-unsigned __int16 Tlv::Tlv107(byte *bin, const uint len)
+uint16_t Tlv::Tlv107(byte *bin, const uint len)
 {
 	::TlvPack Pack(bin, len);
 	Pack.SetBin((const byte *)"\0\0\0\0\0\1", 6);
@@ -98,21 +98,21 @@ unsigned __int16 Tlv::Tlv107(byte *bin, const uint len)
 	;
 }
 
-unsigned __int16 Tlv::Tlv108(byte *bin, const uint len, const byte ksid[16])
+uint16_t Tlv::Tlv108(byte *bin, const uint len, const byte ksid[16])
 {
 	::TlvPack Pack(bin, len);
 	Pack.SetBin(ksid, 16);
 	return Pack.Pack(0x0108);
 }
 
-unsigned __int16 Tlv::Tlv109(byte *bin, const uint len, const char *IMEI)
+uint16_t Tlv::Tlv109(byte *bin, const uint len, const char *IMEI)
 {
 	::TlvPack Pack(bin, len);
 	Pack.SetMD5((byte *)IMEI, strlen(IMEI));
 	return Pack.Pack(0x0109);
 }
 
-unsigned __int16 Tlv::Tlv116(byte *bin, const uint len)
+uint16_t Tlv::Tlv116(byte *bin, const uint len)
 {
 	::TlvPack Pack(bin, len);
 	Pack.SetByte(0);		 //_ver
@@ -122,7 +122,7 @@ unsigned __int16 Tlv::Tlv116(byte *bin, const uint len)
 	return Pack.Pack(0x0116);
 }
 
-unsigned __int16 Tlv::Tlv124(byte *bin, const uint len, const char *os_type, const char *os_version, const unsigned short _network_type, const char *_apn, const char *NetworkName)
+uint16_t Tlv::Tlv124(byte *bin, const uint len, const char *os_type, const char *os_version, const unsigned short _network_type, const char *_apn, const char *NetworkName)
 {
 	::TlvPack Pack(bin, len);
 	Pack.SetShort(strlen(os_type));
@@ -138,7 +138,7 @@ unsigned __int16 Tlv::Tlv124(byte *bin, const uint len, const char *os_type, con
 	return Pack.Pack(0x0124);
 }
 
-unsigned __int16 Tlv::Tlv128(byte *bin, const uint len, const char *_device, const char *Brand, const byte GUID[16])
+uint16_t Tlv::Tlv128(byte *bin, const uint len, const char *_device, const char *Brand, const byte GUID[16])
 {
 	::TlvPack Pack(bin, len);
 	Pack.SetBin((const byte *)"\0\0\0\1\1\1\0\0\0", 9);
@@ -151,7 +151,7 @@ unsigned __int16 Tlv::Tlv128(byte *bin, const uint len, const char *_device, con
 	return Pack.Pack(0x0128);
 }
 
-unsigned __int16 Tlv::Tlv141(byte *bin, const uint len, const char *NetworkName, const char *NetworkType)
+uint16_t Tlv::Tlv141(byte *bin, const uint len, const char *NetworkName, const char *NetworkType)
 {
 	::TlvPack Pack(bin, len);
 	Pack.SetShort(1);
@@ -163,7 +163,7 @@ unsigned __int16 Tlv::Tlv141(byte *bin, const uint len, const char *NetworkName,
 	return Pack.Pack(0x0141);
 }
 
-unsigned __int16 Tlv::Tlv142(byte *bin, const uint len, const char *QQ_APKID)
+uint16_t Tlv::Tlv142(byte *bin, const uint len, const char *QQ_APKID)
 {
 	::TlvPack Pack(bin, len);
 	Pack.SetInt(strlen(QQ_APKID));
@@ -171,7 +171,7 @@ unsigned __int16 Tlv::Tlv142(byte *bin, const uint len, const char *QQ_APKID)
 	return Pack.Pack(0x0142);
 }
 
-unsigned __int16 Tlv::Tlv144(byte *bin, const uint len, const byte TGTKey[16], const char *IMEI, const char *os_type, const char *os_version, const unsigned short _network_type, const char *_apn, const char *NetworkName, const char *_device, const char *Brand, const byte GUID[16])
+uint16_t Tlv::Tlv144(byte *bin, const uint len, const byte TGTKey[16], const char *IMEI, const char *os_type, const char *os_version, const unsigned short _network_type, const char *_apn, const char *NetworkName, const char *_device, const char *Brand, const byte GUID[16])
 {
 	::Pack _Pack(500);
 	_Pack.SetShort(5);
@@ -190,14 +190,14 @@ unsigned __int16 Tlv::Tlv144(byte *bin, const uint len, const byte TGTKey[16], c
 	return Pack.Pack(0x0144);
 }
 
-unsigned __int16 Tlv::Tlv145(byte *bin, const uint len, const byte GUID[16])
+uint16_t Tlv::Tlv145(byte *bin, const uint len, const byte GUID[16])
 {
 	::TlvPack Pack(bin, len);
 	Pack.SetBin(GUID, 16);
 	return Pack.Pack(0X0145);
 }
 
-unsigned __int16 Tlv::Tlv147(byte *bin, const uint len, const char *QQ_VERSION, const byte QQ_ASIG[16])
+uint16_t Tlv::Tlv147(byte *bin, const uint len, const char *QQ_VERSION, const byte QQ_ASIG[16])
 {
 	::TlvPack Pack(bin, len);
 	Pack.SetInt(16);
@@ -208,21 +208,21 @@ unsigned __int16 Tlv::Tlv147(byte *bin, const uint len, const char *QQ_VERSION, 
 	return Pack.Pack(0X0147);
 }
 
-unsigned __int16 Tlv::Tlv154(byte *bin, const uint len, const uint SsoSeq)
+uint16_t Tlv::Tlv154(byte *bin, const uint len, const uint SsoSeq)
 {
 	::TlvPack Pack(bin, len);
 	Pack.SetInt(SsoSeq);
 	return Pack.Pack(0X0154);
 }
 
-unsigned __int16 Tlv::Tlv16A(byte *bin, const uint len, const byte *token_16A)
+uint16_t Tlv::Tlv16A(byte *bin, const uint len, const byte *token_16A)
 {
 	::TlvPack Pack(bin, len);
 	Pack.SetBin(token_16A, 56);
 	return Pack.Pack(0X016A);
 }
 
-unsigned __int16 Tlv::Tlv16E(byte *bin, const uint len, const char *_device)
+uint16_t Tlv::Tlv16E(byte *bin, const uint len, const char *_device)
 {
 	::TlvPack Pack(bin, len);
 	Pack.SetStr(_device);
@@ -230,14 +230,14 @@ unsigned __int16 Tlv::Tlv16E(byte *bin, const uint len, const char *_device)
 	;
 }
 
-unsigned __int16 Tlv::Tlv174(byte *bin, const uint len, const char *SmsToken)
+uint16_t Tlv::Tlv174(byte *bin, const uint len, const char *SmsToken)
 {
 	::TlvPack Pack(bin, len);
 	Pack.SetStr(SmsToken);
 	return Pack.Pack(0X0174);
 }
 
-unsigned __int16 Tlv::Tlv177(byte *bin, const uint len, const uint build_time, const char *SDK_VERSION)
+uint16_t Tlv::Tlv177(byte *bin, const uint len, const uint build_time, const char *SDK_VERSION)
 {
 	::TlvPack Pack(bin, len);
 	Pack.SetByte(1);
@@ -247,7 +247,7 @@ unsigned __int16 Tlv::Tlv177(byte *bin, const uint len, const uint build_time, c
 	return Pack.Pack(0x0177);
 }
 
-unsigned __int16 Tlv::Tlv17A(byte *bin, const uint len)
+uint16_t Tlv::Tlv17A(byte *bin, const uint len)
 {
 	::TlvPack Pack(bin, len);
 	Pack.SetInt(9);
@@ -255,7 +255,7 @@ unsigned __int16 Tlv::Tlv17A(byte *bin, const uint len)
 	;
 }
 
-unsigned __int16 Tlv::Tlv17C(byte *bin, const uint len, const char *code)
+uint16_t Tlv::Tlv17C(byte *bin, const uint len, const char *code)
 {
 	::TlvPack Pack(bin, len);
 	Pack.SetShort(strlen(code));
@@ -263,14 +263,14 @@ unsigned __int16 Tlv::Tlv17C(byte *bin, const uint len, const char *code)
 	return Pack.Pack(0X017C);
 }
 
-unsigned __int16 Tlv::Tlv187(byte *bin, const uint len)
+uint16_t Tlv::Tlv187(byte *bin, const uint len)
 {
 	::TlvPack Pack(bin, len);
 	Pack.SetBin_(Utils::GetRandomBin(16), 16);
 	return Pack.Pack(0X0187);
 }
 
-unsigned __int16 Tlv::Tlv188(byte *bin, const uint len)
+uint16_t Tlv::Tlv188(byte *bin, const uint len)
 {
 	::TlvPack Pack(bin, len);
 	Pack.SetBin_(Utils::GetRandomBin(16), 16);
@@ -278,42 +278,42 @@ unsigned __int16 Tlv::Tlv188(byte *bin, const uint len)
 }
 
 //CodeType 验证码类型 1:字母 130:滑块
-unsigned __int16 Tlv::Tlv191(byte *bin, const uint len, const byte CodeType)
+uint16_t Tlv::Tlv191(byte *bin, const uint len, const byte CodeType)
 {
 	::TlvPack Pack(bin, len);
 	Pack.SetByte(CodeType);
 	return Pack.Pack(0X0191);
 }
 
-unsigned __int16 Tlv::Tlv193(byte *bin, const uint len, const char *Ticket)
+uint16_t Tlv::Tlv193(byte *bin, const uint len, const char *Ticket)
 {
 	::TlvPack Pack(bin, len);
 	Pack.SetStr(Ticket);
 	return Pack.Pack(0X0193);
 }
 
-unsigned __int16 Tlv::Tlv194(byte *bin, const uint len)
+uint16_t Tlv::Tlv194(byte *bin, const uint len)
 {
 	::TlvPack Pack(bin, len);
 	Pack.SetBin_(Utils::GetRandomBin(16), 16);
 	return Pack.Pack(0X0194);
 }
 
-unsigned __int16 Tlv::Tlv197(byte *bin, const uint len)
+uint16_t Tlv::Tlv197(byte *bin, const uint len)
 {
 	::TlvPack Pack(bin, len);
 	Pack.SetByte(0);
 	return Pack.Pack(0X0197);
 }
 
-unsigned __int16 Tlv::Tlv198(byte *bin, const uint len)
+uint16_t Tlv::Tlv198(byte *bin, const uint len)
 {
 	::TlvPack Pack(bin, len);
 	Pack.SetByte(0);
 	return Pack.Pack(0X0198);
 }
 
-unsigned __int16 Tlv::Tlv202(byte *bin, const uint len, const char *BSSID, const char *WiFi_name)
+uint16_t Tlv::Tlv202(byte *bin, const uint len, const char *BSSID, const char *WiFi_name)
 {
 	::TlvPack Pack(bin, len);
 	Pack.SetShort(16);
@@ -323,7 +323,7 @@ unsigned __int16 Tlv::Tlv202(byte *bin, const uint len, const char *BSSID, const
 	return Pack.Pack(0X0202);
 }
 
-unsigned __int16 Tlv::Tlv400(byte *bin, const uint len, const long long QQ, const byte GUID[16], const uint Time, const byte *token_403)
+uint16_t Tlv::Tlv400(byte *bin, const uint len, const long long QQ, const byte GUID[16], const uint Time, const byte *token_403)
 {
 	::Pack _Pack;
 	_Pack.SetShort(1);
@@ -344,7 +344,7 @@ unsigned __int16 Tlv::Tlv400(byte *bin, const uint len, const long long QQ, cons
 	return Pack.Pack(0X0400);
 }
 
-unsigned __int16 Tlv::Tlv401(byte *bin, const uint len, const byte GUID[16], const byte *token_402)
+uint16_t Tlv::Tlv401(byte *bin, const uint len, const byte GUID[16], const byte *token_402)
 {
 	::TlvPack Pack(bin, len);
 	byte b[32];
@@ -355,7 +355,7 @@ unsigned __int16 Tlv::Tlv401(byte *bin, const uint len, const byte GUID[16], con
 	return Pack.Pack(0X0401);
 }
 
-unsigned __int16 Tlv::Tlv511(byte *bin, const uint len, const char **domainList, const byte ListSize)
+uint16_t Tlv::Tlv511(byte *bin, const uint len, const char **domainList, const byte ListSize)
 {
 	::TlvPack Pack(bin, len);
 	Pack.SetShort(ListSize);
@@ -368,14 +368,14 @@ unsigned __int16 Tlv::Tlv511(byte *bin, const uint len, const char **domainList,
 	return Pack.Pack(0X0511);
 }
 
-unsigned __int16 Tlv::Tlv516(byte *bin, const uint len)
+uint16_t Tlv::Tlv516(byte *bin, const uint len)
 {
 	::TlvPack Pack(bin, len);
 	Pack.SetInt(0);
 	return Pack.Pack(0X0516);
 }
 
-unsigned __int16 Tlv::Tlv521(byte *bin, const uint len)
+uint16_t Tlv::Tlv521(byte *bin, const uint len)
 {
 	//未知组包
 	::TlvPack Pack(bin, len);
@@ -384,7 +384,7 @@ unsigned __int16 Tlv::Tlv521(byte *bin, const uint len)
 	return Pack.Pack(0X0521);
 }
 
-unsigned __int16 Tlv::Tlv525(byte *bin, const uint len, const uint QQ, const char *IP, const uint Time, const uint APPID, const bool IsEmp)
+uint16_t Tlv::Tlv525(byte *bin, const uint len, const uint QQ, const char *IP, const uint Time, const uint APPID, const bool IsEmp)
 {
 	::TlvPack Pack(bin, len);
 	Pack.SetInt(0x00010536);
@@ -426,7 +426,7 @@ unsigned __int16 Tlv::Tlv525(byte *bin, const uint len, const uint QQ, const cha
 	return Pack.Pack(0X0525);
 }
 
-unsigned __int16 Tlv::Tlv52D(byte *bin, const uint len)
+uint16_t Tlv::Tlv52D(byte *bin, const uint len)
 {
 	::TlvPack Pack(bin, len);
 
@@ -454,7 +454,7 @@ unsigned __int16 Tlv::Tlv52D(byte *bin, const uint len)
 	return Pack.Pack(0x052D);
 }
 
-unsigned __int16 Tlv::Tlv544(byte *bin, const uint len, const char *QQ_APKID, const byte QQ_ASIG[16])
+uint16_t Tlv::Tlv544(byte *bin, const uint len, const char *QQ_APKID, const byte QQ_ASIG[16])
 {
 	//懒得研究了,太复杂了
 	::TlvPack Pack(bin, len);
@@ -471,14 +471,14 @@ unsigned __int16 Tlv::Tlv544(byte *bin, const uint len, const char *QQ_APKID, co
 	return Pack.Pack(0x0544);
 }
 
-unsigned __int16 Tlv::Tlv545(byte *bin, const uint len, const char *qimei)
+uint16_t Tlv::Tlv545(byte *bin, const uint len, const char *qimei)
 {
 	::TlvPack Pack(bin, len);
 	Pack.SetMD5((byte *)qimei, strlen(qimei));
 	return Pack.Pack(0x0545);
 }
 
-unsigned __int16 Tlv::Tlv547(byte *bin, const uint len, const byte *ClientPow)
+uint16_t Tlv::Tlv547(byte *bin, const uint len, const byte *ClientPow)
 {
 	struct PowValue
 	{

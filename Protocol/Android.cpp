@@ -1,4 +1,4 @@
-﻿#include "Android.h"
+#include "Android.h"
 
 namespace Message
 {
@@ -313,13 +313,20 @@ Android::Android(const char *IMEI, const char IMSI[16], const byte GUID[16], con
     QQ.SsoSeq = Utils::GetRandom(1231123, 99999999);
     QQ.MsgCookie = Utils::GetRandomBin(4);
 
+#if defined(_WIN_PLATFORM_)
     SYSTEM_INFO sysInfo;
     GetSystemInfo(&sysInfo);
     HandleThreads.init(sysInfo.dwNumberOfProcessors * 2);
     HandleThreads.start();
+#endif
+
+#if defined(_LINUX_PLATFORM_)
+    HandleThreads.init(sysconf(_SC_NPROCESSORS_CONF) * 2);
+    HandleThreads.start();
+#endif
 }
 
-bool Android::Fun_Connect(const wchar_t *IP, const unsigned short Port)
+bool Android::Fun_Connect(const char *IP, const unsigned short Port)
 {
     if (IP == nullptr || Port == 0)
     {
@@ -327,6 +334,7 @@ bool Android::Fun_Connect(const wchar_t *IP, const unsigned short Port)
             TCP.Close();
         try
         {
+#if defined(_WIN_PLATFORM_)
             wchar_t *IP;
             TCP.DomainGetIP(L"msfwifi.3g.qq.com", IP);
             if (!TCP.Connect(Iconv::UnicodeToAnsi(IP).c_str(), 8080))
@@ -334,11 +342,24 @@ bool Android::Fun_Connect(const wchar_t *IP, const unsigned short Port)
                 delete[] IP;
                 return false;
             };
+            delete[] IP;
             Connected = true;
+#endif
+#if defined(_LINUX_PLATFORM_)
+            char *IP;
+            TCP.DomainGetIP("msfwifi.3g.qq.com", IP);
+            if (!TCP.Connect(IP, 8080))
+            {
+                delete[] IP;
+                return false;
+            };
+            delete[] IP;
+            Connected = true;
+#endif
         }
         catch (...)
         {
-            if (!TCP.Connect("1l3.96.l3.79", 8080))
+            if (!TCP.Connect("113.96.13.79", 8080))
             {
                 return false;
             };
@@ -349,7 +370,7 @@ bool Android::Fun_Connect(const wchar_t *IP, const unsigned short Port)
     {
         if (Connected)
             TCP.Close();
-        if (!TCP.Connect(Iconv::UnicodeToAnsi(IP).c_str(), Port))
+        if (!TCP.Connect(IP, Port))
             return false;
         Connected = true;
     }
@@ -362,7 +383,6 @@ int Android::Fun_Send(const uint PacketType, const byte EncodeType, const char *
 {
     ::Pack Pack(XBin::Bin2Int(Buffer) + 100, true);
     int SsoSeq = QQ.SsoSeq.fetch_add(1);
-    OutputDebugString(std::to_wstring(SsoSeq).c_str());
 
     switch (PacketType)
     {
@@ -555,18 +575,17 @@ void Android::Fun_Receice(const LPBYTE bin)
         break;
     }
 
-    Log::AddLog(Log::LogType::__DEBUG, Log::MsgType::OTHER, u8"serviceCmd", (char8_t*)ServiceCmd);
-
+    Log::AddLog(Log::LogType::__DEBUG, Log::MsgType::OTHER, u8"serviceCmd", (char8_t *)ServiceCmd);
     if (sso_seq > 0)
     {
         std::mutex lock;
         std::unique_lock<std::mutex> ulock(lock);
+        std::condition_variable condition_variable;
 
         SendList[sso_seq & 0x3F].BodyBin = BodyBin;
-        DuplicateHandle(GetCurrentProcess(), GetCurrentThread(), GetCurrentProcess(), &SendList[sso_seq & 0x3F].hThread, 0, 0, DUPLICATE_SAME_ACCESS);
+        SendList[sso_seq & 0x3F].condition_variable = &condition_variable;
         SendList[sso_seq & 0x3F].cv.notify_one();
-
-        SuspendThread(SendList[sso_seq & 0x3F].hThread);
+        condition_variable.wait(ulock);
     }
     else
     {
@@ -581,8 +600,14 @@ void Android::Fun_Receice(const LPBYTE bin)
 void Android::Fun_Handle(char *serviceCmd, const LPBYTE BodyBin, const uint sso_seq)
 {
     char *buf;
+#if defined(_WIN_PLATFORM_)
     char *first = strtok_s(serviceCmd, ".", &buf);
     char *second = strtok_s(NULL, ".", &buf);
+#endif
+#if defined(_LINUX_PLATFORM_)
+    char *first = strtok_r(serviceCmd, ".", &buf);
+    char *second = strtok_r(NULL, ".", &buf);
+#endif
     if (!strcmp(first, "OnlinePush"))
     {
         if (!strcmp(second, "PbPushGroupMsg"))
@@ -618,7 +643,13 @@ void Android::Fun_Life_Event()
     uint time = 1;
     do
     {
+#if defined(_WIN_PLATFORM_)
         Sleep(45000);
+#endif
+
+#if defined(_LINUX_PLATFORM_)
+        sleep(45);
+#endif
         StatSvc_Register();
         if (!(time % 1919))
             QQ_SyncCookie(); //提前45s防止plugin用了失效的cookie
@@ -907,21 +938,21 @@ void Android::wtlogin_exchange_emp()
 void Android::StatSvc_Register(const byte state)
 {
     Jce Jce;
-    Jce.Write(QQ.QQ, 0);                             //lUin
-    Jce.Write(state == 21 ? 0 : 7, 1);               //lBid
-    Jce.Write(0, 2);                                 //cConnType
-    Jce.Write("", 3);                                //sOther
-    Jce.Write(state == NULL ? QQ.Status : state, 4); //iStatus
-    Jce.Write(state == NULL, 5);                     //bOnlinePush
-    Jce.Write(false, 6);                             //bIsOnline
-    Jce.Write(false, 7);                             //bIsShowOnline
-    Jce.Write(false, 8);                             //bKikPC''''
-    Jce.Write(false, 9);                             //bKikWeak
-    Jce.Write(517, 10);                              //timeStamp
-    Jce.Write(22, 11);                               //iOSVersion
-    Jce.Write(1, 12);                                //cNetType
-    Jce.Write("", 13);                               //sBuildVer
-    Jce.Write(false, 14);                            //bRegType
+    Jce.Write(QQ.QQ, 0);                          //lUin
+    Jce.Write(state == 21 ? 0 : 7, 1);            //lBid
+    Jce.Write(0, 2);                              //cConnType
+    Jce.Write("", 3);                             //sOther
+    Jce.Write(state == 0 ? QQ.Status : state, 4); //iStatus
+    Jce.Write(state == 0, 5);                     //bOnlinePush
+    Jce.Write(false, 6);                          //bIsOnline
+    Jce.Write(false, 7);                          //bIsShowOnline
+    Jce.Write(false, 8);                          //bKikPC''''
+    Jce.Write(false, 9);                          //bKikWeak
+    Jce.Write(517, 10);                           //timeStamp
+    Jce.Write(22, 11);                            //iOSVersion
+    Jce.Write(1, 12);                             //cNetType
+    Jce.Write("", 13);                            //sBuildVer
+    Jce.Write(false, 14);                         //bRegType
     //vecDevParam
     Jce.Write(Device.GUID, 16, 16);   //vecGuid
     Jce.Write(2052, 17);              //iLocaleID
@@ -997,21 +1028,21 @@ void Android::StatSvc_SimpleGet()
 void Android::StatSvc_SetStatusFromClient(const byte state)
 {
     Jce Jce;
-    Jce.Write(QQ.QQ, 0);                             //lUin
-    Jce.Write(state == 21 ? 0 : 7, 1);               //lBid
-    Jce.Write(0, 2);                                 //cConnType
-    Jce.Write("", 3);                                //sOther
-    Jce.Write(state == NULL ? QQ.Status : state, 4); //iStatus
-    Jce.Write(state == NULL, 5);                     //bOnlinePush
-    Jce.Write(0, 6);                                 //bIsOnline
-    Jce.Write(0, 7);                                 //bIsShowOnline
-    Jce.Write(false, 8);                             //bKikPC''''
-    Jce.Write(false, 9);                             //bKikWeak
-    Jce.Write((uint)std::time(0), 10);               //timeStamp
-    Jce.Write(23, 11);                               //iOSVersion
-    Jce.Write(1, 12);                                //cNetType
-    Jce.Write("", 13);                               //sBuildVer
-    Jce.Write(false, 14);                            //bRegType
+    Jce.Write(QQ.QQ, 0);                          //lUin
+    Jce.Write(state == 21 ? 0 : 7, 1);            //lBid
+    Jce.Write(0, 2);                              //cConnType
+    Jce.Write("", 3);                             //sOther
+    Jce.Write(state == 0 ? QQ.Status : state, 4); //iStatus
+    Jce.Write(state == 0, 5);                     //bOnlinePush
+    Jce.Write(0, 6);                              //bIsOnline
+    Jce.Write(0, 7);                              //bIsShowOnline
+    Jce.Write(false, 8);                          //bKikPC''''
+    Jce.Write(false, 9);                          //bKikWeak
+    Jce.Write((uint)std::time(0), 10);            //timeStamp
+    Jce.Write(23, 11);                            //iOSVersion
+    Jce.Write(1, 12);                             //cNetType
+    Jce.Write("", 13);                            //sBuildVer
+    Jce.Write(false, 14);                         //bRegType
     //vecDevParam
     Jce.Write(Device.GUID, 16, 16);   //vecGuid
     Jce.Write(2052, 17);              //iLocaleID
@@ -1755,8 +1786,8 @@ bool Android::MessageSvc_PbSendMsg(const uint ToNumber, const byte ToType, const
             memcpy(T + 4, XBin::Bin2HexEx(((Message::picture *)Msg->Message)->MD5, 16), 32);
             memcpy(T + 36, ".gif", 4);
 
-            auto [ImageID, IP, Port, sig] = ImgStore_GroupPicUp(ToType == 1 ? ToNumber : NULL, T, B, ((Message::picture *)Msg->Message)->Data.Length, ((Message::picture *)Msg->Message)->Width, ((Message::picture *)Msg->Message)->Height);
-            if (IP != NULL && Port != NULL && sig != nullptr)
+            auto [ImageID, IP, Port, sig] = ImgStore_GroupPicUp(ToType == 1 ? ToNumber : 0, T, B, ((Message::picture *)Msg->Message)->Data.Length, ((Message::picture *)Msg->Message)->Width, ((Message::picture *)Msg->Message)->Height);
+            if (IP != 0 && Port != 0 && sig != nullptr)
             {
                 PicUp_DataUp(ToType == 1 ? ToNumber : NULL, ((Message::picture *)Msg->Message)->Data.Contain, ((Message::picture *)Msg->Message)->Data.Length, ((Message::picture *)Msg->Message)->MD5, 2, IP, Port, sig);
             }
@@ -2025,11 +2056,13 @@ bool Android::PicUp_DataUp(const uint Group, const byte *TotalData, const uint T
 {
     Socket TCP;
 
-    if (!TCP.Connect(XBin::Int2IP(IP), Port))
+    char *ip = XBin::Int2IP(IP);
+    if (!TCP.Connect(ip, Port))
     {
         Log::AddLog(Log::LogType::NOTICE, Log::MsgType::OTHER, u8"Upload", u8"Connect upload server false");
         return false;
     };
+    delete[] ip;
 
     //文件分片发送
     uint Offset = 0, DataLength, Length;
@@ -3146,8 +3179,9 @@ byte Android::QQ_Login_Second()
     QQ.Login = new Login;
     Fun_Connect();
 
-    //StatSvc_SimpleGet();
-    //wtlogin_exchange_emp();
+#if defined(RELEASE)
+    wtlogin_exchange_emp();
+#endif
     return QQ.Login->state;
 }
 
@@ -3289,6 +3323,11 @@ void Android::QQ_Set_Token(Android::Token *_Token)
 const Android::Token *Android::QQ_Get_Token()
 {
     return &QQ.Token;
+}
+
+const uint Android::QQ_Get_Account()
+{
+    return QQ.QQ;
 }
 
 /// <summary>
