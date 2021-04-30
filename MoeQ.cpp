@@ -12,7 +12,6 @@ bool DevMode = true;
 
 PluginSystem Plugin;
 
-Android::Token Token;
 //GUID 86A445BF44A2C287597618F6F36EB68C   MAC 4F923C3D4568   4F:92:3C:3D:45:68
 Android Sdk("861891778567", "460013521635791", (const byte *)"\x86\xA4\x45\xBF\x44\xA2\xC2\x87\x59\x76\x18\xF6\xF3\x6E\xB6\x8C", (const byte *)"\x4F\x92\x3C\x3D\x45\x68", "Alpha", "XiaoMi");
 
@@ -20,8 +19,56 @@ void Debug()
 {
 }
 
+void SaveToken(
+    const char *QQ,
+    const Android::Token *Token,
+#if defined(_WIN_PLATFORM_)
+    const wchart *
+#endif
+
+#if defined(_LINUX_PLATFORM_)
+    const char *
+#endif
+        DataFilePath)
+{
+
+    rapidjson::Document d;
+    d["QQ"].SetString(QQ, strlen(QQ));
+    d["A2"].SetString(rapidjson::StringRef(XBin::Bin2HexEx(Token->A2, 64), 128));
+    d["TGTQQ"].SetString(rapidjson::StringRef(XBin::Bin2HexEx(Token->TGT, 72), 144));
+    d["D2Key"].SetString(rapidjson::StringRef(XBin::Bin2HexEx(Token->D2Key, 16), 32));
+    d["wtSessionTicket"].SetString(rapidjson::StringRef(XBin::Bin2HexEx(Token->wtSessionTicket, 48), 96));
+    d["wtSessionTicketKey"].SetString(rapidjson::StringRef(XBin::Bin2HexEx(Token->wtSessionTicketKey, 56), 112));
+    d["token_16A"].SetString(rapidjson::StringRef(XBin::Bin2HexEx(Token->token_16A, 16), 32));
+    d["md5"].SetString(rapidjson::StringRef(XBin::Bin2HexEx(Token->md5, 16), 32));
+    d["TGTkey"].SetString(rapidjson::StringRef(XBin::Bin2HexEx(Token->TGTkey, 16), 32));
+    d["ksid"].SetString(rapidjson::StringRef(XBin::Bin2HexEx(Token->ksid, 16), 32));
+#if defined(_WIN_PLATFORM_)
+    std::ofstream output;
+    output.open(DataFilePath);
+    if (!output.is_open())
+    {
+        Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"SaveData", u8"Save Json error");
+    }
+    output.write(d.GetString(), d.GetStringLength());
+    output.close();
+#endif
+
+#if defined(_LINUX_PLATFORM_)
+    std::ofstream output;
+    output.open(DataFilePath);
+    if (!output.is_open())
+    {
+        Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"SaveData", u8"Save Json error");
+    }
+    output.write(d.GetString(), d.GetStringLength());
+    output.close();
+#endif
+}
+
 int main()
 {
+    Android::Token Token;
 #if defined(_WIN_PLATFORM_)
     SetConsoleOutputCP(65001);
     wchar_t szFilePath[MAX_PATH + 1], DataFilePath[MAX_PATH + 1], DllFilePath[MAX_PATH + 1] = {0};
@@ -36,7 +83,7 @@ int main()
     Database::Init();
     Plugin.Load(szFilePath);
 
-    wchar_t _QQ[12];
+    wchar_t QQ[12];
     wchar_t str[256];
     char Json[10000] = {'0'};
     wcscpy(DataFilePath, DataPath);
@@ -57,48 +104,6 @@ int main()
         goto login;
     }
     input.close();
-
-    try
-    {
-        rapidjson::Document d;
-        d.Parse<rapidjson::kParseCommentsFlag>(Json);
-
-        if (!d.HasParseError())
-        {
-            memcpy(_QQ, d["QQ"].GetString(), d["QQ"].GetStringLength());
-
-            if (XBin::Hex2BinEx(d["A2"].GetString(), Token.A2) != 64)
-                throw "A2 len error";
-
-            if (XBin::Hex2BinEx(d["TGT"].GetString(), Token.TGT) != 72)
-                throw "TGT len error";
-
-            if (XBin::Hex2BinEx(d["D2Key"].GetString(), Token.D2Key) != 16)
-                throw "D2Key len error";
-
-            if (XBin::Hex2BinEx(d["wtSessionTicket"].GetString(), Token.wtSessionTicket) != 48)
-                throw "wtSessionTicket len error";
-
-            if (XBin::Hex2BinEx(d["wtSessionTicketKey"].GetString(), Token.wtSessionTicketKey) != 16)
-                throw "wtSessionTicketKey len error";
-
-            if (XBin::Hex2BinEx(d["token_16A"].GetString(), Token.token_16A) != 56)
-                throw "token_16A len error";
-
-            if (XBin::Hex2BinEx(d["md5"].GetString(), Token.md5) != 16)
-                throw "md5 len error";
-
-            if (XBin::Hex2BinEx(d["TGTkey"].GetString(), Token.TGTkey) != 16)
-                throw "TGTkey len error";
-
-            if (XBin::Hex2BinEx(d["ksid"].GetString(), Token.ksid) != 16)
-                throw "ksid len error";
-        }
-    }
-    catch (...)
-    {
-        goto login;
-    }
 #endif
 
 #if defined(_LINUX_PLATFORM_)
@@ -114,7 +119,7 @@ int main()
     Database::Init();
     Plugin.Load(szFilePath);
 
-    char _QQ[12];
+    char QQ[12];
     char str[256];
     char Json[10000] = {'0'};
     strcpy(DataFilePath, DataPath);
@@ -136,6 +141,8 @@ int main()
     }
     input.close();
 
+#endif
+
     try
     {
         rapidjson::Document d;
@@ -143,7 +150,7 @@ int main()
 
         if (!d.HasParseError())
         {
-            memcpy(_QQ, d["QQ"].GetString(), d["QQ"].GetStringLength());
+            memcpy(QQ, d["QQ"].GetString(), d["QQ"].GetStringLength());
 
             if (XBin::Hex2BinEx(d["A2"].GetString(), Token.A2) != 64)
                 throw "A2 len error";
@@ -176,15 +183,14 @@ int main()
     catch (...)
     {
     }
-#endif
 
     if (true)
     {
 #if defined(_WIN_PLATFORM_)
-        Sdk.QQ_Init(Iconv::UnicodeToAnsi(_QQ).c_str());
+        Sdk.QQ_Init(Iconv::UnicodeToAnsi(QQ).c_str());
 #endif
 #if defined(_LINUX_PLATFORM_)
-        Sdk.QQ_Init(_QQ);
+        Sdk.QQ_Init(QQ);
 #endif
         Sdk.QQ_Set_Token(&Token);
         Sdk.QQ_Login_Second();
@@ -193,7 +199,7 @@ int main()
     else
     {
     login:
-        char QQ[15], Password[20];
+        char Password[20];
         std::cin >> QQ;
         std::cin >> Password;
         byte state;
@@ -238,45 +244,19 @@ int main()
             break;
         }
         Sdk.QQ_Login_Finish();
-    online:
-        //Save Tokens
-        Token = *Sdk.QQ_Get_Token();
-
-#if defined(_WIN_PLATFORM_)
-        WritePrivateProfileString(L"Token", L"QQ", Iconv::AnsiToUnicode(QQ).c_str(), DataFilePath);
-        WritePrivateProfileString(L"Token", L"A2", Iconv::AnsiToUnicode(XBin::Bin2HexEx(Token.A2, 64)).c_str(), DataFilePath);
-        WritePrivateProfileString(L"Token", L"TGT", Iconv::AnsiToUnicode(XBin::Bin2HexEx(Token.TGT, 72)).c_str(), DataFilePath);
-        WritePrivateProfileString(L"Token", L"D2Key", Iconv::AnsiToUnicode(XBin::Bin2HexEx(Token.D2Key, 16)).c_str(), DataFilePath);
-        WritePrivateProfileString(L"Token", L"wtSessionTicket", Iconv::AnsiToUnicode(XBin::Bin2HexEx(Token.wtSessionTicket, 48)).c_str(), DataFilePath);
-        WritePrivateProfileString(L"Token", L"wtSessionTicketKey", Iconv::AnsiToUnicode(XBin::Bin2HexEx(Token.wtSessionTicketKey, 16)).c_str(), DataFilePath);
-        WritePrivateProfileString(L"Token", L"token_16A", Iconv::AnsiToUnicode(XBin::Bin2HexEx(Token.token_16A, 56)).c_str(), DataFilePath);
-        WritePrivateProfileString(L"Token", L"md5", Iconv::AnsiToUnicode(XBin::Bin2HexEx(Token.md5, 16)).c_str(), DataFilePath);
-        WritePrivateProfileString(L"Token", L"TGTkey", Iconv::AnsiToUnicode(XBin::Bin2HexEx(Token.TGTkey, 16)).c_str(), DataFilePath);
-        WritePrivateProfileString(L"Token", L"ksid", Iconv::AnsiToUnicode(XBin::Bin2HexEx(Token.ksid, 16)).c_str(), DataFilePath);
-#endif
-
-#if defined(_LINUX_PLATFORM_)
-        /*
-        WritePrivateProfileString("Token", "QQ", Iconv::AnsiToUnicode(QQ).c_str(), DataFilePath);
-        WritePrivateProfileString("Token", "A2", Iconv::AnsiToUnicode(XBin::Bin2HexEx(Token.A2, 64)).c_str(), DataFilePath);
-        WritePrivateProfileString("Token", "TGT", Iconv::AnsiToUnicode(XBin::Bin2HexEx(Token.TGT, 72)).c_str(), DataFilePath);
-        WritePrivateProfileString("Token", "D2Key", Iconv::AnsiToUnicode(XBin::Bin2HexEx(Token.D2Key, 16)).c_str(), DataFilePath);
-        WritePrivateProfileString("Token", "wtSessionTicket", Iconv::AnsiToUnicode(XBin::Bin2HexEx(Token.wtSessionTicket, 48)).c_str(), DataFilePath);
-        WritePrivateProfileString("Token", "wtSessionTicketKey", Iconv::AnsiToUnicode(XBin::Bin2HexEx(Token.wtSessionTicketKey, 16)).c_str(), DataFilePath);
-        WritePrivateProfileString("Token", "token_16A", Iconv::AnsiToUnicode(XBin::Bin2HexEx(Token.token_16A, 56)).c_str(), DataFilePath);
-        WritePrivateProfileString("Token", "md5", Iconv::AnsiToUnicode(XBin::Bin2HexEx(Token.md5, 16)).c_str(), DataFilePath);
-        WritePrivateProfileString("Token", "TGTkey", Iconv::AnsiToUnicode(XBin::Bin2HexEx(Token.TGTkey, 16)).c_str(), DataFilePath);
-        WritePrivateProfileString("Token", "ksid", Iconv::AnsiToUnicode(XBin::Bin2HexEx(Token.ksid, 16)).c_str(), DataFilePath);
-        */
-#endif
     }
+online:
+    SaveToken(QQ, Sdk.QQ_Get_Token(), DataFilePath);
 
     Sdk.QQ_Online();
-#ifdef DEBUG
+#if defined(DEBUG)
     Debug();
-#endif // DEBUG
+#endif
+
     char a[99];
     std::cin >> a;
+
+    SaveToken(QQ, Sdk.QQ_Get_Token(), DataFilePath);
 
     return 0;
 }

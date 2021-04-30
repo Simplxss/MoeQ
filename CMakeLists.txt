@@ -26,11 +26,11 @@ if ("${CMAKE_SYSTEM_NAME}" STREQUAL "Linux")
     add_definitions(-D _LINUX_PLATFORM_)
 endif()
 
-if ("${DCMAKE_BUILD_TYPE}" STREQUAL "Debug")
+if ("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
     add_definitions(-D DEBUG)
 endif()
 
-if ("${DCMAKE_BUILD_TYPE}" STREQUAL "Release")
+if ("${CMAKE_BUILD_TYPE}" STREQUAL "Release")
     add_definitions(-D RELEASE)
 endif()
 

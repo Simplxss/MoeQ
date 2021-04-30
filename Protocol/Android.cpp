@@ -938,21 +938,21 @@ void Android::wtlogin_exchange_emp()
 void Android::StatSvc_Register(const byte state)
 {
     Jce Jce;
-    Jce.Write(QQ.QQ, 0);                             //lUin
-    Jce.Write(state == 21 ? 0 : 7, 1);               //lBid
-    Jce.Write(0, 2);                                 //cConnType
-    Jce.Write("", 3);                                //sOther
+    Jce.Write(QQ.QQ, 0);                          //lUin
+    Jce.Write(state == 21 ? 0 : 7, 1);            //lBid
+    Jce.Write(0, 2);                              //cConnType
+    Jce.Write("", 3);                             //sOther
     Jce.Write(state == 0 ? QQ.Status : state, 4); //iStatus
     Jce.Write(state == 0, 5);                     //bOnlinePush
-    Jce.Write(false, 6);                             //bIsOnline
-    Jce.Write(false, 7);                             //bIsShowOnline
-    Jce.Write(false, 8);                             //bKikPC''''
-    Jce.Write(false, 9);                             //bKikWeak
-    Jce.Write(517, 10);                              //timeStamp
-    Jce.Write(22, 11);                               //iOSVersion
-    Jce.Write(1, 12);                                //cNetType
-    Jce.Write("", 13);                               //sBuildVer
-    Jce.Write(false, 14);                            //bRegType
+    Jce.Write(false, 6);                          //bIsOnline
+    Jce.Write(false, 7);                          //bIsShowOnline
+    Jce.Write(false, 8);                          //bKikPC''''
+    Jce.Write(false, 9);                          //bKikWeak
+    Jce.Write(517, 10);                           //timeStamp
+    Jce.Write(22, 11);                            //iOSVersion
+    Jce.Write(1, 12);                             //cNetType
+    Jce.Write("", 13);                            //sBuildVer
+    Jce.Write(false, 14);                         //bRegType
     //vecDevParam
     Jce.Write(Device.GUID, 16, 16);   //vecGuid
     Jce.Write(2052, 17);              //iLocaleID
@@ -1028,21 +1028,21 @@ void Android::StatSvc_SimpleGet()
 void Android::StatSvc_SetStatusFromClient(const byte state)
 {
     Jce Jce;
-    Jce.Write(QQ.QQ, 0);                             //lUin
-    Jce.Write(state == 21 ? 0 : 7, 1);               //lBid
-    Jce.Write(0, 2);                                 //cConnType
-    Jce.Write("", 3);                                //sOther
+    Jce.Write(QQ.QQ, 0);                          //lUin
+    Jce.Write(state == 21 ? 0 : 7, 1);            //lBid
+    Jce.Write(0, 2);                              //cConnType
+    Jce.Write("", 3);                             //sOther
     Jce.Write(state == 0 ? QQ.Status : state, 4); //iStatus
     Jce.Write(state == 0, 5);                     //bOnlinePush
-    Jce.Write(0, 6);                                 //bIsOnline
-    Jce.Write(0, 7);                                 //bIsShowOnline
-    Jce.Write(false, 8);                             //bKikPC''''
-    Jce.Write(false, 9);                             //bKikWeak
-    Jce.Write((uint)std::time(0), 10);               //timeStamp
-    Jce.Write(23, 11);                               //iOSVersion
-    Jce.Write(1, 12);                                //cNetType
-    Jce.Write("", 13);                               //sBuildVer
-    Jce.Write(false, 14);                            //bRegType
+    Jce.Write(0, 6);                              //bIsOnline
+    Jce.Write(0, 7);                              //bIsShowOnline
+    Jce.Write(false, 8);                          //bKikPC''''
+    Jce.Write(false, 9);                          //bKikWeak
+    Jce.Write((uint)std::time(0), 10);            //timeStamp
+    Jce.Write(23, 11);                            //iOSVersion
+    Jce.Write(1, 12);                             //cNetType
+    Jce.Write("", 13);                            //sBuildVer
+    Jce.Write(false, 14);                         //bRegType
     //vecDevParam
     Jce.Write(Device.GUID, 16, 16);   //vecGuid
     Jce.Write(2052, 17);              //iLocaleID
@@ -3179,8 +3179,9 @@ byte Android::QQ_Login_Second()
     QQ.Login = new Login;
     Fun_Connect();
 
-    //StatSvc_SimpleGet();
-    //wtlogin_exchange_emp();
+#if defined(RELEASE)
+    wtlogin_exchange_emp();
+#endif
     return QQ.Login->state;
 }
 
