@@ -1,8 +1,8 @@
 # VSCode config
-.vscode/
+.vscode/*
 
 # Build results
-build/
+build/*
 
 # data
-data/
+data/*

@@ -20,10 +20,17 @@ void Debug()
 }
 
 void SaveToken(
-    const char *QQ,
+#if defined(_WIN_PLATFORM_)
+    const wchar_t *
+#endif
+
+#if defined(_LINUX_PLATFORM_)
+    const char *
+#endif
+        QQ,
     const Android::Token *Token,
 #if defined(_WIN_PLATFORM_)
-    const wchart *
+    const wchar_t *
 #endif
 
 #if defined(_LINUX_PLATFORM_)
@@ -33,7 +40,7 @@ void SaveToken(
 {
 
     rapidjson::Document d;
-    d["QQ"].SetString(QQ, strlen(QQ));
+    d["QQ"].SetString((const char *)Iconv::UnicodeToUtf8(QQ).c_str(), Iconv::UnicodeToUtf8(QQ).length());
     d["A2"].SetString(rapidjson::StringRef(XBin::Bin2HexEx(Token->A2, 64), 128));
     d["TGTQQ"].SetString(rapidjson::StringRef(XBin::Bin2HexEx(Token->TGT, 72), 144));
     d["D2Key"].SetString(rapidjson::StringRef(XBin::Bin2HexEx(Token->D2Key, 16), 32));
@@ -200,10 +207,10 @@ int main()
     {
     login:
         char Password[20];
-        std::cin >> QQ;
+        std::wcin >> QQ;
         std::cin >> Password;
         byte state;
-        Sdk.QQ_Init(QQ);
+        Sdk.QQ_Init(Iconv::UnicodeToAnsi(QQ).c_str());
         state = Sdk.QQ_Login(Password);
     check:
         char SmsCode[7], Ticket[200];

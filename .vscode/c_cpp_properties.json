@@ -1,12 +1,11 @@
 {
     "configurations": [
         {
-            "name": "Linux",
+            "name": "Win32",
             "includePath": [
-                "${workspaceFolder}/**",
-                "${vcpkgRoot}/x64-linux"
+                "${workspaceFolder}/**"
             ],
-            "compilerPath": "/usr/bin/g++-10",
+            "compilerPath": "C:/mingw64/bin/x86_64-w64-mingw32-gcc",
             "configurationProvider": "ms-vscode.cmake-tools",
             "cStandard": "gnu17",
             "cppStandard": "gnu++20"
