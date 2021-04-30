@@ -42,7 +42,7 @@ namespace Log
 
 	#endif
 
-	void AddLog(const LogType LogType, const MsgType MsgType, const char8_t* Type, const char8_t* MsgFormat, ...);
+	void AddLog(const LogType LogType, const MsgType MsgType, const char8_t* Type, const char8_t* MsgFormat,const bool Format =false, ...);
 	void AddLog(const LogType LogType, const MsgType MsgType, const Event::NoticeEvent::NoticeEvent *NoticeEvent);
 	void AddLog(const LogType LogType, const MsgType MsgType, const Event::RequestEvent::RequestEvent *RequestEvent);
 };

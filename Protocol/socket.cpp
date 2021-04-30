@@ -14,7 +14,7 @@ Socket::Socket()
 	}
 #endif
 #if defined(_LINUX_PLATFORM_)
-	Client = socket(AF_INET, SOCK_STREAM, 0);
+	Client = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if (Client == -1)
 		throw "create socket error";
 #endif
@@ -140,7 +140,8 @@ void Socket::DomainGetIP(const
 #endif
 #if defined(_LINUX_PLATFORM_)
 	hostent *hostent = gethostbyname(Domain);
-	szHostaddress = new char[46];
-	strcpy(szHostaddress, hostent->h_addr_list[0]);
+	if(hostent == nullptr) throw " error";
+	szHostaddress = new char[INET_ADDRSTRLEN];
+	inet_ntop(hostent->h_addrtype, hostent->h_addr, szHostaddress, INET_ADDRSTRLEN);
 #endif
 }

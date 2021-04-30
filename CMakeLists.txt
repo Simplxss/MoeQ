@@ -19,28 +19,33 @@ endif()
 
 if ("${CMAKE_SYSTEM_NAME}" STREQUAL "Windows")
     add_definitions(-D _WIN_PLATFORM_)
+    add_definitions(-D UNICODE)
 endif()
 
 if ("${CMAKE_SYSTEM_NAME}" STREQUAL "Linux")
     add_definitions(-D _LINUX_PLATFORM_)
 endif()
 
-if ("${DCMAKE_BUILD_TYPE}" STREQUAL "Debug")
+if ("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
     add_definitions(-D DEBUG)
 endif()
 
-if ("${DCMAKE_BUILD_TYPE}" STREQUAL "Release")
+if ("${CMAKE_BUILD_TYPE}" STREQUAL "Release")
     add_definitions(-D RELEASE)
 endif()
 
-add_definitions(-D UNICODE -D X64)
+add_definitions(-D X64)
 
 find_package(ZLIB REQUIRED)
 find_package(OpenSSL REQUIRED)
 find_package(unofficial-sqlite3 CONFIG REQUIRED)
 
-aux_source_directory(Protocol DIR_SRCS)
-add_executable(${TARGET_NAME} ${DIR_SRCS} "MoeQ.cpp")
+file(GLOB_RECURSE SOURCES "Protocol/*.cpp")
+add_executable(${TARGET_NAME} ${SOURCES} "MoeQ.cpp")
+
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
+    target_compile_options(cqcppsdk INTERFACE $<$<CXX_COMPILER_ID:MSVC>:/utf-8>)
+endif()
 
 target_link_libraries(${TARGET_NAME} PRIVATE ZLIB::ZLIB)
 target_link_libraries(${TARGET_NAME} PRIVATE unofficial::sqlite3::sqlite3)
