@@ -438,7 +438,7 @@ std::tuple<uint, uint> Database::GetGroupMsg(const uint64_t MsgID_)
     sqlite3_stmt *pStmt;
     if (sqlite3_prepare_v2(Database_Data, "SELECT MsgID,MsgRand FROM GroupMsg WHERE Id = ?", 48, &pStmt, nullptr) != SQLITE_OK)
     {
-        Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"Select 'GroupMsg' error", (const char8_t *)(const char8_t *)sqlite3_errmsg(Database_Data));
+        Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"Select 'GroupMsg' error", (const char8_t *)sqlite3_errmsg(Database_Data));
         return {0, 0};
     }
 

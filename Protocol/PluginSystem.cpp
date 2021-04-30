@@ -125,7 +125,7 @@ void PluginSystem::Load(
 
                 if (d.HasParseError())
                 {
-                    Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"LoadPlugin", u8"Parse Json fail, ParseErrorCode:%d, ErrorOffset:%u", d.GetParseError(), d.GetErrorOffset());
+                    Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"LoadPlugin", u8"Parse Json fail, ParseErrorCode:%d, ErrorOffset:%u", true, d.GetParseError(), d.GetErrorOffset());
                     return;
                 }
 
@@ -215,7 +215,7 @@ void PluginSystem::Load(
                         PluginList[i].EventList[j].function = (void *)GetProcAddress(Handle, v["function"].GetString());
                         if (PluginList[i].EventList[j].function == NULL)
                         {
-                            Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"LoadPlugin", u8"GetProcAddress error, function name:%s", v["function"].GetString());
+                            Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"LoadPlugin", u8"GetProcAddress error, function name:%s", true, v["function"].GetString());
                             d.Clear();
                             error = true;
                             break;
@@ -279,7 +279,7 @@ void PluginSystem::Load(
                     PluginList[i].Menu.function = (PluginSystem::Menu::Munu)GetProcAddress(Handle, d["menu"]["function"].GetString());
                     if (PluginList[i].Menu.function == NULL)
                     {
-                        Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"LoadPlugin", u8"GetProcAddress error, function name:%s", d["menu"]["function"].GetString());
+                        Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"LoadPlugin", u8"GetProcAddress error, function name:%s", true, d["menu"]["function"].GetString());
                         d.Clear();
                         return;
                     }
@@ -362,7 +362,7 @@ void PluginSystem::Load(
                 void *Handle = dlopen(PluginPath_, RTLD_NOW);
                 if (Handle == NULL)
                 {
-                    Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"LoadPlugin", u8"dlopen fail, GetLastError:%d", dlerror());
+                    Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"LoadPlugin", u8"dlopen fail, GetLastError:%d", true, dlerror());
                     continue;
                 }
                 typedef int (*Initialize)(const uint64_t);
@@ -395,7 +395,7 @@ void PluginSystem::Load(
 
                 if (d.HasParseError())
                 {
-                    Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"LoadPlugin", u8"Parse Json fail, ParseErrorCode:%d, ErrorOffset:%ul", d.GetParseError(), d.GetErrorOffset());
+                    Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"LoadPlugin", u8"Parse Json fail, ParseErrorCode:%d, ErrorOffset:%ul", true, d.GetParseError(), d.GetErrorOffset());
                     return;
                 }
 
@@ -487,7 +487,7 @@ void PluginSystem::Load(
                         PluginList[i].EventList[j].function = dlsym(Handle, v["function"].GetString());
                         if (PluginList[i].EventList[j].function == NULL)
                         {
-                            Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"LoadPlugin", u8"GetProcAddress error, function name:%s", v["function"].GetString());
+                            Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"LoadPlugin", u8"GetProcAddress error, function name:%s", true, v["function"].GetString());
                             d.Clear();
                             error = true;
                             break;
@@ -551,7 +551,7 @@ void PluginSystem::Load(
                     PluginList[i].Menu.function = (PluginSystem::Menu::Munu)dlsym(Handle, d["menu"]["function"].GetString());
                     if (PluginList[i].Menu.function == NULL)
                     {
-                        Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"LoadPlugin", u8"GetProcAddress error, function name:%s", d["menu"]["function"].GetString());
+                        Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"LoadPlugin", u8"GetProcAddress error, function name:%s", true, d["menu"]["function"].GetString());
                         d.Clear();
                         return;
                     }
