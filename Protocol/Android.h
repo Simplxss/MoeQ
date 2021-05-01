@@ -17,8 +17,7 @@
 #define QQ_SDK_VERSION "6.0.0.2463"
 #define QQ_BUILDTIME 1612895972
 
-#define LOGIN_ERROR 0
-#define LOGIN_SUCCESS 1
+#define LOGIN_SUCCESS 0
 #define LOGIN_VERIY 2
 #define LOGIN_VERIY_SMS 160
 
@@ -77,7 +76,7 @@ private:
         char *Viery_Ticket = nullptr;
         char *PhoneNumber = nullptr;
         char *SmsToken = nullptr;
-        byte state;
+        int state;
     };
     struct p_skey
     {

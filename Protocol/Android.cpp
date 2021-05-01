@@ -922,16 +922,7 @@ void Android::wtlogin_exchange_emp()
                           Un_Tlv_Get(cmd, UnPack.GetBin(binlen), binlen);
                       }
 
-                      switch (Result)
-                      {
-                      case 0:
-                          QQ.Login->state = LOGIN_SUCCESS;
-                          break;
-                      default:
-                          QQ.Login->state = Result;
-                          throw "Unknown login result";
-                          break;
-                      }
+                      QQ.Login->state = Result;
                   });
 }
 
@@ -2718,47 +2709,26 @@ void Android::Unpack_wtlogin_login(const LPBYTE BodyBin, const uint sso_seq)
         unsigned short binlen = UnPack.GetShort();
         Un_Tlv_Get(cmd, UnPack.GetBin(binlen), binlen);
     }
+    QQ.Login->state = Result;
+    // 0 登录成功
+    // 1 密码错误
+    // 2 验证码
+    // 32 被回收
+    // 40 被冻结
+    // 160 设备锁
+    // 162 短信发送失败
+    // 180 回滚
+    // 204 设备锁 验证
+    // 235 版本过低
+    // 237 上网环境异常
+    // 239 设备锁
     switch (Result)
     {
-    case 0:
-        QQ.Login->state = LOGIN_SUCCESS;
-        break;
-    case 1: //密码错误
-        QQ.Login->state = LOGIN_ERROR;
-        break;
-    case 2: //验证码
-        QQ.Login->state = LOGIN_VERIY;
-        break;
-    case 32: //回收
-        QQ.Login->state = LOGIN_ERROR;
-        break;
-    case 40: //冻结
-        QQ.Login->state = LOGIN_ERROR;
-        break;
-    case 160: //设备锁
-        QQ.Login->state = LOGIN_VERIY_SMS;
-        break;
-    case 162: //短信发送失败
-        QQ.Login->state = LOGIN_ERROR;
-        break;
-    case 180: //回滚
+    case 180:
         //To do
         break;
-    case 204: //设备锁 验证
+    case 204:
         wtlogin_login_Viery_204();
-        break;
-    case 235: //版本过低
-        QQ.Login->state = LOGIN_ERROR;
-        break;
-    case 237: //上网环境异常
-        QQ.Login->state = LOGIN_ERROR;
-        break;
-    case 239: //设备锁
-        QQ.Login->state = LOGIN_VERIY_SMS;
-        break;
-    default:
-        QQ.Login->state = Result;
-        throw "Unknown login result";
         break;
     }
 }
@@ -3178,6 +3148,7 @@ byte Android::QQ_Login_Second()
     QQ.Token.md52 = Utils::MD5(tmp, 24);
     QQ.Login = new Login;
     Fun_Connect();
+    wtlogin_exchange_emp();
 
 #if defined(RELEASE)
     wtlogin_exchange_emp();

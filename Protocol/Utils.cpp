@@ -543,68 +543,6 @@ std::u8string Iconv::UnicodeToUtf8(const wchar_t *str, const int Length)
 
 #endif
 
-#if defined(_LINUX_PLATFORM_)
-/*
-std::wstring Iconv::AnsiToUnicode(const char *str, const int Length)
-{
-    int utf16Length = ::MultiByteToWideChar(936, 0, str, Length, nullptr, 0);
-
-    std::wstring utf16;
-    utf16.resize(utf16Length);
-    ::MultiByteToWideChar(936, 0, str, Length, &utf16[0], utf16Length);
-    // Resize down the string to avoid bogus double-NUL-terminated strings
-    utf16.resize(utf16Length - 1);
-
-    iconv_t cd;
-    int rc;
-    char **pin = &inbuf;
-    char **pout = &outbuf;
-
-    cd = iconv_open("utf-8", from_charset);
-    if (cd == 0)
-        return -1;
-    memset(outbuf, 0, outlen);
-    if (iconv(cd, pin, &inlen, pout, &outlen) == -1)
-        return -1;
-    iconv_close(cd);
-}
-
-std::string Iconv::UnicodeToAnsi(const wchar_t *str, const int Length)
-{
-    int ansiLength = ::WideCharToMultiByte(936, 0, str, Length, nullptr, 0, nullptr, nullptr);
-
-    std::string ansi;
-    ansi.resize(ansiLength);
-    ::WideCharToMultiByte(936, 0, str, Length, &ansi[0], ansiLength, nullptr, nullptr);
-    // Resize down the string to avoid bogus double-NUL-terminated strings
-    ansi.resize(ansiLength - 1);
-}
-
-std::wstring Iconv::Utf8ToUnicode(const char8_t *str, const int Length)
-{
-    int utf16Length = ::MultiByteToWideChar(CP_UTF8, 0, (LPCCH)str, Length, nullptr, 0);
-
-    std::wstring utf16;
-    utf16.resize(utf16Length);
-    ::MultiByteToWideChar(CP_UTF8, 0, (LPCCH)str, Length, &utf16[0], utf16Length);
-    // Resize down the string to avoid bogus double-NUL-terminated strings
-    utf16.resize(utf16Length - 1);
-}
-
-std::u8string Iconv::UnicodeToUtf8(const wchar_t *str, const int Length)
-{
-    int utf8Length = ::WideCharToMultiByte(CP_ACP, 0, str, Length, nullptr, 0, nullptr, nullptr);
-
-    std::u8string utf8;
-    utf8.resize(utf8Length);
-    ::WideCharToMultiByte(CP_ACP, 0, str, Length, (LPSTR)&utf8[0], utf8Length, nullptr, nullptr);
-    // Resize down the string to avoid bogus double-NUL-terminated strings
-    utf8.resize(utf8Length - 1);
-}
-*/
-
-#endif
-
 bool BigInteger::AddOne(byte *BigInteger, int len)
 {
     for (size_t i = len - 1; i >= 0; i--)

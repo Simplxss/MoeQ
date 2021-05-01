@@ -60,7 +60,17 @@ void SaveToken(
     d.AddMember("ksid", rapidjson::StringRef(XBin::Bin2HexEx(Token->ksid, 16), 32), Allocator);
 
 #if defined(_WIN_PLATFORM_)
-
+    FILE *fp = _wfopen(DataFilePath, L"wb");
+    if (!fp)
+    {
+        Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"SaveData", u8"Save Json error");
+        return;
+    }
+    char writeBuffer[10000];
+    rapidjson::FileWriteStream os(fp, writeBuffer, sizeof(writeBuffer));
+    rapidjson::PrettyWriter<rapidjson::FileWriteStream> writer(os);
+    d.Accept(writer);
+    fclose(fp);
 #endif
 #if defined(_LINUX_PLATFORM_)
     FILE *fp = fopen(DataFilePath, "wb");
@@ -98,7 +108,7 @@ int main()
     wchar_t str[256];
     char Json[10000] = {'0'};
     wcscpy(DataFilePath, DataPath);
-    wcscat(DataFilePath, L"data.ini");
+    wcscat(DataFilePath, L"data.json");
 
     std::ifstream input;
     input.open(DataFilePath);
@@ -204,7 +214,12 @@ int main()
         Sdk.QQ_Init(QQ);
 #endif
         Sdk.QQ_Set_Token(&Token);
-        Sdk.QQ_Login_Second();
+        int state = Sdk.QQ_Login_Second();
+        if (state != LOGIN_SUCCESS)
+        {
+            Log::AddLog(Log::LogType::_ERROR, Log::MsgType::OTHER, u8"SyncCookie", u8"Login failed, error code: %d, error message: %s", true, state, Sdk.QQ_GetErrorMsg());
+            return 0;
+        }
         Sdk.QQ_Login_Finish();
         SaveToken(QQ, Sdk.QQ_Get_Token(), DataFilePath);
     }
@@ -219,7 +234,7 @@ int main()
         std::cin >> QQ;
 #endif
         std::cin >> Password;
-        byte state;
+        int state;
 #if defined(_WIN_PLATFORM_)
         Sdk.QQ_Init(Iconv::UnicodeToAnsi(QQ).c_str());
 #endif
@@ -258,12 +273,10 @@ int main()
                 return 0;
             }
             */
-        case LOGIN_ERROR:
-            Log::AddLog(Log::LogType::INFORMATION, Log::MsgType::OTHER, u8"Login", u8"Login failed");
-            Log::AddLog(Log::LogType::INFORMATION, Log::MsgType::OTHER, u8"Login", Sdk.QQ_GetErrorMsg());
-            return 0;
-        default:
             break;
+        default:
+            Log::AddLog(Log::LogType::INFORMATION, Log::MsgType::OTHER, u8"Login", u8"Login failed, error code: %d, error message: %s.", true, state, Sdk.QQ_GetErrorMsg());
+            return 0;
         }
         Sdk.QQ_Login_Finish();
     }

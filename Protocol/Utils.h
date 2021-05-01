@@ -10,10 +10,6 @@
 #include <stringapiset.h>
 #endif
 
-#if defined(_LINUX_PLATFORM_)
-#include <iconv.h>
-#endif
-
 #include <zlib.h>
 #include <sqlite3.h>
 #include <openssl/sha.h>
@@ -37,7 +33,7 @@ namespace Utils
 	char *GetRandomLetter(const uint length);
 	byte *GetRandomBin(const uint length);
 
-    void MD5(const byte *bin, const size_t length, byte* md5);
+	void MD5(const byte *bin, const size_t length, byte *md5);
 	byte *MD5(const byte *bin, const size_t length);
 	LPBYTE MD5EX(const byte *bin, const size_t length);
 	byte *Sha256(const byte *bin, const size_t length);
@@ -68,9 +64,9 @@ namespace XBin
 	uint Hex2BinEx(const char *hex, byte *&bin);
 }
 
+#if defined(_WIN_PLATFORM_)
 namespace Iconv
 {
-	#if defined(_WIN_PLATFORM_)
 
 	std::wstring AnsiToUnicode(const char *str, const int Length);
 	std::string UnicodeToAnsi(const wchar_t *str, const int Length);
@@ -124,7 +120,7 @@ namespace Iconv
 
 	inline std::string Utf8ToAnsi(const char8_t *str)
 	{
-		return Utf8ToAnsi(str, strlen((char*)str));
+		return Utf8ToAnsi(str, strlen((char *)str));
 	};
 	inline std::u8string AnsiToUtf8(const char *str)
 	{
@@ -140,8 +136,8 @@ namespace Iconv
 		return AnsiToUtf8(str->c_str(), str->length());
 	};
 
-	#endif
 }
+#endif
 
 namespace BigInteger
 {
