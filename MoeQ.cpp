@@ -40,42 +40,40 @@ void SaveToken(
 {
 
     rapidjson::Document d;
+    rapidjson::Document::AllocatorType &Allocator = d.GetAllocator();
+    d.SetObject();
 #if defined(_WIN_PLATFORM_)
-    d["QQ"].SetString((const char *)Iconv::UnicodeToUtf8(QQ).c_str(), Iconv::UnicodeToUtf8(QQ).length());
+    d.AddMember("QQ", rapidjson::Value(rapidjson::kStringType).SetString((const char *)Iconv::UnicodeToUtf8(QQ).c_str(), Allocator), Allocator);
 #endif
 
 #if defined(_LINUX_PLATFORM_)
-    d["QQ"].SetString(QQ, strlen(QQ));
+    d.AddMember("QQ", rapidjson::Value(rapidjson::kStringType).SetString(QQ, Allocator), Allocator);
 #endif
-    d["A2"].SetString(rapidjson::StringRef(XBin::Bin2HexEx(Token->A2, 64), 128));
-    d["TGTQQ"].SetString(rapidjson::StringRef(XBin::Bin2HexEx(Token->TGT, 72), 144));
-    d["D2Key"].SetString(rapidjson::StringRef(XBin::Bin2HexEx(Token->D2Key, 16), 32));
-    d["wtSessionTicket"].SetString(rapidjson::StringRef(XBin::Bin2HexEx(Token->wtSessionTicket, 48), 96));
-    d["wtSessionTicketKey"].SetString(rapidjson::StringRef(XBin::Bin2HexEx(Token->wtSessionTicketKey, 56), 112));
-    d["token_16A"].SetString(rapidjson::StringRef(XBin::Bin2HexEx(Token->token_16A, 16), 32));
-    d["md5"].SetString(rapidjson::StringRef(XBin::Bin2HexEx(Token->md5, 16), 32));
-    d["TGTkey"].SetString(rapidjson::StringRef(XBin::Bin2HexEx(Token->TGTkey, 16), 32));
-    d["ksid"].SetString(rapidjson::StringRef(XBin::Bin2HexEx(Token->ksid, 16), 32));
-#if defined(_WIN_PLATFORM_)
-    std::ofstream output;
-    output.open(DataFilePath);
-    if (!output.is_open())
-    {
-        Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"SaveData", u8"Save Json error");
-    }
-    output.write(d.GetString(), d.GetStringLength());
-    output.close();
-#endif
+    d.AddMember("A2", rapidjson::StringRef(XBin::Bin2HexEx(Token->A2, 64), 128), Allocator);
+    d.AddMember("TGT", rapidjson::StringRef(XBin::Bin2HexEx(Token->TGT, 72), 144), Allocator);
+    d.AddMember("D2Key", rapidjson::StringRef(XBin::Bin2HexEx(Token->D2Key, 16), 32), Allocator);
+    d.AddMember("wtSessionTicket", rapidjson::StringRef(XBin::Bin2HexEx(Token->wtSessionTicket, 48), 96), Allocator);
+    d.AddMember("wtSessionTicketKey", rapidjson::StringRef(XBin::Bin2HexEx(Token->wtSessionTicketKey, 16), 32), Allocator);
+    d.AddMember("token_16A", rapidjson::StringRef(XBin::Bin2HexEx(Token->token_16A, 56), 112), Allocator);
+    d.AddMember("md5", rapidjson::StringRef(XBin::Bin2HexEx(Token->md5, 16), 32), Allocator);
+    d.AddMember("TGTkey", rapidjson::StringRef(XBin::Bin2HexEx(Token->TGTkey, 16), 32), Allocator);
+    d.AddMember("ksid", rapidjson::StringRef(XBin::Bin2HexEx(Token->ksid, 16), 32), Allocator);
 
+#if defined(_WIN_PLATFORM_)
+
+#endif
 #if defined(_LINUX_PLATFORM_)
-    std::ofstream output;
-    output.open(DataFilePath);
-    if (!output.is_open())
+    FILE *fp = fopen(DataFilePath, "wb");
+    if (!fp)
     {
         Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"SaveData", u8"Save Json error");
+        return;
     }
-    output.write(d.GetString(), d.GetStringLength());
-    output.close();
+    char writeBuffer[10000];
+    rapidjson::FileWriteStream os(fp, writeBuffer, sizeof(writeBuffer));
+    rapidjson::PrettyWriter<rapidjson::FileWriteStream> writer(os);
+    d.Accept(writer);
+    fclose(fp);
 #endif
 }
 
@@ -146,7 +144,7 @@ int main()
         goto login;
     }
     input.read(Json, 10000);
-    if (input.gcount() == 10000)
+    if (input.gcount() > 10000)
     {
         Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"LoadData", u8"Json is too big");
         input.close();
@@ -208,12 +206,13 @@ int main()
         Sdk.QQ_Set_Token(&Token);
         Sdk.QQ_Login_Second();
         Sdk.QQ_Login_Finish();
+        SaveToken(QQ, Sdk.QQ_Get_Token(), DataFilePath);
     }
     else
     {
     login:
         char Password[20];
-        #if defined(_WIN_PLATFORM_)
+#if defined(_WIN_PLATFORM_)
         std::wcin >> QQ;
 #endif
 #if defined(_LINUX_PLATFORM_)
@@ -221,7 +220,7 @@ int main()
 #endif
         std::cin >> Password;
         byte state;
-        #if defined(_WIN_PLATFORM_)
+#if defined(_WIN_PLATFORM_)
         Sdk.QQ_Init(Iconv::UnicodeToAnsi(QQ).c_str());
 #endif
 #if defined(_LINUX_PLATFORM_)
@@ -269,7 +268,6 @@ int main()
         Sdk.QQ_Login_Finish();
     }
 online:
-    SaveToken(QQ, Sdk.QQ_Get_Token(), DataFilePath);
 
     Sdk.QQ_Online();
 #if defined(DEBUG)
