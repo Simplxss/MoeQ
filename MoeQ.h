@@ -8,4 +8,7 @@
 
 #include <filesystem>
 
+#include "include/rapidjson/filewritestream.h"
+#include "include/rapidjson/prettywriter.h"
+
 #include "Protocol/ExportFunction.h"

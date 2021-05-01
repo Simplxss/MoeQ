@@ -20,6 +20,7 @@
 #include <openssl/md5.h>
 #include <openssl/ecdh.h>
 #include <openssl/des.h>
+
 #include "../include/rapidjson/document.h"
 
 #include "Defined.h"

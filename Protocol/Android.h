@@ -169,7 +169,7 @@ private:
         int SsoSeq = Fun_Send(PacketType, EncodeType, ServiceCmd, Buffer);
 
         SendList[SsoSeq & 0x3F].cv.wait(ulock);
-        std::condition_variable* condition_variable = SendList[SsoSeq & 0x3F].condition_variable;
+        std::condition_variable *condition_variable = SendList[SsoSeq & 0x3F].condition_variable;
         try
         {
             R ret = Function(SsoSeq, SendList[SsoSeq & 0x3F].BodyBin);
@@ -190,15 +190,15 @@ private:
         int SsoSeq = Fun_Send(PacketType, EncodeType, ServiceCmd, Buffer);
 
         SendList[SsoSeq & 0x3F].cv.wait(ulock);
-        std::condition_variable* condition_variable = SendList[SsoSeq & 0x3F].condition_variable;
+        std::condition_variable *condition_variable = SendList[SsoSeq & 0x3F].condition_variable;
         try
         {
             Function(SsoSeq, SendList[SsoSeq & 0x3F].BodyBin);
         }
         catch (std::exception e)
-        {}
-            condition_variable->notify_one();
-        
+        {
+        }
+        condition_variable->notify_one();
     };
     void Fun_Msg_Loop();
     void Fun_Receice(LPBYTE bin);
