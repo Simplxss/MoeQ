@@ -14,19 +14,6 @@
  * specific language governing permissions and limitations under the License.
  */
 
-
-
-
-
-//                 !!!!!!!!MSVC使用GBK编码编译!!!!!!!!!!
-
-
-
-
-
-
-
-
 #include "Tea.h"
 
 int oi_symmetry_encrypt2_len(int nInBufLen);

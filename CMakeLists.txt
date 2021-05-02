@@ -24,6 +24,7 @@ endif()
 
 if ("${CMAKE_SYSTEM_NAME}" STREQUAL "Linux")
     add_definitions(-D _LINUX_PLATFORM_)
+    set(CMAKE_CXX_FLAGS "-fvisibility=hidden ${CMAKE_CXX_FLAGS}")
 endif()
 
 if ("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")

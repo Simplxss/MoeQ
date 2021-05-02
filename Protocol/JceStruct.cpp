@@ -36,7 +36,7 @@ void Jce::Write(const int i, const byte tag)
 	if (i < -32768 || i > 32767)
 	{
 		WriteHead(JceStruct::JceStructType::INT, tag);
-		Pack::SetInt((uint)i);//强转保留符号
+		Pack::SetInt((uint32_t)i);//强转保留符号
 	}
 	else Write((short)i, tag);
 }
@@ -88,7 +88,7 @@ void Jce::Write(Jce* Jce, const byte tag)
 	if (Jce == this)
 	{
 		byte* bin;
-		uint len = (*Jce).GetAll_(bin, true);
+		uint32_t len = (*Jce).GetAll_(bin, true);
 		WriteHead(JceStruct::JceStructType::STRUCT_BEGIN, tag);
 		Pack::SetBin(bin, len);
 		WriteHead(JceStruct::JceStructType::STRUCT_END, tag);
@@ -98,7 +98,7 @@ void Jce::Write(Jce* Jce, const byte tag)
 	{
 		WriteHead(JceStruct::JceStructType::STRUCT_BEGIN, tag);
 		byte* bin;
-		uint len = (*Jce).GetAll(bin);
+		uint32_t len = (*Jce).GetAll(bin);
 		Pack::SetBin(bin, len);
 		WriteHead(JceStruct::JceStructType::STRUCT_END, tag);
 		delete[] bin;
@@ -110,7 +110,7 @@ void Jce::Write(const LPBYTE bin, const byte tag)
 	Jce::Write(bin + 4, XBin::Bin2Int(bin) - 4, tag);
 }
 
-void Jce::Write(const byte* bin, const uint len, const byte tag)
+void Jce::Write(const byte* bin, const uint32_t len, const byte tag)
 {
 	WriteHead(JceStruct::JceStructType::SIMPLE_LIST, tag);
 	Write(static_cast<int>(JceStruct::JceStructType::SHORT), 0);
@@ -131,7 +131,7 @@ void Jce::Write(const bool b, const byte tag)
 	}
 }
 
-void Jce::Write(const uint i, const byte tag)
+void Jce::Write(const uint32_t i, const byte tag)
 {
 	Write((long long)i, tag);
 }
@@ -152,7 +152,7 @@ LPBYTE Jce::GetAll()
 /// </summary>
 /// <param name="bin"></param>
 /// <returns></returns>
-uint Jce::GetAll(byte*& bin)
+uint32_t Jce::GetAll(byte*& bin)
 {
 	return Pack::GetAll(bin);
 }
@@ -172,7 +172,7 @@ LPBYTE Jce::GetAll_(bool Length)
 /// 可以重用,无需调用Clean
 /// </summary>
 /// <returns></returns>
-uint Jce::GetAll_(byte*& bin, bool Length)
+uint32_t Jce::GetAll_(byte*& bin, bool Length)
 {
 	return Pack::GetAll_(bin, Length);
 }
@@ -251,7 +251,7 @@ void UnJce::SkipField(JceStruct::JceStructType type)
 	{
 		byte type = 0;
 		Read(type, 0);
-		uint len;
+		uint32_t len;
 		switch (static_cast<JceStruct::JceStructType>(type))
 		{
 		case JceStruct::JceStructType::BYTE:
@@ -303,7 +303,7 @@ void UnJce::Reset(const LPBYTE buffer)
 	UnPack::Reset(buffer);
 }
 
-void UnJce::Reset(const byte* buffer, const uint bufferlen)
+void UnJce::Reset(const byte* buffer, const uint32_t bufferlen)
 {
 	UnPack::Reset(buffer, bufferlen);
 }
@@ -327,7 +327,7 @@ void UnJce::Read(double& d, const byte tag)
 /// <param name="tag"></param>
 void UnJce::Read(char*& str, const byte tag)
 {
-	uint len;
+	uint32_t len;
 	switch (SkipToTag(tag))
 	{
 	case JceStruct::JceStructType::STRING1:

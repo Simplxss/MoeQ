@@ -32,7 +32,7 @@ private:
 	LPBYTE Int2Varint(long long int l);
 	int Int2Varint_len(long long int l);
 	LPBYTE Field2Key(int Field, ProtobufStruct::ProtobufStructType ProtobufStructType);
-	uint FirstProcess(ProtobufStruct::TreeNode* First);
+	uint32_t FirstProcess(ProtobufStruct::TreeNode* First);
 	void SecondProcess(ProtobufStruct::TreeNode* First);
 public:
 	LPBYTE Pack(ProtobufStruct::TreeNode* First);
@@ -52,7 +52,7 @@ public:
 	{
 		List = new LinkList{ bin };
 	};
-	UnProtobuf(const byte* bin,const uint Length)
+	UnProtobuf(const byte* bin,const uint32_t Length)
 	{
 		List = new LinkList{ UnPack(bin,Length) };
 	};
@@ -71,11 +71,11 @@ public:
 	bool IsEnd();
 	long long int GetVarint(const byte Field);
 	char8_t* GetStr(const byte Field);
-	uint GetBin(byte*& bin, const byte Field);
+	uint32_t GetBin(byte*& bin, const byte Field);
 	LPBYTE GetBin(const byte Field);
 	template <typename T>
 	typename std::enable_if < std::is_same<int, T>::value
-		|| std::is_same<uint, T>::value
+		|| std::is_same<uint32_t, T>::value
 		|| std::is_same<float, T>::value, void > ::type
 		GetFix32(T& digital, const byte Field)
 	{

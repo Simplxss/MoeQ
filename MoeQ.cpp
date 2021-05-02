@@ -129,7 +129,7 @@ int main()
 
 #if defined(_LINUX_PLATFORM_)
     char szFilePath[PATH_MAX + 1], DataFilePath[PATH_MAX + 1], DllFilePath[PATH_MAX + 1] = {0};
-    getcwd(szFilePath, PATH_MAX);
+    getcwd(szFilePath, sizeof(szFilePath));
     strcpy(DataPath, szFilePath);
     strcat(DataPath, "/data/");
 

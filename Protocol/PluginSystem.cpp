@@ -14,13 +14,15 @@ extern PluginSystem Plugin;
 
 void Event::OnGroupMsg(const GroupMsg *GroupMsg)
 {
-    Target::Target Target{Target::TargetType::group, (void *)new Target::group{GroupMsg->FromGroup, GroupMsg->FromQQ}};
+    Target::group Group{GroupMsg->FromGroup, GroupMsg->FromQQ};
+    Target::Target Target{Target::TargetType::group, (void *)&Group};
     Plugin.BroadcastMessageEvent(&Target, GroupMsg->Msg, Database::AddGroupMsg(GroupMsg));
 }
 
 void Event::OnPrivateMsg(const PrivateMsg *PrivateMsg)
 {
-    Target::Target Target{Target::TargetType::_private, (void *)new Target::_private{PrivateMsg->FromQQ}};
+    Target::_private Private{PrivateMsg->FromQQ};
+    Target::Target Target{Target::TargetType::_private, (void *)&Private};
     Plugin.BroadcastMessageEvent(&Target, PrivateMsg->Msg, Database::AddPrivateMsg(PrivateMsg));
 }
 
@@ -44,6 +46,7 @@ void PluginSystem::Load(
 #endif
         szFilePath)
 {
+    PluginList.clear();
 #if defined(_WIN_PLATFORM_)
     wchar_t PluginPath[MAX_PATH + 1];
     wcscpy(PluginPath, szFilePath);
@@ -70,7 +73,6 @@ void PluginSystem::Load(
         handle = _wfindfirsti64(PluginPath, &fileinfo);
         if (handle != -1)
         {
-            uint i = PluginList.size();
             do
             {
                 PluginList.resize(i + 1);
@@ -80,6 +82,8 @@ void PluginSystem::Load(
                         continue;
                     if (!wcscmp(fileinfo.name, L".."))
                         continue;
+                    uint i = PluginList.size();
+                    PluginList.resize(i + 1);
                     wchar_t PluginPath__[MAX_PATH + 1];
                     wcscat(PluginPath_, fileinfo.name);
                     wcscat(PluginPath_, L"\\");
@@ -152,15 +156,6 @@ void PluginSystem::Load(
                         Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"LoadPlugin", u8"Appid is not same");
                         d.Clear();
                         return;
-                    }
-                    wchar_t SettingFilePath[MAX_PATH + 1];
-                    wchar_t enable[5];
-                    wcscpy(SettingFilePath, DataPath);
-                    wcscat(SettingFilePath, L"setting.ini");
-                    GetPrivateProfileString(Iconv::Utf8ToUnicode(PluginList[i].Appid).c_str(), L"enable", NULL, enable, 12, SettingFilePath);
-                    if (!wcscmp(enable, L"1"))
-                    {
-                        PluginList[i].Enable = true;
                     }
                     if (!d.HasMember("version"))
                     {
@@ -309,14 +304,13 @@ void PluginSystem::Load(
                     PluginList[i].AuthCode = Utils::GetRandom();
                     _Initialize(PluginList[i].AuthCode);
                 }
-                i++;
             } while (!_wfindnexti64(handle, &fileinfo));
             _findclose(handle);
         }
     }
 #endif
 
-#if defined(_LINUX_PLATFORM_)
+#if 1
     char PluginPath[PATH_MAX + 1];
     DIR *dir;
     dirent *dirent;
@@ -345,21 +339,21 @@ void PluginSystem::Load(
         dir = opendir(PluginPath);
         if (dir != 0)
         {
-            uint i = PluginList.size();
             while ((dirent = readdir(dir)) != NULL)
             {
-                PluginList.resize(i + 1);
                 if (dirent->d_type == DT_DIR)
                 {
                     if (!strcmp(dirent->d_name, "."))
                         continue;
                     if (!strcmp(dirent->d_name, ".."))
                         continue;
+                    uint i = PluginList.size();
+                    PluginList.resize(i + 1);
                     char PluginPath__[PATH_MAX + 1];
                     strcat(PluginPath_, dirent->d_name);
                     strcat(PluginPath_, "/");
                     strcpy(PluginPath__, PluginPath_);
-                    strcat(PluginPath_, "app.so");
+                    strcat(PluginPath_, "libapp.so");
                     strcat(PluginPath__, "app.json");
 
                     void *Handle = dlopen(PluginPath_, RTLD_NOW);
@@ -383,7 +377,7 @@ void PluginSystem::Load(
                         Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"LoadPlugin", u8"Read Json error");
                         continue;
                     }
-                    char Json[10000] = {'0'};
+                    char Json[10000];
                     input.read(Json, 10000);
                     if (input.gcount() > 10000)
                     {
@@ -426,17 +420,6 @@ void PluginSystem::Load(
                         d.Clear();
                         return;
                     }
-                    /*
-                char SettingFilePath[PATH_MAX + 1];
-                char enable[5];
-                strcpy(SettingFilePath, DataPath);
-                strcat(SettingFilePath, "setting.ini");
-                GetPrivateProfileString(PluginList[i].Appid, "enable", NULL, enable, 12, SettingFilePath);
-                if (!strcmp(enable, "1"))
-                {
-                    PluginList[i].Enable = true;
-                }
-                */
                     if (!d.HasMember("version"))
                     {
                         Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"LoadPlugin", u8"Json is incomplete");
@@ -584,12 +567,47 @@ void PluginSystem::Load(
                     PluginList[i].AuthCode = Utils::GetRandom();
                     _Initialize(PluginList[i].AuthCode);
                 }
-                i++;
             }
             closedir(dir);
         }
     }
 #endif
+
+    char SettingFilePath[PATH_MAX + 1];
+    strcpy(SettingFilePath, DataPath);
+    strcat(SettingFilePath, "setting.json");
+
+    std::ifstream input;
+    input.open(SettingFilePath);
+    if (!input.is_open())
+    {
+        Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"LoadPlugin", u8"Read Setting Json error");
+        return;
+    }
+    char Json[10000] = {'0'};
+    input.read(Json, 10000);
+    if (input.gcount() > 10000)
+    {
+        Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"LoadPlugin", u8"Setting Json is too big");
+        input.close();
+        return;
+    }
+    input.close();
+
+    rapidjson::Document d;
+    d.Parse<rapidjson::kParseCommentsFlag>(Json);
+
+    if (d.HasParseError())
+    {
+        Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"LoadPlugin", u8"Parse Setting Json fail, ParseErrorCode:%d, ErrorOffset:%ul", true, d.GetParseError(), d.GetErrorOffset());
+        return;
+    }
+    for (size_t i = 0; i < PluginList.size(); i++)
+    {
+        if (d.HasMember((const char*)PluginList[i].Appid))
+            if (d[(const char*)PluginList[i].Appid].HasMember("enable"))
+                PluginList[i].Enable = d[(const char*)PluginList[i].Appid]["enable"].GetBool();
+    }
 
     LoadEvent();
 
@@ -739,14 +757,13 @@ void PluginSystem::BroadcastLifeCycleEvent(const ::Event::LifeCycleEvent::LifeCy
     }
 }
 
-void PluginSystem::BroadcastMessageEvent(::Target::Target *Target, const ::Message::Msg *Msg, const uint64_t MsgID)
+void PluginSystem::BroadcastMessageEvent(const ::Target::Target *Target, const ::Message::Msg *Msg, const uint64_t MsgID)
 {
     for (size_t i = 0; i < MessageEventList[static_cast<int>(Target->TargetType)].size(); i++)
     {
         if (MessageEventList[static_cast<int>(Target->TargetType)][i](Target, Msg, MsgID) == ::Event::ReturnType::block)
             break;
     }
-    delete Target->Sender;
 }
 
 void PluginSystem::BroadcastNoticeEvent(const ::Event::NoticeEvent::NoticeEvent *NoticeEvent)

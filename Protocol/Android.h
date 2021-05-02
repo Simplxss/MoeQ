@@ -76,7 +76,7 @@ private:
         char *Viery_Ticket = nullptr;
         char *PhoneNumber = nullptr;
         char *SmsToken = nullptr;
-        int state;
+        int state = 0;
     };
     struct p_skey
     {
@@ -253,8 +253,8 @@ private:
 
 public:
     void QQ_Init(const char *Account);
-    byte QQ_Login(const char *Password);
-    byte QQ_Login_Second();
+    int QQ_Login(const char *Password);
+    int QQ_Login_Second();
     void QQ_Login_Finish();
     byte QQ_Send_Sms();
     byte QQ_Viery_Ticket(const char *Ticket);

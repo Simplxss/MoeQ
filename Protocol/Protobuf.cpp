@@ -38,7 +38,7 @@ ProtobufStruct::ProtobufStructType UnProtobuf::SkipToField(const byte Field)
 {
 	while (true)
 	{
-		uint key = GetVarint();
+		uint32_t key = GetVarint();
 		if ((key >> 3) < Field)
 		{
 			SkipField(static_cast<ProtobufStruct::ProtobufStructType>(key & 0x07));
@@ -54,7 +54,7 @@ ProtobufStruct::ProtobufStructType UnProtobuf::SkipToField(const byte Field)
 byte UnProtobuf::GetField()
 {
 	UnPack UnPack(List->UnPack);
-	uint key = GetVarint();
+	uint32_t key = GetVarint();
 	List->UnPack = UnPack;
 	return key >> 3;
 }
@@ -63,7 +63,7 @@ void UnProtobuf::StepIn(const byte Field)
 {
 	if (SkipToField(Field) == ProtobufStruct::ProtobufStructType::LENGTH)
 	{
-		uint len = GetVarint();
+		uint32_t len = GetVarint();
 		LinkList *tmp = new LinkList{{List->UnPack.GetCurrentPoint(), len}, List};
 		List->UnPack.Skip(len);
 		List = tmp;
@@ -96,7 +96,7 @@ char8_t *UnProtobuf::GetStr(const byte Field)
 {
 	if (SkipToField(Field) == ProtobufStruct::ProtobufStructType::LENGTH)
 	{
-		uint len = GetVarint();
+		uint32_t len = GetVarint();
 		char8_t *str = new char8_t[len + 1];
 		memcpy(str, List->UnPack.GetStr(len), len);
 		str[len] = 0;
@@ -105,11 +105,11 @@ char8_t *UnProtobuf::GetStr(const byte Field)
 	return nullptr;
 }
 
-uint UnProtobuf::GetBin(byte *&bin, const byte Field)
+uint32_t UnProtobuf::GetBin(byte *&bin, const byte Field)
 {
 	if (SkipToField(Field) == ProtobufStruct::ProtobufStructType::LENGTH)
 	{
-		uint len = GetVarint();
+		uint32_t len = GetVarint();
 		bin = new byte[len];
 		memcpy(bin, List->UnPack.GetBin(len), len);
 		return len;
@@ -121,7 +121,7 @@ LPBYTE UnProtobuf::GetBin(const byte Field)
 {
 	if (SkipToField(Field) == ProtobufStruct::ProtobufStructType::LENGTH)
 	{
-		uint len = GetVarint();
+		uint32_t len = GetVarint();
 		LPBYTE bin = new byte[len + 4];
 		memcpy(bin, XBin::Int2Bin(len + 4), len);
 		memcpy(bin + 4, List->UnPack.GetBin(len), len);
@@ -173,15 +173,15 @@ LPBYTE Protobuf::Field2Key(int Field, ProtobufStruct::ProtobufStructType Protobu
 	return Int2Varint(Field << 3 | static_cast<int>(ProtobufStructType));
 }
 
-uint Protobuf::FirstProcess(ProtobufStruct::TreeNode *First)
+uint32_t Protobuf::FirstProcess(ProtobufStruct::TreeNode *First)
 {
-	uint size = 0;
+	uint32_t size = 0;
 	ProtobufStruct::TreeNode *This = First;
 	while (This != nullptr)
 	{
 		if (This->child != nullptr)
 		{
-			uint s = FirstProcess(This->child);
+			uint32_t s = FirstProcess(This->child);
 			This->Data = Int2Varint(s);
 			size += XBin::Bin2Int((byte *)This->Data) - 4;
 			size += s;

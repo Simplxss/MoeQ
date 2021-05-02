@@ -3109,7 +3109,7 @@ void Android::QQ_Init(const char *Account)
 /// </summary>
 /// <param name="Password">密码</param>
 /// <returns>LOGIN_</returns>
-byte Android::QQ_Login(const char *Password)
+int Android::QQ_Login(const char *Password)
 {
     if (QQ.Token.md5 != nullptr)
         delete[] QQ.Token.md5;
@@ -3136,7 +3136,7 @@ byte Android::QQ_Login(const char *Password)
     return QQ.Login->state;
 }
 
-byte Android::QQ_Login_Second()
+int Android::QQ_Login_Second()
 {
     byte tmp[24] = {0};
     memcpy(tmp, QQ.Token.md5, 16);
@@ -3148,7 +3148,6 @@ byte Android::QQ_Login_Second()
     QQ.Token.md52 = Utils::MD5(tmp, 24);
     QQ.Login = new Login;
     Fun_Connect();
-    wtlogin_exchange_emp();
 
 #if defined(RELEASE)
     wtlogin_exchange_emp();

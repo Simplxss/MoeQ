@@ -87,7 +87,7 @@ private:
 	typedef ::Event::ReturnType (*NoticeEvent)(const ::Event::NoticeEvent::NoticeEvent *);
 	std::vector<NoticeEvent> NoticeEventList[4]; //4 subevents
 
-	typedef ::Event::RequestEvent::ReturnType (*RequestEvent)(const ::Event::RequestEvent::RequestEvent *RequestEvent, const uint64_t responseFlag);
+	typedef ::Event::RequestEvent::ReturnType (*RequestEvent)(const ::Event::RequestEvent::RequestEvent *, const uint64_t);
 	std::vector<RequestEvent> RequestEventList[2]; //2 subevents
 #endif
 public:
@@ -103,7 +103,7 @@ public:
 	bool VieryAuth(const uint64_t auth_code, const int auth);
 	const char8_t *AuthCode2Name(const uint64_t auth_code);
 	void BroadcastLifeCycleEvent(const ::Event::LifeCycleEvent::LifeCycleEventType LifeCycleEventType);
-	void BroadcastMessageEvent(::Target::Target *Target, const ::Message::Msg *Msg, const uint64_t MsgID);
+	void BroadcastMessageEvent(const ::Target::Target *Target, const ::Message::Msg *Msg, const uint64_t MsgID);
 	void BroadcastNoticeEvent(const ::Event::NoticeEvent::NoticeEvent *NoticeEvent);
 	void BroadcastRequestEvent(const ::Event::RequestEvent::RequestEvent *RequestEvent, const uint64_t responseFlag);
 };

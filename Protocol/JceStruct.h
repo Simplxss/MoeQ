@@ -46,12 +46,12 @@ public:
 	void Write(const char* str, const byte tag);
 	void Write(const wchar_t* str, const byte tag);
 	void Write(const LPBYTE bin, const byte tag);
-	void Write(const byte* bin, const uint len, const byte tag);
+	void Write(const byte* bin, const uint32_t len, const byte tag);
 	template <typename Key, typename Value>
 	void Write(const std::vector<JceStruct::Map<Key, Value>>* map, const byte tag)
 	{
 		WriteHead(JceStruct::JceStructType::MAP, tag);
-		uint length = (*map).size();
+		uint32_t length = (*map).size();
 		Write(length, 0);
 		for (size_t i = 0; i < length; i++)
 		{
@@ -63,7 +63,7 @@ public:
 	void Write(const std::vector<Te>* T, const byte tag)
 	{
 		WriteHead(JceStruct::JceStructType::LIST, tag);
-		uint length = (*T).size();
+		uint32_t length = (*T).size();
 		Write(length, 0);
 		for (size_t i = 0; i < length; i++)
 		{
@@ -72,11 +72,11 @@ public:
 	};
 	void Write(Jce* Jce, const byte tag);
 	void Write(const bool b, const byte tag);
-	void Write(const uint i, const byte tag);
+	void Write(const uint32_t i, const byte tag);
 	LPBYTE GetAll();
-	uint GetAll(byte*& bin);
+	uint32_t GetAll(byte*& bin);
 	LPBYTE GetAll_(bool Length = false);
-	uint GetAll_(byte*& bin, bool Length = false);
+	uint32_t GetAll_(byte*& bin, bool Length = false);
 	void Clean(bool Length);
 };
 
@@ -84,7 +84,7 @@ class UnJce :
 	private UnPack
 {
 public:
-	UnJce(const byte* buffer, const uint bufferlen) :UnPack(buffer, bufferlen) {}
+	UnJce(const byte* buffer, const uint32_t bufferlen) :UnPack(buffer, bufferlen) {}
 	UnJce(const LPBYTE buffer) :UnPack(buffer) {}
 	UnJce() :UnPack(0, 0) {}
 private:
@@ -92,7 +92,7 @@ private:
 	JceStruct::JceStructType SkipToTag(const byte tag);
 public:
 	void Reset(const LPBYTE buffer);
-	void Reset(const byte* buffer, const uint bufferlen);
+	void Reset(const byte* buffer, const uint32_t bufferlen);
 	template <typename T>
 	typename std::enable_if < std::is_same<byte, T>::value
 		|| std::is_same<short, T>::value
