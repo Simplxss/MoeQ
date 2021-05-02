@@ -1,8 +1,0 @@
-{
-  "name": "moeq",
-  "dependencies": [
-    "openssl",
-    "sqlite3",
-    "zlib"
-    ]
-}

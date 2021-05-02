@@ -10,6 +10,12 @@ Because of busy school, I can't spare time to continue updating this project on 
 
 **Wish you can make it better!**
 
+# Developing
+
+It is developed by VSCode with environment of Windows 10 Pro & WSL.
+
+I use vcpkg as package management.
+
 # Achieved
 
 ## Protocol
