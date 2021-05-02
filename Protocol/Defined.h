@@ -2,7 +2,7 @@
 #include <stdint.h>
 
 typedef unsigned char byte;
-typedef unsigned int uint32_t;
+typedef unsigned int uint;
 typedef byte *LPBYTE;
 
 namespace Message

@@ -19,7 +19,9 @@
 
 #include "../include/rapidjson/document.h"
 
-#include "Defined.h"
+typedef unsigned char byte;
+typedef unsigned int uint;
+typedef byte *LPBYTE;
 
 namespace Utils
 {

@@ -23,7 +23,7 @@ std::u8string Message::ParseMsg(Message::Msg *Msg)
         {
         case Message::MsgType::text:
             if (((Message::text *)Msg->Message)->text != nullptr)
-                MsgSteam += ((Message::text *)Msg->Message)->text; //Todo 内存泄露
+                MsgSteam += ((Message::text *)Msg->Message)->text;
             else
             {
                 MsgSteam += u8"[MQ:at,qq=";
@@ -74,7 +74,7 @@ std::u8string Message::ParseMsg(Message::Msg *Msg)
                     switch (ReplyMsg->MsgType)
                     {
                     case Message::MsgType::text:
-                        MsgSteam += ((Message::text *)ReplyMsg->Message)->text; //Todo 内存泄露
+                        MsgSteam += ((Message::text *)ReplyMsg->Message)->text;
                         break;
                     case Message::MsgType::classcal_face:
                         MsgSteam += u8"[MQ:cface,id=";

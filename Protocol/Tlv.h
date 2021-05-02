@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Protobuf.h"
-#include "Tea.h"
+#include "../Utils/Protobuf.h"
+#include "../Utils/Tea.h"
 
 namespace Tlv
 {

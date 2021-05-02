@@ -12,8 +12,8 @@
 #include <dlfcn.h>
 #endif
 
-#include "Log.h"
-#include "Socket.h"
+#include "../Protocol/Log.h"
+#include "../Utils/Socket.h"
 
 namespace Event
 {

@@ -41,7 +41,7 @@ find_package(ZLIB REQUIRED)
 find_package(OpenSSL REQUIRED)
 find_package(unofficial-sqlite3 CONFIG REQUIRED)
 
-file(GLOB_RECURSE SOURCES "Protocol/*.cpp")
+file(GLOB_RECURSE SOURCES "Protocol/*.cpp" "PluginSystem/*.cpp" "Utils/*.cpp")
 add_executable(${TARGET_NAME} ${SOURCES} "MoeQ.cpp")
 
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")

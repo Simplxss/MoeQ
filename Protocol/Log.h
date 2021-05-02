@@ -5,7 +5,8 @@
 #include <atomic>
 #include <condition_variable>
 
-#include "Utils.h"
+#include "../Protocol/Defined.h"
+#include "../Utils/Utils.h"
 
 namespace Message
 {

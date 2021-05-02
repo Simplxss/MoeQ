@@ -2923,7 +2923,7 @@ void Android::Unpack_OnlinePush_PbPushGroupMsg(const LPBYTE BodyBin, const uint 
         QQ_SetGroupAdmin(GroupMsg.FromGroup, GroupMsg.FromQQ, true);
         QQ_SendGroupMsg(GroupMsg.FromGroup, GroupMsg.Msg);
     }
-#endif // DEBUG
+#endif
 
     if (GroupMsg.Msg != nullptr)
         Event::OnGroupMsg(&GroupMsg);

@@ -1,11 +1,9 @@
 #pragma once
 
-#include "JceStruct.h"
-#include "Protobuf.h"
+#include "../Utils/JceStruct.h"
 #include "Tlv.h"
-#include "Tea.h"
-#include "ThreadPool.h"
-#include "PluginSystem.h"
+#include "../Utils/ThreadPool.h"
+#include "../PluginSystem/PluginSystem.h"
 
 #include <ctime>
 

@@ -2,7 +2,7 @@ Language: **`English`** [`简体中文`](https://github.com/YuFanXing/MoeQ/blob/
 
 # Brief Introduction
 
-***MoeQ*** is *a QQ robot* based on *Android QQ* or *Tim*.
+***MoeQ*** is *a QQ robot* crossing platforms(*Windows*&*Linux*) based on *Android QQ* or *Tim*.
 
 It is still a *semi-finished product* now. If you want a *ready-made robot* frame, please go to the next door [mirai](https://www.google.com).
 
@@ -40,37 +40,36 @@ Because of busy school, I can't spare time to continue updating this project on 
 
 # Features Under Way
 
-1. Fix some memory leak.
 2. Support voice message.
 3. Fix bugs.
 4. Update protocol version.
-5. Optimize user Interface'
+5. Optimize user Interface.
 6. Plugin store.
 7. ...
 
 # Files Usage
 
+`./MoeQ.cpp` The entrance of the program.
+
 `./include` Include the head files of dependencies.
 
-`./lib` Include the static link library of dependencies.
+`./Protocol` Include QQ protocol files.
 
-`./MoeQ` Include source code of this project.
+`./PluginSystem` Include plugin control files.
 
-`./MoeQ/MoeQ.cpp` The entrance of the program.
+`./Utils` Include utils.
 
-`./MoeQ/MainFrm.cpp` The main window of user interface.
+`./Protocol/Android.cpp` `./Protocol/Tim.cpp` The protocols of *QQ*.
 
-`./MoeQ/Android.cpp` `./MoeQ/Tim.cpp` The protocol of *QQ*.
+`./Protocol/Log.cpp` Database and log system.
 
-`./MoeQ/Log.cpp` Database and log system.
+`./PluginSystem/PluginSystem.cpp` The plugins control system.
 
-`./MoeQ/PluginSystem.cpp` The plugins control system.
+`./PluginSystem/ExportFunction.cpp` The export functions to plugins.
 
-`./MoeQ/ExportFunction.cpp` The export functions to plugins.
+`./Utils/Utils.cpp` Include encode, compress, algorithm and other tools.
 
-`./MoeQ/Utils.cpp` Include encode, compress, algorithm and other tools.
-
-`./MoeQ/Protobuf.cpp` `./MoeQ/JceStruct.cpp` `./MoeQ/Pack.cpp` Include some packing measures.
+`./Utils/Protobuf.cpp` `./Utils/JceStruct.cpp` `./Utils/Pack.cpp` Include some packing measures.
 
 # Protocol
 
@@ -80,7 +79,7 @@ But, you **CAN'T** add features like *send or receive red envelopes*.
 
 ### *Android QQ* Protocol
 
-File: `./MoeQ/Android.cpp` 
+File: `./Protocol/Android.cpp` 
 
 Version: *8.5.5*
 
@@ -89,31 +88,24 @@ Version: *8.5.5*
 |          Android::Fun_Send_Sync           |   send a packet synchronously   |
 |            Android::Fun_Handle            | handle server broadcast message |
 |          Android::Fun_Life_Event          |        life cycle event         |
-|     Android::Make_Body_Request_Packet     |     pack jce struct packet      |
-|       Android::MessageSvc_PbGetMsg        |       get private message       |
+|     Android::Make_Body_Request_Packet     |         pack jce-struct         |
 | Android::Unpack_OnlinePush_PbPushGroupMsg |        get group message        |
 | Android::Unpack_OnlinePush_PbPushTransMsg |    get group action message     |
 |   Android::Unpack_MessageSvc_PushNotify   |       get private message       |
 
 ### *Tim* Protocol
 
-File: `./MoeQ/Tim.cpp`
+File: `./Protocol/Tim.cpp`
 
 Version: *3.3.1*
 
-|           Function Name           |              Usage              |
-| :-------------------------------: | :-----------------------------: |
-|      Android::Fun_Send_Sync       |   send a packet synchronously   |
-|        Android::Fun_Handle        | handle server broadcast message |
-|      Android::Fun_Life_Event      |        life cycle event         |
-| Android::Make_Body_Request_Packet |     pack jce struct packet      |
 
 # Example
 
 If you just want to use the protocol,  following is the simplest way of using the *Android* class.
 
 ```c++
-#include "Android.h"
+#include "\Protocol\Android.h"
 
 Android Sdk("861891778567", 
             "460013521635791", 
@@ -132,11 +124,9 @@ if (state == LOGIN_SUCCESS)
 Thanks to the following projects for making this project greater!
 
 1. ***[rapidjson](https://github.com/Tencent/rapidjson)***
-2. ***[miniblink](https://miniblink.net/)***
 3. ***[openssl](https://github.com/openssl/openssl)***
 4. ***[sqlite3](https://sqlite.org/)***
 5. ***[zlib](https://github.com/madler/zlib)***
-6. ***[curl](https://github.com/curl/curl)***
 
 **If it is not necessary,  please don't add more dependencies.**
 

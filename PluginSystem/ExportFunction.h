@@ -1,5 +1,5 @@
 #pragma once
-#include "Android.h"
+#include "../Protocol/Android.h"
 
 extern Android Sdk;
 extern PluginSystem Plugin;
