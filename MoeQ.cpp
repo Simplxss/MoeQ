@@ -19,36 +19,22 @@ void Debug()
 {
 }
 
-void SaveToken(
+void SaveToken(const char *QQ,
+               const Android::Token *Token,
 #if defined(_WIN_PLATFORM_)
-    const wchar_t *
+               const wchar_t *
 #endif
 
 #if defined(_LINUX_PLATFORM_)
-    const char *
+               const char *
 #endif
-        QQ,
-    const Android::Token *Token,
-#if defined(_WIN_PLATFORM_)
-    const wchar_t *
-#endif
-
-#if defined(_LINUX_PLATFORM_)
-    const char *
-#endif
-        DataFilePath)
+                   DataFilePath)
 {
 
     rapidjson::Document d;
     rapidjson::Document::AllocatorType &Allocator = d.GetAllocator();
     d.SetObject();
-#if defined(_WIN_PLATFORM_)
-    d.AddMember("QQ", rapidjson::Value(rapidjson::kStringType).SetString((const char *)Iconv::UnicodeToUtf8(QQ).c_str(), Allocator), Allocator);
-#endif
-
-#if defined(_LINUX_PLATFORM_)
     d.AddMember("QQ", rapidjson::Value(rapidjson::kStringType).SetString(QQ, Allocator), Allocator);
-#endif
     d.AddMember("A2", rapidjson::StringRef(XBin::Bin2HexEx(Token->A2, 64), 128), Allocator);
     d.AddMember("TGT", rapidjson::StringRef(XBin::Bin2HexEx(Token->TGT, 72), 144), Allocator);
     d.AddMember("D2Key", rapidjson::StringRef(XBin::Bin2HexEx(Token->D2Key, 16), 32), Allocator);
@@ -61,19 +47,10 @@ void SaveToken(
 
 #if defined(_WIN_PLATFORM_)
     FILE *fp = _wfopen(DataFilePath, L"wb");
-    if (!fp)
-    {
-        Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"SaveData", u8"Save Json error");
-        return;
-    }
-    char writeBuffer[10000];
-    rapidjson::FileWriteStream os(fp, writeBuffer, sizeof(writeBuffer));
-    rapidjson::PrettyWriter<rapidjson::FileWriteStream> writer(os);
-    d.Accept(writer);
-    fclose(fp);
 #endif
 #if defined(_LINUX_PLATFORM_)
     FILE *fp = fopen(DataFilePath, "wb");
+#endif
     if (!fp)
     {
         Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"SaveData", u8"Save Json error");
@@ -84,54 +61,25 @@ void SaveToken(
     rapidjson::PrettyWriter<rapidjson::FileWriteStream> writer(os);
     d.Accept(writer);
     fclose(fp);
-#endif
 }
 
 int main()
 {
     Android::Token Token;
+    char QQ[12];
 #if defined(_WIN_PLATFORM_)
     SetConsoleOutputCP(65001);
     wchar_t szFilePath[MAX_PATH + 1], DataFilePath[MAX_PATH + 1], DllFilePath[MAX_PATH + 1] = {0};
     _wgetcwd(szFilePath, MAX_PATH);
     wcscpy(DataPath, szFilePath);
     wcscat(DataPath, L"\\data\\");
-
-    if (!std::filesystem::exists(DataPath))
-        std::filesystem::create_directory(DataPath);
-
-    Log::Init();
-    Database::Init();
-    Plugin.Load(szFilePath);
-
-    wchar_t QQ[12];
-    wchar_t str[256];
-    char Json[10000] = {'0'};
-    wcscpy(DataFilePath, DataPath);
-    wcscat(DataFilePath, L"data.json");
-
-    std::ifstream input;
-    input.open(DataFilePath);
-    if (!input.is_open())
-    {
-        Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"LoadData", u8"Read Json error");
-        goto login;
-    }
-    input.read(Json, 10000);
-    if (input.gcount() == 10000)
-    {
-        Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"LoadData", u8"Json is too big");
-        input.close();
-        goto login;
-    }
-    input.close();
 #endif
-
 #if defined(_LINUX_PLATFORM_)
     char szFilePath[PATH_MAX + 1], DataFilePath[PATH_MAX + 1], DllFilePath[PATH_MAX + 1] = {0};
     getcwd(szFilePath, sizeof(szFilePath));
     strcpy(DataPath, szFilePath);
     strcat(DataPath, "/data/");
+#endif
 
     if (!std::filesystem::exists(DataPath))
         std::filesystem::create_directory(DataPath);
@@ -140,107 +88,98 @@ int main()
     Database::Init();
     Plugin.Load(szFilePath);
 
-    char QQ[12];
-    char str[256];
-    char Json[10000] = {'0'};
+#if defined(_WIN_PLATFORM_)
+    wcscpy(DataFilePath, DataPath);
+    wcscat(DataFilePath, L"data.json");
+#endif
+
+#if defined(_LINUX_PLATFORM_)
     strcpy(DataFilePath, DataPath);
     strcat(DataFilePath, "data.json");
-
-    std::ifstream input;
-    input.open(DataFilePath);
-    if (!input.is_open())
-    {
-        Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"LoadData", u8"Read Json error");
-        goto login;
-    }
-    input.read(Json, 10000);
-    if (input.gcount() > 10000)
-    {
-        Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"LoadData", u8"Json is too big");
-        input.close();
-        goto login;
-    }
-    input.close();
-
 #endif
 
     try
     {
+        std::ifstream input(DataFilePath);
+        char Json[1000] = {0};
+        if (!input.is_open())
+        {
+            Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"LoadData", u8"Read Json error");
+            throw "First login";
+        }
+        input.read(Json,1000);
+        //Todo 
+        //A big 坑
+        //某些编译器(此处点名某MinGW-w64 V10.2.0 http://winlibs.com/)最后一行会重复读一次!!!!
+        //但是更新到V11.1.0又好了,估计修了这个bug吧.....
+        //wsl下gcc-10编译的没得问题
+        input.close();
+
         rapidjson::Document d;
         d.Parse<rapidjson::kParseCommentsFlag>(Json);
 
-        if (!d.HasParseError())
+        if (d.HasParseError())
         {
-            memcpy(QQ, d["QQ"].GetString(), d["QQ"].GetStringLength());
-
-            if (XBin::Hex2BinEx(d["A2"].GetString(), Token.A2) != 64)
-                throw "A2 len error";
-
-            if (XBin::Hex2BinEx(d["TGT"].GetString(), Token.TGT) != 72)
-                throw "TGT len error";
-
-            if (XBin::Hex2BinEx(d["D2Key"].GetString(), Token.D2Key) != 16)
-                throw "D2Key len error";
-
-            if (XBin::Hex2BinEx(d["wtSessionTicket"].GetString(), Token.wtSessionTicket) != 48)
-                throw "wtSessionTicket len error";
-
-            if (XBin::Hex2BinEx(d["wtSessionTicketKey"].GetString(), Token.wtSessionTicketKey) != 16)
-                throw "wtSessionTicketKey len error";
-
-            if (XBin::Hex2BinEx(d["token_16A"].GetString(), Token.token_16A) != 56)
-                throw "token_16A len error";
-
-            if (XBin::Hex2BinEx(d["md5"].GetString(), Token.md5) != 16)
-                throw "md5 len error";
-
-            if (XBin::Hex2BinEx(d["TGTkey"].GetString(), Token.TGTkey) != 16)
-                throw "TGTkey len error";
-
-            if (XBin::Hex2BinEx(d["ksid"].GetString(), Token.ksid) != 16)
-                throw "ksid len error";
+            Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"LoadData", u8"Parse Json fail, ParseErrorCode:%d, ErrorOffset:%ul", true, d.GetParseError(), d.GetErrorOffset());
+            throw "First login";
         }
+
+        if (!(d.HasMember("QQ") && d.HasMember("A2") && d.HasMember("TGT") && d.HasMember("TGTkey") && d.HasMember("D2Key") && d.HasMember("wtSessionTicket") && d.HasMember("wtSessionTicketKey") && d.HasMember("token_16A") && d.HasMember("md5") && d.HasMember("ksid")))
+            throw "First login";
+
+        memcpy(QQ, d["QQ"].GetString(), d["QQ"].GetStringLength());
+
+        if (XBin::Hex2BinEx(d["A2"].GetString(), Token.A2) != 64)
+            throw "A2 len error";
+
+        if (XBin::Hex2BinEx(d["TGT"].GetString(), Token.TGT) != 72)
+            throw "TGT len error";
+
+        if (XBin::Hex2BinEx(d["TGTkey"].GetString(), Token.TGTkey) != 16)
+            throw "TGTkey len error";
+
+        if (XBin::Hex2BinEx(d["D2Key"].GetString(), Token.D2Key) != 16)
+            throw "D2Key len error";
+
+        if (XBin::Hex2BinEx(d["wtSessionTicket"].GetString(), Token.wtSessionTicket) != 48)
+            throw "wtSessionTicket len error";
+
+        if (XBin::Hex2BinEx(d["wtSessionTicketKey"].GetString(), Token.wtSessionTicketKey) != 16)
+            throw "wtSessionTicketKey len error";
+
+        if (XBin::Hex2BinEx(d["token_16A"].GetString(), Token.token_16A) != 56)
+            throw "token_16A len error";
+
+        if (XBin::Hex2BinEx(d["md5"].GetString(), Token.md5) != 16)
+            throw "md5 len error";
+
+        if (XBin::Hex2BinEx(d["ksid"].GetString(), Token.ksid) != 16)
+            throw "ksid len error";
+
+        if (true) //懒得做选择了,直接二次登录
+        {
+            Sdk.QQ_Init(QQ);
+            Sdk.QQ_Set_Token(&Token);
+            int state = Sdk.QQ_Login_Second();
+            if (state != LOGIN_SUCCESS)
+            {
+                Log::AddLog(Log::LogType::_ERROR, Log::MsgType::OTHER, u8"SyncCookie", u8"Login failed, error code: %d, error message: %s", true, state, Sdk.QQ_GetErrorMsg());
+                return 0;
+            }
+            Sdk.QQ_Login_Finish();
+            SaveToken(QQ, Sdk.QQ_Get_Token(), DataFilePath);
+        }
+        else
+            throw "First login";
     }
     catch (...)
-    {
-    }
-
-    if (true)
-    {
-#if defined(_WIN_PLATFORM_)
-        Sdk.QQ_Init(Iconv::UnicodeToAnsi(QQ).c_str());
-#endif
-#if defined(_LINUX_PLATFORM_)
-        Sdk.QQ_Init(QQ);
-#endif
-        Sdk.QQ_Set_Token(&Token);
-        int state = Sdk.QQ_Login_Second();
-        if (state != LOGIN_SUCCESS)
-        {
-            Log::AddLog(Log::LogType::_ERROR, Log::MsgType::OTHER, u8"SyncCookie", u8"Login failed, error code: %d, error message: %s", true, state, Sdk.QQ_GetErrorMsg());
-            return 0;
-        }
-        Sdk.QQ_Login_Finish();
-        SaveToken(QQ, Sdk.QQ_Get_Token(), DataFilePath);
-    }
-    else
-    {
+    { //一次登录
     login:
         char Password[20];
-#if defined(_WIN_PLATFORM_)
-        std::wcin >> QQ;
-#endif
-#if defined(_LINUX_PLATFORM_)
         std::cin >> QQ;
-#endif
         std::cin >> Password;
         int state;
-#if defined(_WIN_PLATFORM_)
-        Sdk.QQ_Init(Iconv::UnicodeToAnsi(QQ).c_str());
-#endif
-#if defined(_LINUX_PLATFORM_)
         Sdk.QQ_Init(QQ);
-#endif
         state = Sdk.QQ_Login(Password);
     check:
         char SmsCode[7], Ticket[200];
@@ -261,7 +200,7 @@ int main()
             strcpy(notice, "Send Sms to ");
             strcat(notice, Sdk.QQ_Get_Viery_PhoneNumber());
             strcat(notice, " ?");
-            /*
+            /* Todo 设备锁
             switch (MessageBoxA(nullptr, notice, "Driver Lock", MB_OKCANCEL))
             {
             case IDOK:
@@ -281,7 +220,6 @@ int main()
         Sdk.QQ_Login_Finish();
     }
 online:
-
     Sdk.QQ_Online();
 #if defined(DEBUG)
     Debug();

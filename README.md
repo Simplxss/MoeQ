@@ -23,19 +23,26 @@ Please run following command to install dependencies.
 git clone https://github.com/microsoft/vcpkg
 cd vcpkg
 bootstrap-vcpkg.bat
+vcpkg install openssl:x64-mingw-static
+vcpkg install sqlite3:x64-mingw-static
+vcpkg install zlib:x64-mingw-static
 vcpkg integrate install
 
 #Linux
 git clone https://github.com/microsoft/vcpkg
 cd vcpkg
 ./bootstrap-vcpkg.sh
-./vcpkg install openssl:x64-mingw-static
-./vcpkg install sqlite3:x64-mingw-static
-./vcpkg install zlib:x64-mingw-static
+./vcpkg install openssl:x64-linux
+./vcpkg install sqlite3:x64-linux
+./vcpkg install zlib:x64-linux
 ./vcpkg integrate install
 ```
 
 Then, add "-DCMAKE_TOOLCHAIN_FILE=path" into your cmake command.
+
+Compiler is [*MinGW64*](http://winlibs.com/) or *MSVC* on Windows and *gcc-10* on Linux.
+
+**Significant: If you use *MinGW64* to build your program, please replace all "\\:" in "path-to-build\CMakeFiles\MoeQ.dir\compiler_depend.make" to ":"**
 
 # Achieved
 

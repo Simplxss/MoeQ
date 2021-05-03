@@ -75,7 +75,6 @@ void PluginSystem::Load(
         {
             do
             {
-                PluginList.resize(i + 1);
                 if (fileinfo.attrib == _A_SUBDIR)
                 {
                     if (!wcscmp(fileinfo.name, L"."))
@@ -113,15 +112,8 @@ void PluginSystem::Load(
                         Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"LoadPlugin", u8"Read Json error");
                         continue;
                     }
-                    char Json[10000] = {'0'};
+                    char Json[10000] = {0};
                     input.read(Json, 10000);
-                    if (input.gcount() > 10000)
-                    {
-                        Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"LoadPlugin", u8"Json is too big");
-                        ;
-                        input.close();
-                        continue;
-                    }
                     input.close();
 
                     rapidjson::Document d;
@@ -310,7 +302,7 @@ void PluginSystem::Load(
     }
 #endif
 
-#if 1
+#if defined(_LINUX_PLATFORM_)
     char PluginPath[PATH_MAX + 1];
     DIR *dir;
     dirent *dirent;
@@ -377,14 +369,8 @@ void PluginSystem::Load(
                         Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"LoadPlugin", u8"Read Json error");
                         continue;
                     }
-                    char Json[10000];
+                    char Json[10000] = {0};
                     input.read(Json, 10000);
-                    if (input.gcount() > 10000)
-                    {
-                        Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"LoadPlugin", u8"Json is too big");
-                        input.close();
-                        continue;
-                    }
                     input.close();
 
                     rapidjson::Document d;
@@ -573,9 +559,17 @@ void PluginSystem::Load(
     }
 #endif
 
+#if defined(_WIN_PLATFORM_)
+    wchar_t SettingFilePath[PATH_MAX + 1];
+    wcscpy(SettingFilePath, DataPath);
+    wcscat(SettingFilePath, L"setting.json");
+#endif
+
+#if defined(_LINUX_PLATFORM_)
     char SettingFilePath[PATH_MAX + 1];
     strcpy(SettingFilePath, DataPath);
     strcat(SettingFilePath, "setting.json");
+#endif
 
     std::ifstream input;
     input.open(SettingFilePath);
@@ -584,14 +578,8 @@ void PluginSystem::Load(
         Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"LoadPlugin", u8"Read Setting Json error");
         return;
     }
-    char Json[10000] = {'0'};
+    char Json[10000] = {0};
     input.read(Json, 10000);
-    if (input.gcount() > 10000)
-    {
-        Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"LoadPlugin", u8"Setting Json is too big");
-        input.close();
-        return;
-    }
     input.close();
 
     rapidjson::Document d;
@@ -604,9 +592,9 @@ void PluginSystem::Load(
     }
     for (size_t i = 0; i < PluginList.size(); i++)
     {
-        if (d.HasMember((const char*)PluginList[i].Appid))
-            if (d[(const char*)PluginList[i].Appid].HasMember("enable"))
-                PluginList[i].Enable = d[(const char*)PluginList[i].Appid]["enable"].GetBool();
+        if (d.HasMember((const char *)PluginList[i].Appid))
+            if (d[(const char *)PluginList[i].Appid].HasMember("enable"))
+                PluginList[i].Enable = d[(const char *)PluginList[i].Appid]["enable"].GetBool();
     }
 
     LoadEvent();
