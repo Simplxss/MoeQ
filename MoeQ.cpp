@@ -111,7 +111,6 @@ int main()
         //Todo 
         //A big 坑
         //某些编译器(此处点名某MinGW-w64 V10.2.0 http://winlibs.com/)最后一行会重复读一次!!!!
-        //但是更新到V11.1.0又好了,估计修了这个bug吧.....
         //wsl下gcc-10编译的没得问题
         input.close();
 
@@ -187,7 +186,7 @@ int main()
         {
         case LOGIN_SUCCESS:
             Log::AddLog(Log::LogType::INFORMATION, Log::MsgType::OTHER, u8"Login", u8"Login Successfully!");
-            goto online;
+            break;
         case LOGIN_VERIY:
             Log::AddLog(Log::LogType::INFORMATION, Log::MsgType::OTHER, u8"Login", u8"Slider verification code");
             std::cout << Sdk.QQ_Get_Viery_Ticket();
@@ -219,7 +218,9 @@ int main()
         }
         Sdk.QQ_Login_Finish();
     }
-online:
+
+    SaveToken(QQ, Sdk.QQ_Get_Token(), DataFilePath);
+
     Sdk.QQ_Online();
 #if defined(DEBUG)
     Debug();

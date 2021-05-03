@@ -14,6 +14,8 @@ Because of busy school, I can't spare time to continue updating this project on 
 
 It is developed by VSCode with environment of Windows 10 Pro & WSL.
 
+There are a lot of features of c++11 and c++20 using by this project.
+
 Package management is [*vcpkg*](https://github.com/Microsoft/vcpkg).
 
 Please run following command to install dependencies.
@@ -35,6 +37,15 @@ cd vcpkg
 ./vcpkg install openssl:x64-linux
 ./vcpkg install sqlite3:x64-linux
 ./vcpkg install zlib:x64-linux
+./vcpkg integrate install
+
+#MacOS
+git clone https://github.com/microsoft/vcpkg
+cd vcpkg
+./bootstrap-vcpkg.sh
+./vcpkg install openssl:x64-macos
+./vcpkg install sqlite3:x64-macos
+./vcpkg install zlib:x64-macos
 ./vcpkg integrate install
 ```
 

@@ -112,8 +112,8 @@ void PluginSystem::Load(
                         Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"LoadPlugin", u8"Read Json error");
                         continue;
                     }
-                    char Json[10000] = {0};
-                    input.read(Json, 10000);
+                    char Json[5000] = {0};
+                    input.read(Json, 5000);
                     input.close();
 
                     rapidjson::Document d;
@@ -121,7 +121,7 @@ void PluginSystem::Load(
 
                     if (d.HasParseError())
                     {
-                        Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"LoadPlugin", u8"Parse Json fail, ParseErrorCode:%d, ErrorOffset:%u", true, d.GetParseError(), d.GetErrorOffset());
+                        Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"LoadPlugin", u8"Parse Json fail, ParseErrorCode:%d, ErrorOffset:%llu", true, d.GetParseError(), d.GetErrorOffset());
                         return;
                     }
 
@@ -369,8 +369,8 @@ void PluginSystem::Load(
                         Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"LoadPlugin", u8"Read Json error");
                         continue;
                     }
-                    char Json[10000] = {0};
-                    input.read(Json, 10000);
+                    char Json[5000] = {0};
+                    input.read(Json, 5000);
                     input.close();
 
                     rapidjson::Document d;
@@ -378,7 +378,7 @@ void PluginSystem::Load(
 
                     if (d.HasParseError())
                     {
-                        Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"LoadPlugin", u8"Parse Json fail, ParseErrorCode:%d, ErrorOffset:%ul", true, d.GetParseError(), d.GetErrorOffset());
+                        Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"LoadPlugin", u8"Parse Json fail, ParseErrorCode:%d, ErrorOffset:%llu", true, d.GetParseError(), d.GetErrorOffset());
                         return;
                     }
 
@@ -578,8 +578,8 @@ void PluginSystem::Load(
         Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"LoadPlugin", u8"Read Setting Json error");
         return;
     }
-    char Json[10000] = {0};
-    input.read(Json, 10000);
+    char Json[1000] = {0};
+    input.read(Json, 1000);
     input.close();
 
     rapidjson::Document d;
@@ -587,7 +587,7 @@ void PluginSystem::Load(
 
     if (d.HasParseError())
     {
-        Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"LoadPlugin", u8"Parse Setting Json fail, ParseErrorCode:%d, ErrorOffset:%ul", true, d.GetParseError(), d.GetErrorOffset());
+        Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"LoadPlugin", u8"Parse Setting Json fail, ParseErrorCode:%d, ErrorOffset:%llu", true, d.GetParseError(), d.GetErrorOffset());
         return;
     }
     for (size_t i = 0; i < PluginList.size(); i++)
