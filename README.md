@@ -10,11 +10,32 @@ Because of busy school, I can't spare time to continue updating this project on 
 
 **Wish you can make it better!**
 
-# Developing
+# Build
 
 It is developed by VSCode with environment of Windows 10 Pro & WSL.
 
-I use vcpkg as package management.
+Package management is [*vcpkg*](https://github.com/Microsoft/vcpkg).
+
+Please run following command to install dependencies.
+
+```bash
+#Windows
+git clone https://github.com/microsoft/vcpkg
+cd vcpkg
+bootstrap-vcpkg.bat
+vcpkg integrate install
+
+#Linux
+git clone https://github.com/microsoft/vcpkg
+cd vcpkg
+./bootstrap-vcpkg.sh
+./vcpkg install openssl:x64-mingw-static
+./vcpkg install sqlite3:x64-mingw-static
+./vcpkg install zlib:x64-mingw-static
+./vcpkg integrate install
+```
+
+Then, add "-DCMAKE_TOOLCHAIN_FILE=path" into your cmake command.
 
 # Achieved
 
