@@ -2,7 +2,6 @@
 
 #include <thread>
 #include <queue>
-#include <atomic>
 #include <condition_variable>
 
 #include "../Protocol/Defined.h"
@@ -34,16 +33,16 @@ namespace Log
 	void DesplayThread();
 	void Init();
 
-	#if defined(_WIN_PLATFORM_)
+#if defined(_WIN_PLATFORM_)
 
 	void AddLog(const LogType LogType, const MsgType MsgType, const char *Type, const char *Msg);
 	void AddLog(const LogType LogType, const MsgType MsgType, const char *Type, const char8_t *Msg);
 	void AddLog(const LogType LogType, const MsgType MsgType, const char8_t *Type, const char *Msg);
 	void AddLog(const LogType LogType, const MsgType MsgType, const wchar_t *Type, const wchar_t *Msg);
 
-	#endif
+#endif
 
-	void AddLog(const LogType LogType, const MsgType MsgType, const char8_t* Type, const char8_t* MsgFormat,const bool Format =false, ...);
+	void AddLog(const LogType LogType, const MsgType MsgType, const char8_t *Type, const char8_t *MsgFormat, const bool Format = false, ...);
 	void AddLog(const LogType LogType, const MsgType MsgType, const Event::NoticeEvent::NoticeEvent *NoticeEvent);
 	void AddLog(const LogType LogType, const MsgType MsgType, const Event::RequestEvent::RequestEvent *RequestEvent);
 };

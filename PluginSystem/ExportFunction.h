@@ -9,7 +9,7 @@ extern PluginSystem Plugin;
 #endif
 
 #if defined(_LINUX_PLATFORM_)
-#define FUNC(ReturnType, FuncName, ...) extern "C" __attribute__ ((visibility("default"))) ReturnType FuncName(__VA_ARGS__)
+#define FUNC(ReturnType, FuncName, ...) extern "C" __attribute__((visibility("default"))) ReturnType FuncName(__VA_ARGS__)
 #endif
 
 FUNC(char *, getCookies, const uint64_t AuthCode, const char *Host)
@@ -209,7 +209,7 @@ FUNC(LPBYTE, getFriendList, const uint64_t AuthCode)
 {
 	if (Plugin.VieryAuth(AuthCode, 17))
 	{
-		const std::vector<Android::FriendInfo> *FriendList = Sdk.QQ_GetFriendList();
+		const std::vector<QQ::FriendInfo> *FriendList = Sdk.QQ_GetFriendList();
 		Pack Pack(FriendList->size() * 24 + 8, true);
 		Pack.SetInt(FriendList->size());
 		for (size_t i = 0; i < FriendList->size(); i++)
@@ -241,7 +241,7 @@ FUNC(LPBYTE, getGroupList, const uint64_t AuthCode)
 {
 	if (Plugin.VieryAuth(AuthCode, 18))
 	{
-		const std::vector<Android::GroupInfo> *GroupList = Sdk.QQ_GetGroupList();
+		const std::vector<QQ::GroupInfo> *GroupList = Sdk.QQ_GetGroupList();
 		Pack Pack(GroupList->size() * 19 + 8, true);
 		Pack.SetInt(GroupList->size());
 		for (size_t i = 0; i < GroupList->size(); i++)
@@ -270,10 +270,11 @@ FUNC(LPBYTE, getGroupMemberList, const uint64_t AuthCode, uint group_code)
 {
 	if (Plugin.VieryAuth(AuthCode, 19))
 	{
-		const std::vector<Android::GroupMemberInfo>* GroupMemberList = Sdk.QQ_GetGroupMemberList(group_code);
-		if(GroupMemberList == nullptr) return (LPBYTE) "\0\0\0\0";
+		const std::vector<QQ::GroupMemberInfo> *GroupMemberList = Sdk.QQ_GetGroupMemberList(group_code);
+		if (GroupMemberList == nullptr)
+			return (LPBYTE) "\0\0\0\0";
 
-		Pack Pack(GroupMemberList->size() *  + 8, true);
+		Pack Pack(GroupMemberList->size() * +8, true);
 		Pack.SetInt(GroupMemberList->size());
 		for (size_t i = 0; i < GroupMemberList->size(); i++)
 		{

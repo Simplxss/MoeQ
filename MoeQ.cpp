@@ -28,7 +28,7 @@ void SaveToken(
     const char *
 #endif
         QQ,
-    const Android::Token *Token,
+    const QQ::Token *Token,
 #if defined(_WIN_PLATFORM_)
     const wchar_t *
 #endif
@@ -89,7 +89,7 @@ void SaveToken(
 
 int main()
 {
-    Android::Token Token;
+    QQ::Token Token;
 #if defined(_WIN_PLATFORM_)
     SetConsoleOutputCP(65001);
     wchar_t szFilePath[MAX_PATH + 1], DataFilePath[MAX_PATH + 1], DllFilePath[MAX_PATH + 1] = {0};
@@ -205,7 +205,7 @@ int main()
     {
     }
 
-    if (true)
+    if (false)
     {
 #if defined(_WIN_PLATFORM_)
         Sdk.QQ_Init(Iconv::UnicodeToAnsi(QQ).c_str());

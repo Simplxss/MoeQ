@@ -163,11 +163,11 @@ uint16_t Tlv::Tlv141(byte *bin, const uint len, const char *NetworkName, const c
 	return Pack.Pack(0x0141);
 }
 
-uint16_t Tlv::Tlv142(byte *bin, const uint len, const char *QQ_APKID)
+uint16_t Tlv::Tlv142(byte *bin, const uint len, const char *AndroidQQ_APKID)
 {
 	::TlvPack Pack(bin, len);
-	Pack.SetInt(strlen(QQ_APKID));
-	Pack.SetStr(QQ_APKID);
+	Pack.SetInt(strlen(AndroidQQ_APKID));
+	Pack.SetStr(AndroidQQ_APKID);
 	return Pack.Pack(0x0142);
 }
 
@@ -197,14 +197,14 @@ uint16_t Tlv::Tlv145(byte *bin, const uint len, const byte GUID[16])
 	return Pack.Pack(0X0145);
 }
 
-uint16_t Tlv::Tlv147(byte *bin, const uint len, const char *QQ_VERSION, const byte QQ_ASIG[16])
+uint16_t Tlv::Tlv147(byte *bin, const uint len, const char *QQ_VERSION, const byte AndroidQQ_ASIG[16])
 {
 	::TlvPack Pack(bin, len);
 	Pack.SetInt(16);
 	Pack.SetShort(strlen(QQ_VERSION));
 	Pack.SetStr(QQ_VERSION);
 	Pack.SetShort(16);
-	Pack.SetBin(QQ_ASIG, 16);
+	Pack.SetBin(AndroidQQ_ASIG, 16);
 	return Pack.Pack(0X0147);
 }
 
@@ -277,7 +277,7 @@ uint16_t Tlv::Tlv188(byte *bin, const uint len)
 	return Pack.Pack(0X0188);
 }
 
-//CodeType 验证码类型 1:字母 130:滑块
+//CodeType 验证码类型 0x01:字母 0x82:滑块
 uint16_t Tlv::Tlv191(byte *bin, const uint len, const byte CodeType)
 {
 	::TlvPack Pack(bin, len);
@@ -454,7 +454,7 @@ uint16_t Tlv::Tlv52D(byte *bin, const uint len)
 	return Pack.Pack(0x052D);
 }
 
-uint16_t Tlv::Tlv544(byte *bin, const uint len, const char *QQ_APKID, const byte QQ_ASIG[16])
+uint16_t Tlv::Tlv544(byte *bin, const uint len, const char *AndroidQQ_APKID, const byte AndroidQQ_ASIG[16])
 {
 	//懒得研究了,太复杂了
 	::TlvPack Pack(bin, len);
@@ -463,9 +463,9 @@ uint16_t Tlv::Tlv544(byte *bin, const uint len, const char *QQ_APKID, const byte
 	Pack.SetShort(0);
 	Pack.SetInt(0x00220020);
 	Pack.SetBin((byte *)"\x9C\x10\x39\xC7\xFB\x6C\x18\x2B\x33\x66\xB7\xFC\x4E\x8E\x3D\xC6\x2D\xB7\x88\xC4\x12\xBC\xB1\x46\x9E\x74\x82\x3A\xC2\xC1\x88\xB9\x01\x00\x00\x00\x00\x00\x01\x00\x00\x00\x01\x00\x00\x00\x01\x6F\xD0\xB0\x72\xBD\x39\x79\x41\x41\x73\x46\x79\x41\x46\x70", 62);
-	Pack.SetShort(strlen(QQ_APKID));
-	Pack.SetStr(QQ_APKID);
-	Pack.SetStr(XBin::Bin2HexEx(QQ_ASIG, 16));
+	Pack.SetShort(strlen(AndroidQQ_APKID));
+	Pack.SetStr(AndroidQQ_APKID);
+	Pack.SetStr(XBin::Bin2HexEx(AndroidQQ_ASIG, 16));
 	Pack.SetInt(0x04D26C9F);
 	Pack.SetInt(0);
 	return Pack.Pack(0x0544);

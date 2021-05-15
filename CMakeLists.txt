@@ -15,6 +15,10 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     if ("${CMAKE_SYSTEM_NAME}" STREQUAL "Linux")
     set(VCPKG_TARGET_TRIPLET x64-linux)
     endif()
+
+    if ("${CMAKE_SYSTEM_NAME}" STREQUAL "Darwin")
+    set(VCPKG_TARGET_TRIPLET x64-macos)
+    endif()
 endif()
 
 if ("${CMAKE_SYSTEM_NAME}" STREQUAL "Windows")
@@ -23,6 +27,11 @@ if ("${CMAKE_SYSTEM_NAME}" STREQUAL "Windows")
 endif()
 
 if ("${CMAKE_SYSTEM_NAME}" STREQUAL "Linux")
+    add_definitions(-D _LINUX_PLATFORM_)
+    set(CMAKE_CXX_FLAGS "-fvisibility=hidden ${CMAKE_CXX_FLAGS}")
+endif()
+
+if ("${CMAKE_SYSTEM_NAME}" STREQUAL "Darwin")
     add_definitions(-D _LINUX_PLATFORM_)
     set(CMAKE_CXX_FLAGS "-fvisibility=hidden ${CMAKE_CXX_FLAGS}")
 endif()
@@ -45,7 +54,7 @@ file(GLOB_RECURSE SOURCES "Protocol/*.cpp" "PluginSystem/*.cpp" "Utils/*.cpp")
 add_executable(${TARGET_NAME} ${SOURCES} "MoeQ.cpp")
 
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
-    target_compile_options(cqcppsdk INTERFACE $<$<CXX_COMPILER_ID:MSVC>:/utf-8>)
+    target_compile_options(${TARGET_NAME} INTERFACE $<$<CXX_COMPILER_ID:MSVC>:/utf-8>)
 endif()
 
 target_link_libraries(${TARGET_NAME} PRIVATE ZLIB::ZLIB)

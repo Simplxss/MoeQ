@@ -1,131 +1,21 @@
 #pragma once
 
 #include "../Utils/JceStruct.h"
-#include "Tlv.h"
 #include "../Utils/ThreadPool.h"
 #include "../PluginSystem/PluginSystem.h"
 
-#include <ctime>
+#include "wtlogin.h"
+#include "StatSvc.h"
 
-#define QQ_APPID 537066978
-#define QQ_VERSION "8.5.5"
-#define QQ_VERSION_ "A8.5.5.de12fadd"
-#define QQ_APKID "com.tencent.mobileqq"
-#define QQ_ASIG (const byte *)"\xA6\xB7\x45\xBF\x24\xA2\xC2\x77\x52\x77\x16\xF6\xF3\x6E\xB6\x8D" // A6B745BF24A2C277527716F6F36EB68D
-#define QQ_SDK_VERSION "6.0.0.2463"
-#define QQ_BUILDTIME 1612895972
+#include <ctime>
 
 #define LOGIN_SUCCESS 0
 #define LOGIN_VERIY 2
 #define LOGIN_VERIY_SMS 160
 
-class Android
+class Android : private wtlogin, private StatSvc
 {
-public:
-    struct Token
-    {
-        byte *A2 = nullptr; //64
-        byte *A5 = nullptr;
-        byte *A8 = nullptr;
-        byte *D2Key = nullptr;              //16
-        byte *wtSessionTicket = nullptr;    //48
-        byte *wtSessionTicketKey = nullptr; //16
-        byte *StSig = nullptr;
-        byte *StKey = nullptr;
-        byte *token_16A = nullptr; //56
-        byte *md5 = nullptr;       //16
-        byte *md52 = nullptr;      //16
-        byte *TGT = nullptr;       //72
-        byte *TGTkey = nullptr;    //16
-        byte *ksid = nullptr;      //16
-    };
-    struct FriendInfo
-    {
-        uint QQ;
-        char *Nick;
-        int status;
-        char *Remark;
-    };
-    struct GroupMemberInfo
-    {
-        uint QQ;
-        char *Nick;
-    };
-    struct GroupInfo
-    {
-        uint GroupCode;
-        char *GroupName;
-        uint MasterQQ;
-        short MemberCount;
-        byte SelfIdentity;
-    };
-
 private:
-    struct Login
-    {
-        Utils::ECDHKEY ECDH;
-        byte *RandKey = nullptr;
-        byte *VieryToken1 = nullptr;
-        byte *VieryToken2 = nullptr;
-        byte *ClientPow = nullptr;
-        byte *token_402 = nullptr; //8
-        byte *token_403 = nullptr; //8
-        byte *Viery_Image = nullptr;
-        char *Viery_Ticket = nullptr;
-        char *PhoneNumber = nullptr;
-        char *SmsToken = nullptr;
-        int state = 0;
-    };
-    struct p_skey
-    {
-        char *host;
-        char *p_skey;
-    };
-    struct Cookie
-    {
-        byte *StWebSig = nullptr;
-        byte *sid = nullptr;
-        char *skey = nullptr;
-        char *vkey = nullptr;
-        char *superKey = nullptr;
-        std::vector<Android::p_skey> p_skey;
-    };
-    struct QQ
-    {
-        uint QQ;
-        char *QQ_Str = nullptr;
-        char8_t *Nick = nullptr;
-        byte Status = 21;
-        char8_t *ErrorMsg = nullptr;
-        std::atomic_int SsoSeq;
-        unsigned char *MsgCookie = nullptr; //4
-        LPBYTE SyncCookies = nullptr;
-        char Version[33] = "|\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0|" QQ_VERSION_;
-        Android::Login *Login = nullptr;
-        Android::Token Token;
-        Android::Cookie Cookie;
-
-        std::vector<Android::FriendInfo> FriendList;
-        std::vector<Android::GroupInfo> GroupList; //不包含被封群
-    };
-    struct Device
-    {
-        char *IMEI = nullptr;
-        char *IMSI = nullptr;
-        byte *MAC = nullptr;
-        char *IP = nullptr;
-        byte *GUID = nullptr;
-        char *_device = nullptr;
-        char *Brand = nullptr;
-        unsigned short _network_type;
-        const char *QIMEI = nullptr; //算法未知 在so层中
-        const char *BSSID = nullptr;
-        const char *os_type = nullptr;
-        const char *os_version = nullptr;
-        const char *_apn = nullptr;
-        const char *NetworkName = nullptr;
-        const char *WiFiName = nullptr;
-    };
     struct SenderInfo
     {
         std::condition_variable cv;
@@ -134,8 +24,8 @@ private:
     };
 
 private:
-    QQ QQ;
-    Device Device;
+    QQ::QQ QQ;
+    QQ::Device Device;
     Socket TCP;
     ThreadPool HandleThreads;
     SenderInfo SendList[64]; // 0x3F
@@ -204,18 +94,8 @@ private:
 
 private:
     LPBYTE Make_Body_Request_Packet(const byte iVersion, const int iRequestId, const char *sServantName, const char *sFuncName, byte *sBuffer, uint Bufferlen);
-    LPBYTE Make_Body_PC(byte *Buffer, const uint BufferLen, const bool emp);
 
 private:
-    void wtlogin_login();
-    void wtlogin_login_Send_Sms();
-    void wtlogin_login_Viery_Ticket(const char *Ticket);
-    void wtlogin_login_Viery_Sms(const char *SmsCode);
-    void wtlogin_login_Viery_204();
-    void wtlogin_exchange_emp();
-    void StatSvc_Register(const byte state = 0);
-    void StatSvc_SimpleGet();
-    void StatSvc_SetStatusFromClient(const byte state);
     void friendlist_getFriendGroupList(const int StartIndex);
     void friendlist_GetTroopListReqV2();
     void friendlist_getTroopMemberList(const uint Group);
@@ -266,8 +146,8 @@ public:
     void QQ_SyncCookie();
     bool QQ_Status();
     const char8_t *QQ_GetErrorMsg();
-    void QQ_Set_Token(Android::Token *_Token);
-    const Android::Token *QQ_Get_Token();
+    void QQ_Set_Token(QQ::Token *_Token);
+    const QQ::Token *QQ_Get_Token();
     const uint QQ_Get_Account();
     char *QQ_GetCookies(const char *Host);
     bool QQ_SendLike(const uint QQ, const int Times);
@@ -283,7 +163,7 @@ public:
     bool QQ_SetGroupMemberBan(const uint Group, const uint QQ, const uint Time);
     bool QQ_SetGroupBan(const uint Group, const bool Ban);
     const std::vector<uint> *QQ_GetGroupAdminList(const uint Group);
-    const std::vector<Android::FriendInfo> *QQ_GetFriendList();
-    const std::vector<Android::GroupInfo> *QQ_GetGroupList();
-    const std::vector<Android::GroupMemberInfo> *QQ_GetGroupMemberList(uint Group);
+    const std::vector<QQ::FriendInfo> *QQ_GetFriendList();
+    const std::vector<QQ::GroupInfo> *QQ_GetGroupList();
+    const std::vector<QQ::GroupMemberInfo> *QQ_GetGroupMemberList(uint Group);
 };

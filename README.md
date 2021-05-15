@@ -23,15 +23,18 @@ Please run following command to install dependencies.
 git clone https://github.com/microsoft/vcpkg
 cd vcpkg
 bootstrap-vcpkg.bat
+vcpkg install openssl:x64-mingw-static
+vcpkg install sqlite3:x64-mingw-static
+vcpkg install zlib:x64-mingw-static
 vcpkg integrate install
 
 #Linux
 git clone https://github.com/microsoft/vcpkg
 cd vcpkg
 ./bootstrap-vcpkg.sh
-./vcpkg install openssl:x64-mingw-static
-./vcpkg install sqlite3:x64-mingw-static
-./vcpkg install zlib:x64-mingw-static
+./vcpkg install openssl:x64-linux
+./vcpkg install sqlite3:x64-linux
+./vcpkg install zlib:x64-linux
 ./vcpkg integrate install
 ```
 
