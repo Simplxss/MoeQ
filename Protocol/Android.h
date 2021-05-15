@@ -68,6 +68,7 @@ private:
         {
             condition_variable->notify_one();
         }
+        return R();
     };
     void Fun_Send_Sync(const uint PacketType, const byte EncodeType, const char *ServiceCmd, LPBYTE Buffer, std::function<void(uint, LPBYTE)> Function)
     {

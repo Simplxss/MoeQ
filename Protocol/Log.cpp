@@ -108,18 +108,23 @@ void Message::DestoryMsg(Message::Msg *Msg)
         case Message::MsgType::text:
             if (((Message::text *)Msg->Message)->text != nullptr)
                 delete[]((Message::text *)Msg->Message)->text;
+            delete (Message::text *)Msg->Message;
             break;
         case Message::MsgType::classcal_face:
+            delete (Message::classcal_face *)Msg->Message;
             break;
         case Message::MsgType::expression:
             delete[]((Message::expression *)Msg->Message)->MD5;
+            delete (Message::expression *)Msg->Message;
             break;
         case Message::MsgType::picture:
             delete[]((Message::picture *)Msg->Message)->MD5;
             delete[]((Message::picture *)Msg->Message)->Data.URL;
+            delete (Message::picture *)Msg->Message;
             break;
         case Message::MsgType::xml:
             delete[]((Message::xml *)Msg->Message)->text;
+            delete (Message::xml *)Msg->Message;
             break;
         case Message::MsgType::reply:
         {
@@ -130,24 +135,26 @@ void Message::DestoryMsg(Message::Msg *Msg)
                 {
                 case Message::MsgType::text:
                     delete[]((Message::text *)ReplyMsg->Message)->text;
+                    delete (Message::text *)ReplyMsg->Message;
                     break;
                 case Message::MsgType::classcal_face:
+                    delete (Message::classcal_face *)ReplyMsg->Message;
                     break;
                 }
-                delete ReplyMsg->Message;
                 Message::Msg *tmp = ReplyMsg->NextPoint;
                 delete ReplyMsg;
                 ReplyMsg = tmp;
             }
         }
-        break;
+            delete (Message::reply *)Msg->Message;
+            break;
         case Message::MsgType::json:
             delete[]((Message::json *)Msg->Message)->text;
+            delete (Message::json *)Msg->Message;
             break;
         default:
             break;
         }
-        delete Msg->Message;
         Message::Msg *tmp = Msg->NextPoint;
         delete Msg;
         Msg = tmp;
