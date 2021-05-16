@@ -287,7 +287,7 @@ namespace Message
     }
 }
 
-Android::Android(const char *IMEI, const char IMSI[16], const byte GUID[16], const byte MAC[6], const char *_device, const char *Brand) : wtlogin(&QQ, &Device), StatSvc(&QQ, &Device)
+Android::Android(const char *IMEI, const char IMSI[16], const byte GUID[16], const byte MAC[6], const char *_device, const char *Brand) : wtlogin(&QQ, &Device), StatSvc(&QQ, &Device), friendlist(&QQ), OidbSvc(&QQ)
 {
     Device.IMEI = new char[strlen(IMEI)];
     Device.IMSI = new char[16];
@@ -656,7 +656,7 @@ void Android::Fun_Life_Event()
         ++time;
     } while (QQ_Status());
 }
-
+    
 /// <summary>
 ///
 /// </summary>
@@ -682,217 +682,6 @@ LPBYTE Android::Make_Body_Request_Packet(const byte iVersion, const int iRequest
     Jce.Write(&a, 10);
     delete[] sBuffer;
     return Jce.GetAll();
-}
-
-void Android::friendlist_getFriendGroupList(const int StartIndex)
-{
-    Jce Jce;
-    Jce.Write(3, 0);
-    Jce.Write(1, 1);
-    Jce.Write(QQ.QQ, 2);
-    Jce.Write(StartIndex, 3); //开始数
-    Jce.Write(20, 4);         //获取个数
-    Jce.Write(0, 5);
-    Jce.Write(1, 6);
-    Jce.Write(0, 7);
-    Jce.Write(0, 8);
-    Jce.Write(0, 9);
-    Jce.Write(1, 10);
-    Jce.Write(5, 11);
-
-    Jce.Write(&Jce, 0);
-    LPBYTE bin = Jce.GetAll_();
-
-    const std::vector<JceStruct::Map<const char *, const LPBYTE>> JceMap{JceStruct::Map<const char *, const LPBYTE>{"FL", bin}};
-    Jce.Write(&JceMap, 0);
-    delete[] bin;
-
-    uint len = Jce.GetAll_(bin);
-
-    LPBYTE sBuffer;
-    Fun_Send_Sync(11, 1, "friendlist.getFriendGroupList", Make_Body_Request_Packet(3, 0, "mqq.IMService.FriendListServiceServantObj", "GetFriendListReq", bin, len),
-                  [&](uint sso_seq, LPBYTE BodyBin)
-                  {
-                      Unpack_Body_Request_Packet(BodyBin, sBuffer);
-
-                      UnJce UnJce(sBuffer);
-                      std::vector<JceStruct::Map<char *, LPBYTE>> Map;
-                      UnJce.Read(Map, 0);
-
-                      for (size_t i = 0; i < Map.size(); i++)
-                      {
-                          UnJce.Reset(Map[i].Value);
-                          UnJce.Read(UnJce, 0);
-
-                          int startIndex, totoal_friend_count, get_count = 0;
-                          UnJce.Read(startIndex, 3);
-                          UnJce.Read(totoal_friend_count, 5);
-                          UnJce.Read(get_count, 6);
-                          if (startIndex + get_count < totoal_friend_count)
-                              friendlist_getFriendGroupList(startIndex + get_count);
-                          if (startIndex == 0)
-                              QQ.FriendList.resize(totoal_friend_count);
-
-                          std::vector<::UnJce> Friends;
-                          UnJce.Read(Friends, 7);
-                          for (size_t j = 0; j < Friends.size(); j++)
-                          {
-                              Friends[j].Read((int &)QQ.FriendList[startIndex + j].QQ, 0);
-                              Friends[j].Read(QQ.FriendList[startIndex + j].Remark, 3);
-                              Friends[j].Read(QQ.FriendList[startIndex + j].status, 5);
-                              Friends[j].Read(QQ.FriendList[startIndex + j].Nick, 14);
-                          }
-
-                          delete[] Map[i].Key;
-                          delete[] Map[i].Value;
-                      }
-                      delete[] sBuffer;
-                  });
-}
-
-void Android::friendlist_GetTroopListReqV2()
-{
-    Jce Jce;
-    Jce.Write(QQ.QQ, 0);
-    Jce.Write(0, 1);
-    Jce.Write(1, 4);
-    Jce.Write(5, 5);
-
-    Jce.Write(&Jce, 0);
-    LPBYTE bin = Jce.GetAll_();
-
-    const std::vector<JceStruct::Map<const char *, const LPBYTE>> JceMap{JceStruct::Map<const char *, const LPBYTE>{"GetTroopListReqV2Simplify", bin}};
-    Jce.Write(&JceMap, 0);
-    delete[] bin;
-
-    uint len = Jce.GetAll_(bin);
-
-    LPBYTE sBuffer;
-    Fun_Send_Sync(11, 1, "friendlist.GetTroopListReqV2", Make_Body_Request_Packet(3, 0, "mqq.IMService.FriendListServiceServantObj", "GetTroopListReqV2Simplify", bin, len),
-                  [&](uint sso_seq, LPBYTE BodyBin)
-                  {
-                      Unpack_Body_Request_Packet(BodyBin, sBuffer);
-
-                      UnJce UnJce(sBuffer);
-                      std::vector<JceStruct::Map<char *, LPBYTE>> Map;
-                      UnJce.Read(Map, 0);
-
-                      for (size_t i = 0; i < Map.size(); i++)
-                      {
-                          UnJce.Reset(Map[i].Value);
-                          UnJce.Read(UnJce, 0);
-                          //UnJce.Read(totoal_group_count, 1);
-
-                          std::vector<::UnJce> Groups;
-                          UnJce.Read(Groups, 5);
-                          QQ.GroupList.resize(Groups.size());
-
-                          for (size_t j = 0; j < Groups.size(); j++)
-                          {
-                              Groups[j].Read((int &)QQ.GroupList[j].GroupCode, 1);
-                              Groups[j].Read(QQ.GroupList[j].GroupName, 4);
-                              Groups[j].Read(QQ.GroupList[j].MemberCount, 19);
-                              Groups[j].Read((int &)QQ.GroupList[j].MasterQQ, 23);
-                          }
-
-                          delete[] Map[i].Key;
-                          delete[] Map[i].Value;
-                      }
-                      delete[] sBuffer;
-                  });
-}
-
-void Android::friendlist_getTroopMemberList(const uint Group)
-{
-    Jce Jce;
-    Jce.Write(QQ.QQ, 0);
-    Jce.Write(Group, 1);
-    Jce.Write(0, 2);
-    Jce.Write(Group, 3);
-    Jce.Write(2, 4);
-    Jce.Write(1, 5);
-    Jce.Write(0, 6);
-    Jce.Write(1, 7);
-
-    Jce.Write(&Jce, 0);
-    LPBYTE bin = Jce.GetAll_();
-
-    const std::vector<JceStruct::Map<const char *, const LPBYTE>> JceMap{JceStruct::Map<const char *, const LPBYTE>{"GTML", bin}};
-    Jce.Write(&JceMap, 0);
-    delete[] bin;
-
-    uint len = Jce.GetAll(bin);
-
-    LPBYTE sBuffer;
-    Fun_Send_Sync(11, 1, "friendlist.getTroopMemberList", Make_Body_Request_Packet(3, 0, "mqq.IMService.FriendListServiceServantObj", "GetFriendListReq", bin, len),
-                  [&](uint sso_seq, LPBYTE BodyBin)
-                  {
-                      Unpack_Body_Request_Packet(BodyBin, sBuffer);
-
-                      UnJce UnJce(sBuffer);
-                      std::vector<JceStruct::Map<char *, LPBYTE>> Map;
-                      UnJce.Read(Map, 0);
-
-                      for (size_t i = 0; i < Map.size(); i++)
-                      {
-                          UnJce.Reset(Map[i].Value);
-                          UnJce.Read(UnJce, 0);
-
-                          std::vector<::UnJce> Groups;
-                          UnJce.Read(Groups, 3);
-                          QQ.GroupList.resize(Groups.size());
-
-                          for (size_t j = 0; j < Groups.size(); j++)
-                          {
-                              /*
-                    Groups[j].Read((int&)QQ.GroupList[j].GroupCode, 1);
-                    Groups[j].Read(QQ.GroupList[j].GroupName, 4);
-                    Groups[j].Read(QQ.GroupList[j].MemberCount, 19);
-                    Groups[j].Read((int&)QQ.GroupList[j].MasterQQ, 23);
-                    */
-                          }
-
-                          delete[] Map[i].Key;
-                          delete[] Map[i].Value;
-                      }
-                      delete[] sBuffer;
-                  });
-}
-
-bool Android::friendlist_ModifyGroupCardReq(const uint Group, const uint QQ, const char *NewGroupCard)
-{
-    Jce Jce;
-    Jce.Write(QQ, 0);
-    Jce.Write(1, 1);
-    Jce.Write(NewGroupCard, 2);
-    Jce.Write(255, 3);
-    Jce.Write("", 4);
-    Jce.Write("", 5);
-    Jce.Write("", 6);
-
-    const std::vector<::Jce *> list{&Jce};
-
-    ::Jce Jce_;
-    Jce_.Write(0, 0);
-    Jce_.Write(Group, 1);
-    Jce_.Write(0, 2);
-    Jce_.Write(&list, 3);
-
-    Jce.Write(&Jce_, 0);
-    LPBYTE bin = Jce.GetAll_(false);
-
-    const std::vector<JceStruct::Map<const char *, const LPBYTE>> JceMap{JceStruct::Map<const char *, const LPBYTE>{"MGCREQ", bin}};
-    Jce.Write(&JceMap, 0);
-    delete[] bin;
-
-    uint len = Jce.GetAll(bin);
-    return Fun_Send_Sync<bool>(11, 1, "friendlist.ModifyGroupCardReq", Make_Body_Request_Packet(3, 0, "mqq.IMService.FriendListServiceServantObj", "ModifyGroupCardReq", bin, len),
-                               [&](uint sso_seq, LPBYTE BodyBin)
-                                   -> bool
-                               {
-                                   //Todo
-                                   return true;
-                               });
 }
 
 void Android::SQQzoneSvc_getUndealCount()
@@ -1714,230 +1503,6 @@ bool Android::PicUp_DataUp(const uint Group, const byte *TotalData, const uint T
     Length = UnPack.GetInt();
     UnPack.GetInt();
     UnProtobuf UnPB(UnPack.GetBin(), Length);
-}
-
-/// <summary>
-/// 设置管理员
-/// </summary>
-/// <param name="Group"></param>
-/// <param name="QQ"></param>
-/// <param name="Set"></param>
-void Android::OidbSvc_0x55c_1(const uint Group, const uint QQ, const bool Set)
-{
-    Pack Pack(13, true);
-    Pack.SetInt(Group);
-    Pack.SetInt(QQ);
-    Pack.SetByte(Set);
-
-    ProtobufStruct::TreeNode Node4{nullptr, nullptr, 4, ProtobufStruct::ProtobufStructType::LENGTH, Pack.GetAll()};
-    ProtobufStruct::TreeNode Node2{nullptr, nullptr, 2, ProtobufStruct::ProtobufStructType::VARINT, (void *)1};
-    ProtobufStruct::TreeNode Node1{nullptr, nullptr, 1, ProtobufStruct::ProtobufStructType::VARINT, (void *)1372};
-
-    Protobuf PB;
-    Fun_Send_Sync<bool>(11, 1, "OidbSvc.0x55c_1", PB.Pack(&Node1),
-                        [&](uint sso_seq, LPBYTE BodyBin)
-                            -> bool
-                        {
-                            UnProtobuf UnPB(BodyBin);
-                            return true;
-                        });
-}
-
-/// <summary>
-/// 群禁言(Time为0时解除禁言)
-/// </summary>
-/// <param name="Group"></param>
-/// <param name="QQ"></param>
-/// <param name="Time">单位:秒</param>
-void Android::OidbSvc_0x570_8(const uint Group, const uint QQ, const uint Time)
-{
-    Pack Pack(19, true);
-    Pack.SetInt(Group);
-    Pack.SetBin((byte *)"\x20\0\1", 3);
-    Pack.SetInt(QQ);
-    Pack.SetInt(Time);
-    ProtobufStruct::TreeNode Node4{nullptr, nullptr, 4, ProtobufStruct::ProtobufStructType::LENGTH, Pack.GetAll()};
-    ProtobufStruct::TreeNode Node3{nullptr, &Node4, 3, ProtobufStruct::ProtobufStructType::VARINT, (void *)0};
-    ProtobufStruct::TreeNode Node2{nullptr, &Node3, 2, ProtobufStruct::ProtobufStructType::VARINT, (void *)8};
-    ProtobufStruct::TreeNode Node1{nullptr, &Node2, 1, ProtobufStruct::ProtobufStructType::VARINT, (void *)1392};
-
-    Protobuf PB;
-    Fun_Send_Sync<bool>(11, 1, "OidbSvc.0x570_8", PB.Pack(&Node1),
-                        [&](uint sso_seq, LPBYTE BodyBin)
-                            -> bool
-                        {
-                            UnProtobuf UnPB(BodyBin);
-                            return true;
-                        });
-}
-
-/// <summary>
-/// 取管理员列表(包括群主)
-/// </summary>
-/// <param name="Group"></param>
-std::vector<uint> *Android::OidbSvc_0x899_0(const uint Group)
-{
-    ProtobufStruct::TreeNode Node4_5_3{nullptr, nullptr, 3, ProtobufStruct::ProtobufStructType::VARINT, (void *)1};
-    ProtobufStruct::TreeNode Node4_5_1{nullptr, &Node4_5_3, 1, ProtobufStruct::ProtobufStructType::VARINT, (void *)0};
-    ProtobufStruct::TreeNode Node4_5{
-        &Node4_5_1,
-        nullptr,
-        5,
-        ProtobufStruct::ProtobufStructType::LENGTH,
-    };
-    ProtobufStruct::TreeNode Node4_3{nullptr, &Node4_5, 3, ProtobufStruct::ProtobufStructType::VARINT, (void *)2};
-    ProtobufStruct::TreeNode Node4_2{nullptr, &Node4_3, 2, ProtobufStruct::ProtobufStructType::VARINT, (void *)0};
-    ProtobufStruct::TreeNode Node4_1{nullptr, &Node4_2, 1, ProtobufStruct::ProtobufStructType::VARINT, (void *)Group};
-    ProtobufStruct::TreeNode Node4{
-        &Node4_1,
-        nullptr,
-        4,
-        ProtobufStruct::ProtobufStructType::LENGTH,
-    };
-    ProtobufStruct::TreeNode Node2{nullptr, &Node4, 2, ProtobufStruct::ProtobufStructType::VARINT, (void *)0};
-    ProtobufStruct::TreeNode Node1{nullptr, &Node2, 1, ProtobufStruct::ProtobufStructType::VARINT, (void *)2201};
-
-    Protobuf PB;
-    return Fun_Send_Sync<std::vector<uint> *>(11, 1, "OidbSvc.0x899_0", PB.Pack(&Node1),
-                                              [&](uint sso_seq, LPBYTE BodyBin)
-                                                  -> std::vector<uint> *
-                                              {
-                                                  UnProtobuf UnPB(BodyBin);
-
-                                                  std::vector<uint> ManagerList;
-
-                                                  UnPB.StepIn(4);
-                                                  while (UnPB.IsEnd())
-                                                  {
-                                                      UnPB.StepIn(4);
-                                                      ManagerList.insert(ManagerList.end(), UnPB.GetVarint(1));
-                                                      UnPB.StepOut();
-                                                  }
-                                                  UnPB.StepOut();
-
-                                                  return &ManagerList;
-                                              });
-}
-
-/// <summary>
-/// 全体禁言(解禁)
-/// </summary>
-/// <param name="Group"></param>
-/// <param name="Ban"></param>
-void Android::OidbSvc_0x89a_0(const uint Group, const bool Ban)
-{
-    ProtobufStruct::TreeNode Node4_2_17{nullptr, nullptr, 17, ProtobufStruct::ProtobufStructType::VARINT, (void *)(Ban ? 268435455 : 0)};
-    ProtobufStruct::TreeNode Node4_2{
-        &Node4_2_17,
-        nullptr,
-        2,
-        ProtobufStruct::ProtobufStructType::LENGTH,
-    };
-    ProtobufStruct::TreeNode Node4_1{nullptr, &Node4_2, 1, ProtobufStruct::ProtobufStructType::VARINT, (void *)Group};
-    ProtobufStruct::TreeNode Node4{
-        &Node4_1,
-        nullptr,
-        4,
-        ProtobufStruct::ProtobufStructType::LENGTH,
-    };
-    ProtobufStruct::TreeNode Node3{nullptr, &Node4, 3, ProtobufStruct::ProtobufStructType::VARINT, (void *)0};
-    ProtobufStruct::TreeNode Node2{nullptr, &Node3, 2, ProtobufStruct::ProtobufStructType::VARINT, (void *)0};
-    ProtobufStruct::TreeNode Node1{nullptr, &Node2, 1, ProtobufStruct::ProtobufStructType::VARINT, (void *)2202};
-
-    Protobuf PB;
-    Fun_Send_Sync<bool>(11, 1, "OidbSvc.0x89a_0", PB.Pack(&Node1),
-                        [&](uint sso_seq, LPBYTE BodyBin)
-                            -> bool
-                        {
-                            UnProtobuf UnPB(BodyBin);
-                            return true;
-                        });
-}
-
-/// <summary>
-/// 群踢人
-/// </summary>
-/// <param name="Group"></param>
-/// <param name="QQ"></param>
-/// <param name="Forever">不再接收加群申请</param>
-void Android::OidbSvc_0x8a0_0(const uint Group, const uint QQ, const bool Forever)
-{
-    ProtobufStruct::TreeNode Node4_2_3{nullptr, nullptr, 3, ProtobufStruct::ProtobufStructType::VARINT, (void *)Forever};
-    ProtobufStruct::TreeNode Node4_2_2{nullptr, &Node4_2_3, 2, ProtobufStruct::ProtobufStructType::VARINT, (void *)QQ};
-    ProtobufStruct::TreeNode Node4_2_1{nullptr, &Node4_2_2, 1, ProtobufStruct::ProtobufStructType::VARINT, (void *)5};
-    ProtobufStruct::TreeNode Node4_2{
-        &Node4_2_1,
-        nullptr,
-        2,
-        ProtobufStruct::ProtobufStructType::LENGTH,
-    };
-    ProtobufStruct::TreeNode Node4_1{nullptr, &Node4_2, 1, ProtobufStruct::ProtobufStructType::VARINT, (void *)Group};
-    ProtobufStruct::TreeNode Node4{
-        &Node4_1,
-        nullptr,
-        4,
-        ProtobufStruct::ProtobufStructType::LENGTH,
-    };
-    ProtobufStruct::TreeNode Node3{nullptr, &Node4, 3, ProtobufStruct::ProtobufStructType::VARINT, (void *)0};
-    ProtobufStruct::TreeNode Node2{nullptr, &Node3, 2, ProtobufStruct::ProtobufStructType::VARINT, (void *)0};
-    ProtobufStruct::TreeNode Node1{nullptr, &Node2, 1, ProtobufStruct::ProtobufStructType::VARINT, (void *)2208};
-
-    Protobuf PB;
-    Fun_Send_Sync<bool>(11, 1, "OidbSvc.0x8a0_0", PB.Pack(&Node1),
-                        [&](uint sso_seq, LPBYTE BodyBin)
-                            -> bool
-                        {
-                            UnProtobuf UnPB(BodyBin);
-                            return true;
-                        });
-}
-
-/// <summary>
-/// 设置专属头衔
-/// </summary>
-/// <param name="Group"></param>
-/// <param name="QQ"></param>
-/// <param name="Title">为空即收回</param>
-void Android::OidbSvc_0x8fc_2(const uint Group, const uint QQ, const char *Title)
-{
-    uint len = strlen(Title);
-    LPBYTE T = new byte[len + 4];
-    memcpy(T, XBin::Int2Bin(len + 4), 4);
-    memcpy(T + 4, Title, len);
-
-    ProtobufStruct::TreeNode Node4_3_7{
-        nullptr,
-        nullptr,
-        7,
-        ProtobufStruct::ProtobufStructType::LENGTH,
-    }; //群名片
-    ProtobufStruct::TreeNode Node4_3_6{nullptr, &Node4_3_7, 6, ProtobufStruct::ProtobufStructType::VARINT, (void *)4294967295};
-    ProtobufStruct::TreeNode Node4_3_5{nullptr, &Node4_3_6, 5, ProtobufStruct::ProtobufStructType::LENGTH, T};
-    ProtobufStruct::TreeNode Node4_3_1{nullptr, &Node4_3_5, 1, ProtobufStruct::ProtobufStructType::VARINT, (void *)2257382492};
-    ProtobufStruct::TreeNode Node4_3{
-        &Node4_3_1,
-        nullptr,
-        3,
-        ProtobufStruct::ProtobufStructType::LENGTH,
-    };
-    ProtobufStruct::TreeNode Node4_1{nullptr, &Node4_3, 1, ProtobufStruct::ProtobufStructType::VARINT, (void *)Group};
-    ProtobufStruct::TreeNode Node4{
-        &Node4_1,
-        nullptr,
-        4,
-        ProtobufStruct::ProtobufStructType::LENGTH,
-    };
-    ProtobufStruct::TreeNode Node2{nullptr, &Node4, 2, ProtobufStruct::ProtobufStructType::VARINT, (void *)2};
-    ProtobufStruct::TreeNode Node1{nullptr, &Node2, 1, ProtobufStruct::ProtobufStructType::VARINT, (void *)2300};
-
-    Protobuf PB;
-    Fun_Send_Sync<bool>(11, 1, "OidbSvc.0x8fc_2", PB.Pack(&Node1),
-                        [&](uint sso_seq, LPBYTE BodyBin)
-                            -> bool
-                        {
-                            UnProtobuf UnPB(BodyBin);
-                            return true;
-                        });
 }
 
 void Android::Un_Tlv_Get(const unsigned short cmd, const byte *bin, const uint len)
@@ -2970,6 +2535,123 @@ void Android::QQ_SyncCookie()
                   });
 }
 
+void Android::QQ_SyncFriendList(int startIndex)
+{
+    Fun_Send_Sync(11, 1, "friendlist.getFriendGroupList", friendlist::getFriendGroupList(startIndex),
+                  [&](uint sso_seq, LPBYTE BodyBin)
+                  {
+                      LPBYTE sBuffer;
+                      Unpack_Body_Request_Packet(BodyBin, sBuffer);
+
+                      UnJce UnJce(sBuffer);
+                      std::vector<JceStruct::Map<char *, LPBYTE>> Map;
+                      UnJce.Read(Map, 0);
+
+                      for (size_t i = 0; i < Map.size(); i++)
+                      {
+                          UnJce.Reset(Map[i].Value);
+                          UnJce.Read(UnJce, 0);
+
+                          int startIndex, totoal_friend_count, get_count = 0;
+                          UnJce.Read(startIndex, 3);
+                          UnJce.Read(totoal_friend_count, 5);
+                          UnJce.Read(get_count, 6);
+                          if (startIndex + get_count < totoal_friend_count)
+                              Android::QQ_SyncFriendList(startIndex + get_count);
+                          if (startIndex == 0)
+                              QQ.FriendList.resize(totoal_friend_count);
+
+                          std::vector<::UnJce> Friends;
+                          UnJce.Read(Friends, 7);
+                          for (size_t j = 0; j < Friends.size(); j++)
+                          {
+                              Friends[j].Read((int &)QQ.FriendList[startIndex + j].QQ, 0);
+                              Friends[j].Read(QQ.FriendList[startIndex + j].Remark, 3);
+                              Friends[j].Read(QQ.FriendList[startIndex + j].status, 5);
+                              Friends[j].Read(QQ.FriendList[startIndex + j].Nick, 14);
+                          }
+
+                          delete[] Map[i].Key;
+                          delete[] Map[i].Value;
+                      }
+                      delete[] sBuffer;
+                  });
+}
+
+void Android::QQ_SyncGroupList()
+{
+    Fun_Send_Sync(11, 1, "friendlist.GetTroopListReqV2", friendlist::GetTroopListReqV2(),
+                  [&](uint sso_seq, LPBYTE BodyBin)
+                  {
+                      LPBYTE sBuffer;
+                      Unpack_Body_Request_Packet(BodyBin, sBuffer);
+
+                      UnJce UnJce(sBuffer);
+                      std::vector<JceStruct::Map<char *, LPBYTE>> Map;
+                      UnJce.Read(Map, 0);
+
+                      for (size_t i = 0; i < Map.size(); i++)
+                      {
+                          UnJce.Reset(Map[i].Value);
+                          UnJce.Read(UnJce, 0);
+                          //UnJce.Read(totoal_group_count, 1);
+
+                          std::vector<::UnJce> Groups;
+                          UnJce.Read(Groups, 5);
+                          QQ.GroupList.resize(Groups.size());
+
+                          for (size_t j = 0; j < Groups.size(); j++)
+                          {
+                              Groups[j].Read((int &)QQ.GroupList[j].GroupCode, 1);
+                              Groups[j].Read(QQ.GroupList[j].GroupName, 4);
+                              Groups[j].Read(QQ.GroupList[j].MemberCount, 19);
+                              Groups[j].Read((int &)QQ.GroupList[j].MasterQQ, 23);
+                          }
+
+                          delete[] Map[i].Key;
+                          delete[] Map[i].Value;
+                      }
+                      delete[] sBuffer;
+                  });
+}
+
+void Android::QQ_SyncGroupMemberList(uint Group)
+{
+    Fun_Send_Sync(11, 1, "friendlist.getTroopMemberList", friendlist::getTroopMemberList(Group),
+                  [&](uint sso_seq, LPBYTE BodyBin)
+                  {
+                      LPBYTE sBuffer;
+                      Unpack_Body_Request_Packet(BodyBin, sBuffer);
+
+                      UnJce UnJce(sBuffer);
+                      std::vector<JceStruct::Map<char *, LPBYTE>> Map;
+                      UnJce.Read(Map, 0);
+
+                      for (size_t i = 0; i < Map.size(); i++)
+                      {
+                          UnJce.Reset(Map[i].Value);
+                          UnJce.Read(UnJce, 0);
+
+                          std::vector<::UnJce> Groups;
+                          UnJce.Read(Groups, 3);
+                          QQ.GroupList.resize(Groups.size());
+
+                          for (size_t j = 0; j < Groups.size(); j++)
+                          {
+                              /*
+                    Groups[j].Read((int&)QQ->GroupList[j].GroupCode, 1);
+                    Groups[j].Read(QQ->GroupList[j].GroupName, 4);
+                    Groups[j].Read(QQ->GroupList[j].MemberCount, 19);
+                    Groups[j].Read((int&)QQ->GroupList[j].MasterQQ, 23);
+                    */
+                          }
+
+                          delete[] Map[i].Key;
+                          delete[] Map[i].Value;
+                      }
+                      delete[] sBuffer;
+                  });
+}
 /// <summary>
 /// Get QQ Online state
 /// </summary>
@@ -3071,42 +2753,92 @@ bool Android::QQ_SendDisscussMsg(const uint Disscuss, const Message::Msg *Msg)
 
 bool Android::QQ_KickGroupMember(const uint Group, const uint QQ, const bool Forever)
 {
-    OidbSvc_0x8a0_0(Group, QQ, Forever);
-    return true;
+
+    return Fun_Send_Sync<bool>(11, 1, "OidbSvc.0x8a0_0", OidbSvc::_0x8a0_0(Group, QQ, Forever),
+                               [&](uint sso_seq, LPBYTE BodyBin)
+                                   -> bool
+                               {
+                                   UnProtobuf UnPB(BodyBin);
+                                   return true;
+                               });
 }
 
 bool Android::QQ_SetGroupAdmin(const uint Group, const uint QQ, const bool Set)
 {
-    OidbSvc_0x55c_1(Group, QQ, Set);
-    return true;
+    return Fun_Send_Sync<bool>(11, 1, "OidbSvc.0x55c_1", OidbSvc::_0x55c_1(Group, QQ, Set),
+                               [&](uint sso_seq, LPBYTE BodyBin)
+                                   -> bool
+                               {
+                                   UnProtobuf UnPB(BodyBin);
+                                   return true;
+                               });
 }
 
 bool Android::QQ_SetGroupMemberTitle(const uint Group, const uint QQ, const char *Title)
 {
-    OidbSvc_0x8fc_2(Group, QQ, Title);
-    return true;
+    return Fun_Send_Sync<bool>(11, 1, "OidbSvc.0x8fc_2", OidbSvc::_0x8fc_2(Group, QQ, Title),
+                               [&](uint sso_seq, LPBYTE BodyBin)
+                                   -> bool
+                               {
+                                   UnProtobuf UnPB(BodyBin);
+                                   return true;
+                               });
 }
 
 bool Android::QQ_SetGroupMemberCard(const uint Group, const uint QQ, const char *Card)
 {
-    return friendlist_ModifyGroupCardReq(Group, QQ, Card);
+    return Fun_Send_Sync<bool>(11, 1, "friendlist.ModifyGroupCardReq", friendlist::ModifyGroupCardReq(Group, QQ, Card),
+                               [&](uint sso_seq, LPBYTE BodyBin)
+                                   -> bool
+                               {
+                                   //Todo
+                                   return true;
+                               });
 }
 
 bool Android::QQ_SetGroupMemberBan(const uint Group, const uint QQ, const uint Time)
 {
-    OidbSvc_0x570_8(Group, QQ, Time);
-    return true;
+    return Fun_Send_Sync<bool>(11, 1, "OidbSvc.0x570_8", OidbSvc::_0x570_8(Group, QQ, Time),
+                               [&](uint sso_seq, LPBYTE BodyBin)
+                                   -> bool
+                               {
+                                   UnProtobuf UnPB(BodyBin);
+                                   return true;
+                               });
 }
 
 bool Android::QQ_SetGroupBan(const uint Group, const bool Ban)
 {
-    OidbSvc_0x89a_0(Group, Ban);
-    return true;
+    return Fun_Send_Sync<bool>(11, 1, "OidbSvc.0x89a_0", OidbSvc::_0x89a_0(Group, Ban),
+                               [&](uint sso_seq, LPBYTE BodyBin)
+                                   -> bool
+                               {
+                                   UnProtobuf UnPB(BodyBin);
+                                   return true;
+                               });
 }
 
 const std::vector<uint> *Android::QQ_GetGroupAdminList(const uint Group)
 {
-    return OidbSvc_0x899_0(Group);
+    return Fun_Send_Sync<std::vector<uint> *>(11, 1, "OidbSvc.0x899_0", OidbSvc::_0x899_0(Group),
+                                              [&](uint sso_seq, LPBYTE BodyBin)
+                                                  -> std::vector<uint> *
+                                              {
+                                                  UnProtobuf UnPB(BodyBin);
+
+                                                  std::vector<uint> ManagerList;
+
+                                                  UnPB.StepIn(4);
+                                                  while (UnPB.IsEnd())
+                                                  {
+                                                      UnPB.StepIn(4);
+                                                      ManagerList.insert(ManagerList.end(), UnPB.GetVarint(1));
+                                                      UnPB.StepOut();
+                                                  }
+                                                  UnPB.StepOut();
+
+                                                  return &ManagerList;
+                                              });
 }
 
 const std::vector<QQ::FriendInfo> *Android::QQ_GetFriendList()

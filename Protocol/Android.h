@@ -6,6 +6,8 @@
 
 #include "wtlogin.h"
 #include "StatSvc.h"
+#include "friendlist.h"
+#include "OidbSvc.h"
 
 #include <ctime>
 
@@ -13,7 +15,7 @@
 #define LOGIN_VERIY 2
 #define LOGIN_VERIY_SMS 160
 
-class Android : private wtlogin, private StatSvc
+class Android : private wtlogin, private StatSvc, private friendlist, private OidbSvc
 {
 private:
     struct SenderInfo
@@ -97,10 +99,6 @@ private:
     LPBYTE Make_Body_Request_Packet(const byte iVersion, const int iRequestId, const char *sServantName, const char *sFuncName, byte *sBuffer, uint Bufferlen);
 
 private:
-    void friendlist_getFriendGroupList(const int StartIndex);
-    void friendlist_GetTroopListReqV2();
-    void friendlist_getTroopMemberList(const uint Group);
-    bool friendlist_ModifyGroupCardReq(const uint Group, const uint QQ, const char *NewGroupCard);
     void SQQzoneSvc_getUndealCount();
     void OnlinePush_RespPush(const LPBYTE protobuf, const int a);
     bool VisitorSvc_ReqFavorite(const uint QQ, const int Times);
@@ -110,12 +108,6 @@ private:
     void ProfileService_Pb_ReqSystemMsgNew_Group();
     std::tuple<uint, uint, uint, LPBYTE> ImgStore_GroupPicUp(const uint Group, const LPBYTE ImageName, const LPBYTE ImageMD5, const uint ImageLength, const uint ImageWidth, const uint ImageHeight);
     bool PicUp_DataUp(const uint Group, const byte *TotalData, const uint TotalDataLength, const LPBYTE TotalDataMD5, const int DataType, const uint IP, const uint Port, const LPBYTE sig);
-    void OidbSvc_0x55c_1(const uint Group, const uint QQ, const bool Set);
-    void OidbSvc_0x570_8(const uint Group, const uint QQ, const uint Time);
-    std::vector<uint> *OidbSvc_0x899_0(const uint Group);
-    void OidbSvc_0x89a_0(const uint Group, const bool Ban);
-    void OidbSvc_0x8a0_0(const uint Group, const uint QQ, const bool Forever);
-    void OidbSvc_0x8fc_2(const uint Group, const uint QQ, const char *Title);
 
 private:
     void Un_Tlv_Get(const unsigned short cmd, const byte *bin, const uint len);
@@ -145,6 +137,9 @@ public:
     void QQ_SetOnlineType(const byte Type);
     void QQ_Heart_Beat();
     void QQ_SyncCookie();
+    void QQ_SyncFriendList(int startIndex);
+    void QQ_SyncGroupList();
+    void QQ_SyncGroupMemberList(uint Group);
     bool QQ_Status();
     const char8_t *QQ_GetErrorMsg();
     void QQ_Set_Token(QQ::Token *_Token);
