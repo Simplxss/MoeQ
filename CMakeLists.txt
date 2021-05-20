@@ -5,8 +5,7 @@ set(TARGET_NAME MoeQ)
 
 set(CMAKE_CXX_STANDARD 20)
 
-
-if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
     if ("${CMAKE_SYSTEM_NAME}" STREQUAL "Windows")
     set(VCPKG_TARGET_TRIPLET x64-windows)
     link_libraries(ws2_32 wsock32)
