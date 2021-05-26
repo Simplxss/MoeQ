@@ -149,39 +149,27 @@ int main()
         if (XBin::Hex2BinEx(d["token_16A"].GetString(), Token.token_16A) != 56)
             throw "token_16A len error";
 
-        if (false)
+        if (XBin::Hex2BinEx(d["md5"].GetString(), Token.md5) != 16)
+            throw "md5 len error";
+
+        if (XBin::Hex2BinEx(d["ksid"].GetString(), Token.ksid) != 16)
+            throw "ksid len error";
+
+        if (true) //懒得做选择了,直接二次登录
         {
-#if defined(_WIN_PLATFORM_)
-            Sdk.QQ_Init(Iconv::UnicodeToAnsi(QQ).c_str());
-#endif
-#if defined(_LINUX_PLATFORM_)
             Sdk.QQ_Init(QQ);
-#endif
             Sdk.QQ_Set_Token(&Token);
             int state = Sdk.QQ_Login_Second();
             if (state != LOGIN_SUCCESS)
-                if (XBin::Hex2BinEx(d["md5"].GetString(), Token.md5) != 16)
-                    throw "md5 len error";
-
-            if (XBin::Hex2BinEx(d["ksid"].GetString(), Token.ksid) != 16)
-                throw "ksid len error";
-
-            if (true) //懒得做选择了,直接二次登录
             {
-                Sdk.QQ_Init(QQ);
-                Sdk.QQ_Set_Token(&Token);
-                int state = Sdk.QQ_Login_Second();
-                if (state != LOGIN_SUCCESS)
-                {
-                    Log::AddLog(Log::LogType::_ERROR, Log::MsgType::OTHER, u8"SyncCookie", u8"Login failed, error code: %d, error message: %s", true, state, Sdk.QQ_GetErrorMsg());
-                    return 0;
-                }
-                Sdk.QQ_Login_Finish();
-                SaveToken(QQ, Sdk.QQ_Get_Token(), DataFilePath);
+                Log::AddLog(Log::LogType::_ERROR, Log::MsgType::OTHER, u8"SyncCookie", u8"Login failed, error code: %d, error message: %s", true, state, Sdk.QQ_GetErrorMsg());
+                return 0;
             }
-            else
-                throw "First login";
+            Sdk.QQ_Login_Finish();
+            SaveToken(QQ, Sdk.QQ_Get_Token(), DataFilePath);
         }
+        else
+            throw "First login";
     }
     catch (...)
     { //一次登录

@@ -2340,7 +2340,7 @@ int Android::QQ_Login_Second()
     Fun_Connect();
 
 #if defined(RELEASE)
-    wtlogin_exchange_emp();
+    QQ_SyncCookie();
 #endif
     return QQ.Login->state;
 }
