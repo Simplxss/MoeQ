@@ -14,11 +14,7 @@ Because of busy school, I can't spare time to continue updating this project on 
 
 It is developed by VSCode with environment of Windows 10 Pro & WSL.
 
-There are a lot of features of c++11 and c++20 using by this project.
-
-Package management is [*vcpkg*](https://github.com/Microsoft/vcpkg).
-
-Please run following command to install dependencies.
+The package management is [*vcpkg*](https://github.com/Microsoft/vcpkg), please run following command to install dependencies.
 
 ```bash
 #Windows
@@ -51,7 +47,9 @@ cd vcpkg
 
 Then, add "-DCMAKE_TOOLCHAIN_FILE=path" into your cmake command.
 
-Compiler is [*MinGW64*](http://winlibs.com/) or *MSVC* on Windows and *gcc-10* on Linux.
+The compilers that we use are [*MinGW64*](http://winlibs.com/) or *MSVC* on Windows and *gcc-10* on Linux.
+
+There are a lot of features of c++11 and c++20 using by this project, please notice the support of your compiler.
 
 **Significant: If you use *MinGW64* to build your program, please replace all "\\:" in "path-to-build\CMakeFiles\MoeQ.dir\compiler_depend.make" to ":"**
 
@@ -63,15 +61,15 @@ Compiler is [*MinGW64*](http://winlibs.com/) or *MSVC* on Windows and *gcc-10* o
 
 2. Get friends and groups list.
 
-2. Receive some group messages and private messages.
+3. Receive some group messages and private messages.
 
-3. Send part of group messages and private messages.
+4. Send part of group messages and private messages.
 
-4. Draw group and private message.
+5. Draw group and private message.
 
-5. Do some friend and group actions.
+6. Do some friend and group actions.
 
-6. ...
+7. ...
 
 ## Plugin System
 
@@ -85,12 +83,17 @@ Compiler is [*MinGW64*](http://winlibs.com/) or *MSVC* on Windows and *gcc-10* o
 
 # Features Under Way
 
-2. Support voice message.
-3. Fix bugs.
-4. Update protocol version.
-5. Optimize user Interface.
-6. Plugin store.
-7. ...
+1. Support voice message.
+
+2. Fix bugs.
+
+3. Update protocol version.
+
+4. Optimize user Interface.
+
+5. Plugin store.
+
+6. ...
 
 # Files Usage
 
@@ -169,9 +172,9 @@ if (state == LOGIN_SUCCESS)
 Thanks to the following projects for making this project greater!
 
 1. ***[rapidjson](https://github.com/Tencent/rapidjson)***
-3. ***[openssl](https://github.com/openssl/openssl)***
-4. ***[sqlite3](https://sqlite.org/)***
-5. ***[zlib](https://github.com/madler/zlib)***
+2. ***[openssl](https://github.com/openssl/openssl)***
+3. ***[sqlite3](https://sqlite.org/)***
+4. ***[zlib](https://github.com/madler/zlib)***
 
 **If it is not necessary,  please don't add more dependencies.**
 
