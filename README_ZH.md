@@ -47,7 +47,7 @@ cd vcpkg
 
 接着, 请添加"-DCMAKE_TOOLCHAIN_FILE=path"到CMake的命令行中.
 
-我们在Windows上使用的编译器为[*MinGW64*](http://winlibs.com/)或*MSVC*, Linux上使用的编译器为*gcc-10*.
+本项目在Windows上使用的编译器为[*MinGW64*](http://winlibs.com/)或*MSVC*, Linux上使用的编译器为*gcc-10*.
 
 本程序使用了许多的c++11和c++20特性, 请注意编译器的支持.
 

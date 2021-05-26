@@ -419,7 +419,7 @@ int Android::Fun_Send(const uint PacketType, const byte EncodeType, const char *
         Pack.SetInt(4);
         break;
     }
-    Pack.SetLength(); //这里利用了个bug,不用 Pack.SetBin_(Pack.GetAll_(false)) 也行
+    Pack.SetLength(); //这里利用了个bug, 就不用 Pack.SetBin_(Pack.GetAll_(false)) 了
     Pack.SetBin_(Buffer);
     byte *bin;
     uint bin_len = Pack.GetAll_(bin, true);
@@ -478,12 +478,23 @@ int Android::Fun_Send(const uint PacketType, const byte EncodeType, const char *
 
 void Android::Fun_Msg_Loop()
 {
-    LPBYTE bin;
-    while ((bin = TCP.Receive()) != nullptr)
+    while (true)
     {
-        HandleThreads.exec(std::bind(&Android::Fun_Receice, this, bin), bin);
+        LPBYTE bin;
+        while ((bin = TCP.Receive()) != nullptr)
+        {
+            HandleThreads.exec(std::bind(&Android::Fun_Receice, this, bin), bin);
+        }
+        Connected = false;
+        Log::AddLog(Log::LogType::WARNING, Log::MsgType::OTHER, u8"Connection", u8"Connecting is broken");
+        if (Fun_Connect())
+        {
+            Log::AddLog(Log::LogType::WARNING, Log::MsgType::OTHER, u8"Connection", u8"Connected");
+            QQ_Online();
+        }
+        else
+            return;
     }
-    Connected = false;
 }
 
 void Android::Fun_Receice(const LPBYTE bin)
@@ -656,7 +667,7 @@ void Android::Fun_Life_Event()
         ++time;
     } while (QQ_Status());
 }
-    
+
 /// <summary>
 ///
 /// </summary>
