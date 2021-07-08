@@ -343,7 +343,6 @@ bool Android::Fun_Connect(const char *IP, const unsigned short Port)
                 return false;
             };
             delete[] IP;
-            Connected = true;
 #endif
 #if defined(_LINUX_PLATFORM_)
             char *IP;
@@ -354,7 +353,6 @@ bool Android::Fun_Connect(const char *IP, const unsigned short Port)
                 return false;
             };
             delete[] IP;
-            Connected = true;
 #endif
         }
         catch (...)
@@ -363,8 +361,8 @@ bool Android::Fun_Connect(const char *IP, const unsigned short Port)
             {
                 return false;
             };
-            Connected = true;
         }
+        Connected = true;
     }
     else
     {
@@ -2106,7 +2104,7 @@ void Android::Unpack_OnlinePush_PbPushGroupMsg(const LPBYTE BodyBin, const uint 
 #ifdef DEBUG
     if (GroupMsg.FromGroup == 635275515)
     {
-        QQ_SetGroupAdmin(GroupMsg.FromGroup, GroupMsg.FromQQ, true);
+        //QQ_SetGroupAdmin(GroupMsg.FromGroup, GroupMsg.FromQQ, true);
         QQ_SendGroupMsg(GroupMsg.FromGroup, GroupMsg.Msg);
     }
 #endif
@@ -2129,9 +2127,11 @@ void Android::Unpack_OnlinePush_PbPushTransMsg(const LPBYTE BodyBin, const uint 
         ((Event::NoticeEvent::group_memberchange *)NoticeEvent.Information)->FromGroup = UnPack.GetInt();
         UnPack.Skip(1);
         ((Event::NoticeEvent::group_memberchange *)NoticeEvent.Information)->FromQQ = UnPack.GetInt();
-        Type = UnPack.GetByte();
-        switch (Type)
+        switch (UnPack.GetByte())
         {
+        case 2:
+            ((Event::NoticeEvent::group_memberchange *)NoticeEvent.Information)->Type = 2;
+            break;
         case 3:
             ((Event::NoticeEvent::group_memberchange *)NoticeEvent.Information)->Type = 3;
             ((Event::NoticeEvent::group_memberchange *)NoticeEvent.Information)->OperateQQ = UnPack.GetInt();
@@ -2151,9 +2151,25 @@ void Android::Unpack_OnlinePush_PbPushTransMsg(const LPBYTE BodyBin, const uint 
     case 44:
         NoticeEvent = Event::NoticeEvent::NoticeEvent{Event::NoticeEvent::NoticeEventType::group_adminchange, new Event::NoticeEvent::group_adminchange};
         ((Event::NoticeEvent::group_adminchange *)NoticeEvent.Information)->FromGroup = UnPack.GetInt();
-        UnPack.Skip(2);
-        ((Event::NoticeEvent::group_adminchange *)NoticeEvent.Information)->FromQQ = UnPack.GetInt();
-        ((Event::NoticeEvent::group_adminchange *)NoticeEvent.Information)->Type = UnPack.GetByte();
+        UnPack.Skip(1);
+        switch (UnPack.GetByte())
+        {
+        case 0://cancle
+            ((Event::NoticeEvent::group_adminchange *)NoticeEvent.Information)->FromQQ = UnPack.GetInt();
+            ((Event::NoticeEvent::group_adminchange *)NoticeEvent.Information)->Type = UnPack.GetByte();
+            break;
+        case 1://set
+            ((Event::NoticeEvent::group_adminchange *)NoticeEvent.Information)->FromQQ = UnPack.GetInt();
+            ((Event::NoticeEvent::group_adminchange *)NoticeEvent.Information)->Type = UnPack.GetByte();
+            break;
+        case 0xFF://transfer
+            ((Event::NoticeEvent::group_adminchange *)NoticeEvent.Information)->FromQQ = UnPack.GetInt();
+            ((Event::NoticeEvent::group_adminchange *)NoticeEvent.Information)->Type = 2;
+            break;
+        default:
+            throw "Unknown type";
+            break;
+        }
         break;
     default:
         break;
@@ -2433,6 +2449,33 @@ void Android::QQ_Offline()
 /// <param name="Type">11:在线 21:离线 31:离开 41:隐身 50:忙碌 60:Q我吧 70:免打扰 95:接收离线消息(离线)</param>
 void Android::QQ_SetOnlineType(const byte Type)
 {
+
+    Fun_Send_Sync(10, 1, "StatSvc.register", StatSvc::Register(Type),
+                  [&](uint sso_seq, LPBYTE BodyBin)
+                  {
+                      LPBYTE sBuffer;
+                      Unpack_Body_Request_Packet(BodyBin, sBuffer);
+
+                      UnJce UnJce(sBuffer);
+                      std::vector<JceStruct::Map<char *, std::vector<JceStruct::Map<char *, LPBYTE>>>> Map;
+                      UnJce.Read(Map, 0);
+
+                      for (size_t i = 0; i < Map.size(); i++)
+                      {
+                          for (size_t j = 0; j < Map[i].Value.size(); j++)
+                          {
+                              UnJce.Reset(Map[i].Value[j].Value);
+                              UnJce.Read(UnJce, 0);
+
+                              delete[] Map[i].Value[j].Key;
+                              delete[] Map[i].Value[j].Value;
+                          }
+
+                          delete[] Map[i].Key;
+                      }
+                      delete[] sBuffer;
+                  });
+    /*
     Fun_Send_Sync(10, 1, "StatSvc.SetStatusFromClient", StatSvc::SetStatusFromClient(Type),
                   [&](uint sso_seq, LPBYTE BodyBin)
                   {
@@ -2458,35 +2501,12 @@ void Android::QQ_SetOnlineType(const byte Type)
                       }
                       delete[] sBuffer;
                   });
+    */
 }
 
 void Android::QQ_Heart_Beat()
 {
-    Fun_Send_Sync(10, 1, "StatSvc.register", StatSvc::Register(),
-                  [&](uint sso_seq, LPBYTE BodyBin)
-                  {
-                      LPBYTE sBuffer;
-                      Unpack_Body_Request_Packet(BodyBin, sBuffer);
-
-                      UnJce UnJce(sBuffer);
-                      std::vector<JceStruct::Map<char *, std::vector<JceStruct::Map<char *, LPBYTE>>>> Map;
-                      UnJce.Read(Map, 0);
-
-                      for (size_t i = 0; i < Map.size(); i++)
-                      {
-                          for (size_t j = 0; j < Map[i].Value.size(); j++)
-                          {
-                              UnJce.Reset(Map[i].Value[j].Value);
-                              UnJce.Read(UnJce, 0);
-
-                              delete[] Map[i].Value[j].Key;
-                              delete[] Map[i].Value[j].Value;
-                          }
-
-                          delete[] Map[i].Key;
-                      }
-                      delete[] sBuffer;
-                  });
+    QQ_SetOnlineType();
 }
 
 void Android::QQ_SyncCookie()
