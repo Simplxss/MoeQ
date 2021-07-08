@@ -215,17 +215,9 @@ FUNC(LPBYTE, getFriendList, const uint64_t AuthCode)
 		for (size_t i = 0; i < FriendList->size(); i++)
 		{
 			Pack.SetInt((*FriendList)[i].QQ);
-#if X64
 			Pack.SetLong((long long)(*FriendList)[i].Nick);
-#else
-			Pack.SetLong((int)(*FriendList)[i].Nick);
-#endif
 			Pack.SetInt((*FriendList)[i].status);
-#if X64
 			Pack.SetLong((long long)(*FriendList)[i].Remark);
-#else
-			Pack.SetLong((int)(*FriendList)[i].Remark);
-#endif
 		}
 		Pack.SetLength();
 		return Pack.GetAll();
@@ -247,11 +239,7 @@ FUNC(LPBYTE, getGroupList, const uint64_t AuthCode)
 		for (size_t i = 0; i < GroupList->size(); i++)
 		{
 			Pack.SetInt((*GroupList)[i].GroupCode);
-#if X64
 			Pack.SetLong((long long)(*GroupList)[i].GroupName);
-#else
-			Pack.SetLong((int)(*GroupList)[i].GroupName);
-#endif
 			Pack.SetInt((*GroupList)[i].MasterQQ);
 			Pack.SetShort((*GroupList)[i].MemberCount);
 			Pack.SetByte((*GroupList)[i].SelfIdentity);

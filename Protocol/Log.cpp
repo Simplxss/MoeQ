@@ -38,7 +38,7 @@ std::u8string Message::ParseMsg(Message::Msg *Msg)
             break;
         case Message::MsgType::expression:
             MsgSteam += u8"[MQ:expression,id=";
-            MsgSteam += ((Message::expression *)Msg->Message)->id;
+            MsgSteam += (char8_t *)std::to_string(((Message::expression *)Msg->Message)->id).c_str();
             MsgSteam += u8",MD5=";
             MsgSteam += (char8_t *)XBin::Bin2HexEx(((Message::expression *)Msg->Message)->MD5, 16);
             MsgSteam += u8"]";
@@ -644,21 +644,41 @@ void Log::AddLog(const LogType LogType, const MsgType MsgType, const Event::Noti
         }));
         break;
     case Event::NoticeEvent::NoticeEventType::group_adminchange:
-        MsgSteam += ((Event::NoticeEvent::group_adminchange *)NoticeEvent->Information)->FromGroup;
+        MsgSteam += (char8_t *)std::to_string(((Event::NoticeEvent::group_adminchange *)NoticeEvent->Information)->FromGroup).c_str();
         MsgSteam += u8" ";
-        MsgSteam += ((Event::NoticeEvent::group_adminchange *)NoticeEvent->Information)->FromQQ;
+        MsgSteam += (char8_t *)std::to_string(((Event::NoticeEvent::group_adminchange *)NoticeEvent->Information)->FromQQ).c_str();
         MsgSteam += u8" ";
         MsgSteam += (((Event::NoticeEvent::group_adminchange *)NoticeEvent->Information)->Type ? u8"Set" : u8"UnSet");
         LogQueue.push(Log({LogType, MsgType, u8"group_adminchange", MsgSteam}));
         break;
     case Event::NoticeEvent::NoticeEventType::group_memberchange:
-        MsgSteam += ((Event::NoticeEvent::group_memberchange *)NoticeEvent->Information)->FromGroup;
+        MsgSteam += (char8_t *)std::to_string(((Event::NoticeEvent::group_memberchange *)NoticeEvent->Information)->FromGroup).c_str();
         MsgSteam += u8" ";
-        MsgSteam += ((Event::NoticeEvent::group_memberchange *)NoticeEvent->Information)->FromQQ;
-        MsgSteam += u8" ";
-        MsgSteam += ((Event::NoticeEvent::group_memberchange *)NoticeEvent->Information)->OperateQQ;
-        MsgSteam += u8" ";
-        MsgSteam += ((Event::NoticeEvent::group_memberchange *)NoticeEvent->Information)->Type;
+        MsgSteam += (char8_t *)std::to_string(((Event::NoticeEvent::group_memberchange *)NoticeEvent->Information)->FromQQ).c_str();
+        switch (((Event::NoticeEvent::group_memberchange *)NoticeEvent->Information)->Type)
+        {
+        case 0:
+            MsgSteam += u8" Increase";
+            break;
+        case 1:
+            MsgSteam += u8" ";
+            MsgSteam += (char8_t *)std::to_string(((Event::NoticeEvent::group_memberchange *)NoticeEvent->Information)->OperateQQ).c_str();
+            MsgSteam += u8" Increase";
+            break;
+        case 2:
+            MsgSteam += u8" Decrease";
+            break;
+        case 3:
+            MsgSteam += u8" ";
+            MsgSteam += (char8_t *)std::to_string(((Event::NoticeEvent::group_memberchange *)NoticeEvent->Information)->OperateQQ).c_str();
+            MsgSteam += u8" Decrease";
+            break;
+        case 4:
+            MsgSteam += u8" Disband";
+            break;
+        default:
+            break;
+        }
         LogQueue.push(Log({LogType, MsgType, u8"group_memberchange", MsgSteam}));
         break;
     case Event::NoticeEvent::NoticeEventType::group_mute:
@@ -686,17 +706,17 @@ void Log::AddLog(const LogType LogType, const MsgType MsgType, const Event::Requ
     switch (RequestEvent->RequestEventType)
     {
     case Event::RequestEvent::RequestEventType::add_friend:
-        MsgSteam += ((Event::RequestEvent::add_friend *)RequestEvent->Information)->FromQQ;
+        MsgSteam += (char8_t *)std::to_string(((Event::RequestEvent::add_friend *)RequestEvent->Information)->FromQQ).c_str();
         MsgSteam += u8" ";
         MsgSteam += ((Event::RequestEvent::add_friend *)RequestEvent->Information)->msg;
         LogQueue.push(Log({LogType, MsgType, u8"add_friend", MsgSteam}));
         break;
     case Event::RequestEvent::RequestEventType::add_group:
-        MsgSteam += ((Event::RequestEvent::add_group *)RequestEvent->Information)->FromGroup;
+        MsgSteam += (char8_t *)std::to_string(((Event::RequestEvent::add_group *)RequestEvent->Information)->FromGroup).c_str();
         MsgSteam += u8" ";
-        MsgSteam += ((Event::RequestEvent::add_group *)RequestEvent->Information)->FromQQ;
+        MsgSteam += (char8_t *)std::to_string(((Event::RequestEvent::add_group *)RequestEvent->Information)->FromQQ).c_str();
         MsgSteam += u8" ";
-        MsgSteam += ((Event::RequestEvent::add_group *)RequestEvent->Information)->Type;
+        MsgSteam += (char8_t *)std::to_string(((Event::RequestEvent::add_group *)RequestEvent->Information)->Type).c_str();
         //MsgSteam += ((Event::RequestEvent::add_group*)RequestEvent->Information)->msg;
         LogQueue.push(Log({LogType, MsgType, u8"add_group", MsgSteam}));
         break;

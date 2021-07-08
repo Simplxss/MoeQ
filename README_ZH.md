@@ -4,7 +4,9 @@
 
 ***MoeQ***是一个基于*安卓QQ*或*Tim*的跨平台(*Windows*&*Linux*)*QQ机器人*.
 
-它现在还是一个半成品, 如果你想要的是一个成品的机器人框架, 请去[mirai](https://www.google.com).
+它现在还是一个半成品, 如果你想要的是一个成品的机器人框架, 请去[*mirai*](https://www.google.com).
+
+部分协议代码和变量名参考*mirai*.
 
 由于学业繁忙, 我无力继续支撑这个项目, 于是将其开源.
 
@@ -49,7 +51,7 @@ cd vcpkg
 
 本项目在Windows上使用的编译器为[*MinGW64*](http://winlibs.com/)或*MSVC*, Linux上使用的编译器为*gcc-10*.
 
-本程序使用了许多的c++11和c++20特性, 请注意编译器的支持.
+本程序使用了许多的c++11和c++20特性, 请注意编译器的支持性.
 
 **注意:如果你使用MinGW64来构建程序, 请替换"path-to-build\CMakeFiles\MoeQ.dir\compiler_depend.make"文件中所有的"\:"为":"**
 

@@ -184,7 +184,7 @@ namespace Event
         {
             uint32_t FromGroup;
             uint32_t FromQQ;
-            uint32_t Type; // 0 Cancelled administrator 被取消管理员 1 Set up administrator 被设置管理员
+            uint32_t Type; // 0 Cancelled administrator 被取消管理员 1 Set up administrator 被设置管理员 2 Group transfer 群转让
         };
         struct group_memberchange
         {

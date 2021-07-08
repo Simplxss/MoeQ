@@ -4,7 +4,9 @@ Language: **`English`** [`简体中文`](https://github.com/YuFanXing/MoeQ/blob/
 
 ***MoeQ*** is *a QQ robot* crossing platforms(*Windows*&*Linux*) based on *Android QQ* or *Tim*.
 
-It is still a *semi-finished product* now. If you want a *ready-made robot* frame, please go to the next door [mirai](https://www.google.com).
+It is still a *semi-finished product* now. If you want a *ready-made robot* frame, please go to the next door [*mirai*](https://github.com/mamoe/mirai).
+
+Some codes and names of variate are referred to *mirai*.
 
 Because of busy school, I can't spare time to continue updating this project on my own, so I opened sources.
 
@@ -77,15 +79,15 @@ There are a lot of features of c++11 and c++20 using by this project, please not
 
 2. Right control.
 
-3. [C++ sdk](https://github.com/YuFanXing/mqcppsdk).
+3. [*C++ sdk*](https://github.com/YuFanXing/mqcppsdk).
 
 4. ...
 
 # Features Under Way
 
-1. Support voice message.
+1. Support upload image and voice.
 
-2. Fix bugs.
+2. Support voice message.
 
 3. Update protocol version.
 

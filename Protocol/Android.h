@@ -134,7 +134,7 @@ public:
     char *QQ_Get_Viery_PhoneNumber();
     void QQ_Online();
     void QQ_Offline();
-    void QQ_SetOnlineType(const byte Type);
+    void QQ_SetOnlineType(const byte Type = 0);
     void QQ_Heart_Beat();
     void QQ_SyncCookie();
     void QQ_SyncFriendList(int startIndex);
