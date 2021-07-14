@@ -2266,7 +2266,7 @@ uint Android::QQ_Get_Account()
 /// <returns>使用new,记得delete</returns>
 char *Android::QQ_GetCookies(const char *Host)
 {
-    char *Cookies = new char[50];
+    char *Cookies = new char[100];
     strcpy(Cookies, "skey=");
     strcat(Cookies, QQ.Cookie.skey);
     strcat(Cookies, ";p_skey=");
