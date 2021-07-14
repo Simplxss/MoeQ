@@ -65,12 +65,12 @@ void PluginSystem::Load(
 
     if (DevMode)
     {
-        wchar_t PluginPath_[MAX_PATH + 1];
+        wchar_t _PluginPath[MAX_PATH + 1];
         wcscpy(PluginPath, szFilePath);
         wcscat(PluginPath, L"dev\\");
-        wcscpy(PluginPath_, PluginPath);
-        wcscat(PluginPath, L"*");
-        handle = _wfindfirsti64(PluginPath, &fileinfo);
+        wcscpy(_PluginPath, PluginPath);
+        wcscat(_PluginPath, L"*");
+        handle = _wfindfirsti64(_PluginPath, &fileinfo);
         if (handle != -1)
         {
             do
@@ -83,7 +83,8 @@ void PluginSystem::Load(
                         continue;
                     uint i = PluginList.size();
                     PluginList.resize(i + 1);
-                    wchar_t PluginPath__[MAX_PATH + 1];
+                    wchar_t PluginPath_[MAX_PATH + 1], PluginPath__[MAX_PATH + 1];
+                    wcscpy(PluginPath_, PluginPath);
                     wcscat(PluginPath_, fileinfo.name);
                     wcscat(PluginPath_, L"\\");
                     wcscpy(PluginPath__, PluginPath_);
@@ -324,10 +325,8 @@ void PluginSystem::Load(
 
     if (DevMode)
     {
-        char PluginPath_[PATH_MAX + 1];
         strcpy(PluginPath, szFilePath);
         strcat(PluginPath, "/dev/");
-        strcpy(PluginPath_, PluginPath);
         dir = opendir(PluginPath);
         if (dir != 0)
         {
@@ -341,7 +340,8 @@ void PluginSystem::Load(
                         continue;
                     uint i = PluginList.size();
                     PluginList.resize(i + 1);
-                    char PluginPath__[PATH_MAX + 1];
+                    char PluginPath_[PATH_MAX + 1], PluginPath__[PATH_MAX + 1];
+                    strcpy(PluginPath_, PluginPath);
                     strcat(PluginPath_, dirent->d_name);
                     strcat(PluginPath_, "/");
                     strcpy(PluginPath__, PluginPath_);
@@ -718,7 +718,7 @@ bool PluginSystem::VieryAuth(const uint64_t auth_code, const int auth)
         {
             if (PluginList[i].Enable)
             {
-                return PluginList[i].Auth & (1 << auth);
+                return (PluginList[i].Auth & (1 << auth)) || !auth;
             }
         }
     }

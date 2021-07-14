@@ -8,6 +8,9 @@
 #include "StatSvc.h"
 #include "friendlist.h"
 #include "OidbSvc.h"
+#include "MessageSvc.h"
+#include "ImgStore.h"
+#include "PicUp.h"
 
 #include <ctime>
 
@@ -15,7 +18,7 @@
 #define LOGIN_VERIY 2
 #define LOGIN_VERIY_SMS 160
 
-class Android : private wtlogin, private StatSvc, private friendlist, private OidbSvc
+class Android : private wtlogin, private StatSvc, private friendlist, private OidbSvc, private MessageSvc, private ImgStore, private PicUp
 {
 private:
     struct SenderInfo
@@ -102,12 +105,8 @@ private:
     void SQQzoneSvc_getUndealCount();
     void OnlinePush_RespPush(const LPBYTE protobuf, const int a);
     bool VisitorSvc_ReqFavorite(const uint QQ, const int Times);
-    void MessageSvc_PbGetMsg();
-    bool MessageSvc_PbSendMsg(const uint ToNumber, const byte ToType, const Message::Msg *Msg);
     bool PbMessageSvc_PbMsgWithDraw(const uint Group, const uint MsgId, const uint MsgId_);
     void ProfileService_Pb_ReqSystemMsgNew_Group();
-    std::tuple<uint, uint, uint, LPBYTE> ImgStore_GroupPicUp(const uint Group, const LPBYTE ImageName, const LPBYTE ImageMD5, const uint ImageLength, const uint ImageWidth, const uint ImageHeight);
-    bool PicUp_DataUp(const uint Group, const byte *TotalData, const uint TotalDataLength, const LPBYTE TotalDataMD5, const int DataType, const uint IP, const uint Port, const LPBYTE sig);
 
 private:
     void Un_Tlv_Get(const unsigned short cmd, const byte *bin, const uint len);
@@ -144,12 +143,12 @@ public:
     const char8_t *QQ_GetErrorMsg();
     void QQ_Set_Token(QQ::Token *_Token);
     const QQ::Token *QQ_Get_Token();
-    const uint QQ_Get_Account();
+    uint QQ_UploadImage(const uint Group, const LPBYTE ImageName, const LPBYTE ImageMD5, const uint ImageLength, const uint ImageWidth, const uint ImageHeight, const byte *Image = nullptr);
+    uint QQ_Get_Account();
     char *QQ_GetCookies(const char *Host);
     bool QQ_SendLike(const uint QQ, const int Times);
-    bool QQ_SendGroupMsg(const uint Group, const Message::Msg *Msg);
+    bool QQ_SendMsg(const int ToNumber, const uint ToType, const Message::Msg *Msg);
     bool QQ_DrawGroupMsg(const uint Group, const uint MsgId, const uint MsgRand);
-    bool QQ_SendPrivateMsg(const uint QQ, const Message::Msg *Msg);
     bool QQ_DrawPrivateMsg(const uint Group, const uint MsgId, const uint MsgRand);
     bool QQ_SendDisscussMsg(const uint Disscuss, const Message::Msg *Msg);
     bool QQ_KickGroupMember(const uint Group, const uint QQ, const bool Forever);

@@ -2,165 +2,6 @@
 
 namespace Message
 {
-    LPBYTE Pack1(const char8_t *Text, const uint AtQQ)
-    {
-        if (Text == nullptr)
-        {
-            byte B[17];
-            if (AtQQ == 0)
-            {
-                memcpy(B, "\0\0\0\x11\0\1\0\0\0\5\1\0\0\0\0\0\0", 17);
-                Text = u8"@全体成员";
-            }
-            else
-            {
-                memcpy(B, "\0\0\0\x11\0\1\0\0\0\5\0\0\0\0\0\0\0", 17);
-                memcpy(B + 11, XBin::Int2Bin(AtQQ), 4);
-                Text = u8"@";
-                //Todo
-                //strcat(Text,)
-            }
-            uint len = strlen((char *)Text);
-            LPBYTE T = new byte[len + 4];
-            memcpy(T, XBin::Int2Bin(len + 4), 4);
-            memcpy(T + 4, Text, len);
-            ProtobufStruct::TreeNode Node1_3{nullptr, nullptr, 3, ProtobufStruct::ProtobufStructType::LENGTH, B};
-            ProtobufStruct::TreeNode Node1_1{nullptr, &Node1_3, 1, ProtobufStruct::ProtobufStructType::LENGTH, T};
-            ProtobufStruct::TreeNode Node1{
-                &Node1_1,
-                nullptr,
-                1,
-                ProtobufStruct::ProtobufStructType::LENGTH,
-            };
-            Protobuf PB;
-            LPBYTE bin = PB.Pack(&Node1);
-            delete[] T;
-            return bin;
-        }
-        else
-        {
-            uint len = strlen((char *)Text);
-            LPBYTE T = new byte[len + 4];
-            memcpy(T, XBin::Int2Bin(len + 4), 4);
-            memcpy(T + 4, Text, len);
-            ProtobufStruct::TreeNode Node1_1{nullptr, nullptr, 1, ProtobufStruct::ProtobufStructType::LENGTH, T};
-            ProtobufStruct::TreeNode Node1{
-                &Node1_1,
-                nullptr,
-                1,
-                ProtobufStruct::ProtobufStructType::LENGTH,
-            };
-            Protobuf PB;
-            return PB.Pack(&Node1);
-        }
-    }
-    LPBYTE Pack2(const byte id)
-    {
-        ProtobufStruct::TreeNode Node2_1{nullptr, nullptr, 1, ProtobufStruct::ProtobufStructType::VARINT, (void *)id};
-        ProtobufStruct::TreeNode Node2{
-            &Node2_1,
-            nullptr,
-            2,
-            ProtobufStruct::ProtobufStructType::LENGTH,
-        };
-        Protobuf PB;
-        return PB.Pack(&Node2);
-    }
-    LPBYTE Pack6(const byte id)
-    {
-        ProtobufStruct::TreeNode Node2_1{nullptr, nullptr, 1, ProtobufStruct::ProtobufStructType::VARINT, (void *)id};
-        ProtobufStruct::TreeNode Node2{
-            &Node2_1,
-            nullptr,
-            2,
-            ProtobufStruct::ProtobufStructType::LENGTH,
-        };
-        Protobuf PB;
-        return PB.Pack(&Node2);
-    }
-    LPBYTE Pack8(const LPBYTE ImageName, const LPBYTE ImageMD5, const uint ImageID, const uint ImageLength, const uint ImageWidth, const uint ImageHeight)
-    {
-        ProtobufStruct::TreeNode Node8_34_15{nullptr, nullptr, 15, ProtobufStruct::ProtobufStructType::VARINT, (void *)5};
-        ProtobufStruct::TreeNode Node8_34_10{nullptr, &Node8_34_15, 10, ProtobufStruct::ProtobufStructType::VARINT, (void *)0};
-        ProtobufStruct::TreeNode Node8_34_6{nullptr, &Node8_34_10, 6, ProtobufStruct::ProtobufStructType::LENGTH, (void *)"\0\0\0\4"};
-        ProtobufStruct::TreeNode Node8_34_2{nullptr, &Node8_34_6, 2, ProtobufStruct::ProtobufStructType::VARINT, (void *)0};
-        ProtobufStruct::TreeNode Node8_34_1{nullptr, &Node8_34_2, 1, ProtobufStruct::ProtobufStructType::VARINT, (void *)1};
-        ProtobufStruct::TreeNode Node8_34{
-            &Node8_34_1,
-            nullptr,
-            34,
-            ProtobufStruct::ProtobufStructType::LENGTH,
-        };
-        ProtobufStruct::TreeNode Node8_30{nullptr, &Node8_34, 30, ProtobufStruct::ProtobufStructType::VARINT, (void *)0};
-        ProtobufStruct::TreeNode Node8_29{nullptr, &Node8_30, 29, ProtobufStruct::ProtobufStructType::VARINT, (void *)0};
-        ProtobufStruct::TreeNode Node8_26{nullptr, &Node8_29, 26, ProtobufStruct::ProtobufStructType::VARINT, (void *)0};
-        ProtobufStruct::TreeNode Node8_25{nullptr, &Node8_26, 25, ProtobufStruct::ProtobufStructType::VARINT, (void *)ImageLength};
-        ProtobufStruct::TreeNode Node8_24{nullptr, &Node8_25, 24, ProtobufStruct::ProtobufStructType::VARINT, (void *)103};
-        ProtobufStruct::TreeNode Node8_23{nullptr, &Node8_24, 23, ProtobufStruct::ProtobufStructType::VARINT, (void *)ImageHeight};
-        ProtobufStruct::TreeNode Node8_22{nullptr, &Node8_23, 22, ProtobufStruct::ProtobufStructType::VARINT, (void *)ImageWidth};
-        ProtobufStruct::TreeNode Node8_20{nullptr, &Node8_22, 20, ProtobufStruct::ProtobufStructType::VARINT, (void *)1000};
-        ProtobufStruct::TreeNode Node8_17{nullptr, &Node8_20, 17, ProtobufStruct::ProtobufStructType::VARINT, (void *)5};
-        ProtobufStruct::TreeNode Node8_13{nullptr, &Node8_17, 13, ProtobufStruct::ProtobufStructType::LENGTH, ImageMD5};
-        ProtobufStruct::TreeNode Node8_12{nullptr, &Node8_13, 12, ProtobufStruct::ProtobufStructType::VARINT, (void *)1};
-        ProtobufStruct::TreeNode Node8_11{nullptr, &Node8_12, 11, ProtobufStruct::ProtobufStructType::LENGTH, (void *)"\0\0\0\4"}; //Unknown
-        ProtobufStruct::TreeNode Node8_10{nullptr, &Node8_11, 10, ProtobufStruct::ProtobufStructType::VARINT, (void *)66};
-        ProtobufStruct::TreeNode Node8_9{nullptr, &Node8_10, 9, ProtobufStruct::ProtobufStructType::VARINT, (void *)80};
-        ProtobufStruct::TreeNode Node8_8{nullptr, &Node8_9, 8, ProtobufStruct::ProtobufStructType::VARINT, (void *)2073511832};
-        ProtobufStruct::TreeNode Node8_7{nullptr, &Node8_8, 7, ProtobufStruct::ProtobufStructType::VARINT, (void *)ImageID};
-        ProtobufStruct::TreeNode Node8_2{nullptr, &Node8_7, 2, ProtobufStruct::ProtobufStructType::LENGTH, ImageName};
-        ProtobufStruct::TreeNode Node8{
-            &Node8_2,
-            nullptr,
-            8,
-            ProtobufStruct::ProtobufStructType::LENGTH,
-        };
-
-        Protobuf PB;
-        return PB.Pack(&Node8);
-    }
-    LPBYTE Pack37()
-    {
-        ProtobufStruct::TreeNode Node37_19_41{nullptr, nullptr, 41, ProtobufStruct::ProtobufStructType::VARINT, (void *)0};
-        ProtobufStruct::TreeNode Node37_19_31{nullptr, &Node37_19_41, 31, ProtobufStruct::ProtobufStructType::VARINT, (void *)0};
-        ProtobufStruct::TreeNode Node37_19_15{nullptr, &Node37_19_31, 15, ProtobufStruct::ProtobufStructType::VARINT, (void *)0};
-        ProtobufStruct::TreeNode Node37_19{
-            &Node37_19_15,
-            nullptr,
-            19,
-            ProtobufStruct::ProtobufStructType::LENGTH,
-        };
-        ProtobufStruct::TreeNode Node37_17{nullptr, &Node37_19, 17, ProtobufStruct::ProtobufStructType::VARINT, (void *)0};
-        ProtobufStruct::TreeNode Node37{
-            &Node37_17,
-            nullptr,
-            37,
-            ProtobufStruct::ProtobufStructType::LENGTH,
-        };
-
-        Protobuf PB;
-        return PB.Pack(&Node37);
-    }
-    LPBYTE Pack51(const char8_t *Json)
-    {
-        Pack Pack(500, true);
-        Pack.SetByte(1); //压缩
-        LPBYTE bin = Utils::ZlibCompress((char *)Json);
-        Pack.SetBin(bin + 4, XBin::Bin2Int(bin) - 4);
-        Pack.SetLength();
-        ProtobufStruct::TreeNode Node51_1{nullptr, nullptr, 1, ProtobufStruct::ProtobufStructType::LENGTH, Pack.GetAll()};
-        ProtobufStruct::TreeNode Node51{
-            &Node51_1,
-            nullptr,
-            51,
-            ProtobufStruct::ProtobufStructType::LENGTH,
-        };
-
-        Protobuf PB;
-        bin = PB.Pack(&Node51);
-        delete[] Pack.GetAll();
-        return bin;
-    }
-
     void UnPack1(UnProtobuf *UnPB, Msg *&Msg)
     {
         UnPB->StepIn(1);
@@ -287,7 +128,7 @@ namespace Message
     }
 }
 
-Android::Android(const char *IMEI, const char IMSI[16], const byte GUID[16], const byte MAC[6], const char *_device, const char *Brand) : wtlogin(&QQ, &Device), StatSvc(&QQ, &Device), friendlist(&QQ), OidbSvc(&QQ)
+Android::Android(const char *IMEI, const char IMSI[16], const byte GUID[16], const byte MAC[6], const char *_device, const char *Brand) : wtlogin(&QQ, &Device), StatSvc(&QQ, &Device), friendlist(&QQ), OidbSvc(&QQ), MessageSvc(&QQ), ImgStore(&QQ), PicUp(&QQ)
 {
     Device.IMEI = new char[strlen(IMEI)];
     Device.IMSI = new char[16];
@@ -821,463 +662,6 @@ bool Android::VisitorSvc_ReqFavorite(const uint QQ, const int Times)
                                });
 }
 
-void Android::MessageSvc_PbGetMsg()
-{
-    ProtobufStruct::TreeNode Node12{nullptr, nullptr, 12, ProtobufStruct::ProtobufStructType::LENGTH, (void *)"\0\0\0\4"};
-    ProtobufStruct::TreeNode Node9{nullptr, &Node12, 9, ProtobufStruct::ProtobufStructType::VARINT, (void *)0};
-    ProtobufStruct::TreeNode Node7{nullptr, &Node9, 7, ProtobufStruct::ProtobufStructType::VARINT, (void *)1};
-    ProtobufStruct::TreeNode Node6{nullptr, &Node7, 6, ProtobufStruct::ProtobufStructType::VARINT, (void *)1};
-    ProtobufStruct::TreeNode Node5{nullptr, &Node6, 5, ProtobufStruct::ProtobufStructType::VARINT, (void *)3};
-    ProtobufStruct::TreeNode Node4{nullptr, &Node5, 4, ProtobufStruct::ProtobufStructType::VARINT, (void *)20};
-    ProtobufStruct::TreeNode Node3{nullptr, &Node4, 3, ProtobufStruct::ProtobufStructType::VARINT, (void *)0};
-    ProtobufStruct::TreeNode Node2_14{nullptr, nullptr, 14, ProtobufStruct::ProtobufStructType::VARINT, (void *)0};
-    ProtobufStruct::TreeNode Node2_13{&Node2_14, nullptr, 13, ProtobufStruct::ProtobufStructType::VARINT, (void *)std::time(0)};
-    ProtobufStruct::TreeNode Node2_12{&Node2_13, nullptr, 12, ProtobufStruct::ProtobufStructType::VARINT, (void *)41};
-    ProtobufStruct::TreeNode Node2_11{&Node2_12, nullptr, 11, ProtobufStruct::ProtobufStructType::VARINT, (void *)1885270429};
-    ProtobufStruct::TreeNode Node2_9{&Node2_11, nullptr, 9, ProtobufStruct::ProtobufStructType::VARINT, (void *)2346412847};
-    ProtobufStruct::TreeNode Node2_5{&Node2_9, nullptr, 5, ProtobufStruct::ProtobufStructType::VARINT, (void *)562530569};
-    ProtobufStruct::TreeNode Node2_4{&Node2_5, nullptr, 4, ProtobufStruct::ProtobufStructType::VARINT, (void *)3414434724};
-    ProtobufStruct::TreeNode Node2_3{&Node2_4, nullptr, 3, ProtobufStruct::ProtobufStructType::VARINT, (void *)1787282332};
-    ProtobufStruct::TreeNode Node2_2{&Node2_3, nullptr, 2, ProtobufStruct::ProtobufStructType::VARINT, (void *)std::time(0)};
-    ProtobufStruct::TreeNode Node2_1{&Node2_2, nullptr, 1, ProtobufStruct::ProtobufStructType::VARINT, (void *)std::time(0)};
-    ProtobufStruct::TreeNode Node2{
-        &Node2_1,
-        &Node3,
-        2,
-        ProtobufStruct::ProtobufStructType::LENGTH,
-    };
-    ProtobufStruct::TreeNode Node1{nullptr, &Node2, 1, ProtobufStruct::ProtobufStructType::VARINT, (void *)0};
-
-    Protobuf PB;
-    Fun_Send_Sync(11, 1, "MessageSvc.PbGetMsg", PB.Pack(&Node1),
-                  [&](uint sso_seq, LPBYTE BodyBin)
-                  {
-                      UnProtobuf UnPB(BodyBin);
-
-                      QQ.SyncCookies = UnPB.GetBin(3);
-                      UnPB.GetVarint(4);
-                      while (UnPB.GetField() == 5)
-                      {
-                          UnPB.StepIn(5);
-                          UnPB.GetVarint(3);
-                          while (UnPB.GetField() == 4)
-                          {
-                              Event::PrivateMsg PrivateMsg;
-                              UnPB.StepIn(4);
-                              UnPB.StepIn(1);
-                              PrivateMsg.FromQQ = UnPB.GetVarint(1);
-                              uint MsgType = UnPB.GetVarint(3);
-                              PrivateMsg.MsgType = UnPB.GetVarint(4);
-                              PrivateMsg.MsgID = UnPB.GetVarint(5);
-                              UnPB.StepOut();
-                              switch (MsgType)
-                              {
-                              case 33:
-                              {
-                                  UnPB.StepIn(3);
-                                  UnPack UnPack(UnPB.GetBin(2));
-                                  Event::NoticeEvent::NoticeEvent NoticeEvent{Event::NoticeEvent::NoticeEventType::group_memberchange, new Event::NoticeEvent::group_memberchange};
-                                  ((Event::NoticeEvent::group_memberchange *)NoticeEvent.Information)->FromGroup = UnPack.GetInt();
-                                  UnPack.Skip(1);
-                                  ((Event::NoticeEvent::group_memberchange *)NoticeEvent.Information)->FromQQ = UnPack.GetInt();
-                                  switch (UnPack.GetByte())
-                                  {
-                                  case 130:
-                                      ((Event::NoticeEvent::group_memberchange *)NoticeEvent.Information)->Type = 0;
-                                      break;
-                                  case 131:
-                                      ((Event::NoticeEvent::group_memberchange *)NoticeEvent.Information)->Type = 0;
-                                      ((Event::NoticeEvent::group_memberchange *)NoticeEvent.Information)->OperateQQ = UnPack.GetInt();
-                                      break;
-                                  }
-                                  UnPB.StepOut();
-                                  Event::OnNoticeMsg(&NoticeEvent);
-                                  Log::AddLog(Log::LogType::INFORMATION, Log::MsgType::OTHER, &NoticeEvent);
-                              }
-                              break;
-                              case 34:
-                              {
-                                  UnPB.StepIn(3);
-                                  UnPack UnPack(UnPB.GetBin(2));
-                                  Event::RequestEvent::RequestEvent RequestEvent{Event::RequestEvent::RequestEventType::add_group, new Event::RequestEvent::add_group};
-                                  ((Event::RequestEvent::add_group *)RequestEvent.Information)->FromGroup = UnPack.GetInt();
-                                  UnPack.Skip(1);
-                                  ((Event::RequestEvent::add_group *)RequestEvent.Information)->FromQQ = UnPack.GetInt();
-                                  switch (UnPack.GetByte())
-                                  {
-                                  case 130:
-                                      ((Event::RequestEvent::add_group *)RequestEvent.Information)->Type = 0;
-                                      break;
-                                  }
-                                  UnPB.StepOut();
-                                  Event::OnRequestMsg(&RequestEvent);
-                                  Log::AddLog(Log::LogType::INFORMATION, Log::MsgType::OTHER, &RequestEvent);
-                              }
-                              break;
-                              case 84:
-                                  break;
-                              case 166:
-                                  UnPB.StepIn(3);
-                                  UnPB.StepIn(1);
-                                  UnPB.StepIn(1);
-                                  PrivateMsg.SendTime = UnPB.GetVarint(2);
-                                  PrivateMsg.MsgRand = UnPB.GetVarint(3);
-                                  UnPB.StepOut();
-                                  while (UnPB.GetField() == 2)
-                                  {
-                                      UnPB.StepIn(2);
-                                      Message::Msg *ThisMsg = nullptr;
-                                      switch (UnPB.GetField())
-                                      {
-                                      case 1:
-                                          UnPack1(&UnPB, ThisMsg != nullptr ? ThisMsg->NextPoint : ThisMsg);
-                                          if (ThisMsg->NextPoint == nullptr)
-                                          {
-                                              PrivateMsg.Msg = ThisMsg;
-                                          }
-                                          else
-                                              ThisMsg = ThisMsg->NextPoint;
-                                          break;
-                                      case 2: //小黄豆
-                                          UnPack2(&UnPB, ThisMsg != nullptr ? ThisMsg->NextPoint : ThisMsg);
-                                          if (ThisMsg->NextPoint == nullptr)
-                                          {
-                                              PrivateMsg.Msg = ThisMsg;
-                                          }
-                                          else
-                                              ThisMsg = ThisMsg->NextPoint;
-                                          break;
-                                      case 4:
-                                          UnPB.StepIn(4);
-                                          if (ThisMsg != nullptr)
-                                              ThisMsg = ThisMsg->NextPoint = new Message::Msg{Message::MsgType::picture, nullptr, new Message::picture};
-                                          else
-                                              PrivateMsg.Msg = ThisMsg = new Message::Msg{Message::MsgType::picture, nullptr, new Message::picture};
-                                          ((Message::picture *)ThisMsg->Message)->Data.Length = UnPB.GetVarint(2);
-                                          UnPB.GetBin(((Message::picture *)ThisMsg->Message)->MD5, 7);
-                                          ((Message::picture *)ThisMsg->Message)->Data.URL = UnPB.GetStr(15);
-                                          ((Message::picture *)ThisMsg->Message)->Width = UnPB.GetVarint(21);
-                                          ((Message::picture *)ThisMsg->Message)->Height = UnPB.GetVarint(22);
-                                          UnPB.StepOut();
-                                          break;
-                                      case 5: //文件
-                                          break;
-                                      case 6: //原创表情
-                                          UnPack6(&UnPB, ThisMsg != nullptr ? ThisMsg->NextPoint : ThisMsg);
-                                          if (ThisMsg->NextPoint == nullptr)
-                                          {
-                                              PrivateMsg.Msg = ThisMsg;
-                                          }
-                                          else
-                                              ThisMsg = ThisMsg->NextPoint;
-                                          break;
-                                      case 8: //图片
-                                          UnPack8(&UnPB, ThisMsg != nullptr ? ThisMsg->NextPoint : ThisMsg);
-                                          if (ThisMsg->NextPoint == nullptr)
-                                          {
-                                              PrivateMsg.Msg = ThisMsg;
-                                          }
-                                          else
-                                              ThisMsg = ThisMsg->NextPoint;
-                                          break;
-                                      case 9: //气泡消息
-                                          /*
-                                4a 04 08 00 40 03
-                                [
-                                9 {
-                                  1: 0
-                                  8: 3
-                                }
-                                ]
-                                */
-                                          break;
-                                      case 12: //xml
-                                          UnPack12(&UnPB, ThisMsg != nullptr ? ThisMsg->NextPoint : ThisMsg);
-                                          if (ThisMsg->NextPoint == nullptr)
-                                          {
-                                              PrivateMsg.Msg = ThisMsg;
-                                          }
-                                          else
-                                              ThisMsg = ThisMsg->NextPoint;
-                                          break;
-                                      case 16:
-                                          /*
-                                82 01 0b 0a 05 65 6d 6d 6d 63 18 01 28 01
-                                [
-                                16 {
-                                  1 {
-                                    12: emmmc //发送人群名片
-                                  }
-                                  3: 1
-                                  5: 1
-                                }
-                                ]
-                                */
-                                          break;
-                                      case 24: //红包
-                                          UnPB.StepIn(24);
-                                          UnPB.StepIn(1);
-                                          {
-                                              char8_t *listid = UnPB.GetStr(9);
-                                              char8_t *authkey = UnPB.GetStr(10);
-                                              uint channel = UnPB.GetVarint(19);
-                                              delete[] listid, authkey;
-                                          }
-                                          UnPB.StepOut();
-                                          UnPB.StepOut();
-                                          break;
-                                      case 33: //小视频
-                                          break;
-                                      case 37:
-                                          /*
-                                aa 02 3e 50 00 60 00 68 00 9a 01 35 08 07 20 cb
-                                50 c8 01 00 f0 01 00 f8 01 00 90 02 00 98 03 00
-                                a0 03 00 b0 03 00 c0 03 00 d0 03 00 e8 03 00 8a
-                                04 02 10 02 90 04 80 40 b8 04 00 c0 04 00 ca 04
-                                00
-                                [
-                                37 {
-                                  10: 0
-                                  12: 0
-                                  13: 0
-                                  19 {
-                                    1: 7
-                                    4: 10315
-                                    25: 0
-                                    30: 0
-                                    31: 0
-                                    34: 0
-                                    51: 0
-                                    52: 0
-                                    54: 0
-                                   56: 0
-                                    58: 0
-                                    61: 0
-                                    65 {
-                                      2: 2
-                                    }
-                                    66: 8192
-                                    71: 0
-                                    72: 0
-                                    73: ""
-                                  }
-                                }
-                                ]
-                                */
-                                          break;
-                                      case 45: //回复
-                                          UnPack45(&UnPB, ThisMsg != nullptr ? ThisMsg->NextPoint : ThisMsg);
-                                          if (ThisMsg->NextPoint == nullptr)
-                                          {
-                                              PrivateMsg.Msg = ThisMsg;
-                                          }
-                                          else
-                                              ThisMsg = ThisMsg->NextPoint;
-                                          break;
-                                      case 51: //json
-                                          UnPack51(&UnPB, ThisMsg != nullptr ? ThisMsg->NextPoint : ThisMsg);
-                                          if (ThisMsg->NextPoint == nullptr)
-                                          {
-                                              PrivateMsg.Msg = ThisMsg;
-                                          }
-                                          else
-                                              ThisMsg = ThisMsg->NextPoint;
-                                          break;
-                                      case 53:
-                                          UnPB.StepIn(53);
-                                          UnPB.GetVarint(1);
-                                          //Todo 吃瓜等新表情,json等解析
-                                          UnPB.StepOut();
-                                          break;
-                                      default:
-                                          break;
-                                      }
-                                      UnPB.StepOut();
-                                  }
-                                  UnPB.StepOut();
-                                  UnPB.StepOut();
-
-                                  if (PrivateMsg.Msg != nullptr)
-                                      Event::OnPrivateMsg(&PrivateMsg);
-                                  Message::DestoryMsg(PrivateMsg.Msg);
-                                  break;
-                              default:
-                                  throw "Unknow msgtype";
-                                  break;
-                              }
-                              UnPB.StepOut();
-                          }
-                          UnPB.StepOut();
-                      }
-                  });
-}
-
-/// <summary>
-/// 发送消息(群聊,私聊)
-/// </summary>
-/// <param name="ToNumber"></param>
-/// <param name="ToType">接收者类型 0 Friend 1 Group</param>
-/// <param name="Msg"></param>
-/// <returns></returns>
-bool Android::MessageSvc_PbSendMsg(const uint ToNumber, const byte ToType, const Message::Msg *Msg)
-{
-    ProtobufStruct::TreeNode Node8{nullptr, nullptr, 8, ProtobufStruct::ProtobufStructType::VARINT, (void *)(ToType == 0 ? 2 : 1)};
-    ProtobufStruct::TreeNode Node5, Node6, Node6_1, Node6_2, Node6_3, Node6_4, Node6_5, Node6_9, Node6_11, Node6_12, Node6_13, Node6_14;
-    if (ToType == 0)
-    {
-        Node6_14 = ProtobufStruct::TreeNode{nullptr, nullptr, 14, ProtobufStruct::ProtobufStructType::VARINT, (void *)0};
-        Node6_13 = ProtobufStruct::TreeNode{nullptr, &Node6_14, 13, ProtobufStruct::ProtobufStructType::VARINT, (void *)std::time(0)};
-        Node6_12 = ProtobufStruct::TreeNode{nullptr, &Node6_13, 12, ProtobufStruct::ProtobufStructType::VARINT, (void *)41};
-        Node6_11 = ProtobufStruct::TreeNode{nullptr, &Node6_12, 11, ProtobufStruct::ProtobufStructType::VARINT, (void *)1885270429};
-        Node6_9 = ProtobufStruct::TreeNode{nullptr, &Node6_11, 9, ProtobufStruct::ProtobufStructType::VARINT, (void *)2346412847};
-        Node6_5 = ProtobufStruct::TreeNode{nullptr, &Node6_9, 5, ProtobufStruct::ProtobufStructType::VARINT, (void *)562530569};
-        Node6_4 = ProtobufStruct::TreeNode{nullptr, &Node6_5, 4, ProtobufStruct::ProtobufStructType::VARINT, (void *)3414434724};
-        Node6_3 = ProtobufStruct::TreeNode{nullptr, &Node6_4, 3, ProtobufStruct::ProtobufStructType::VARINT, (void *)1787282332};
-        Node6_2 = ProtobufStruct::TreeNode{nullptr, &Node6_3, 2, ProtobufStruct::ProtobufStructType::VARINT, (void *)std::time(0)};
-        Node6_1 = ProtobufStruct::TreeNode{nullptr, &Node6_2, 1, ProtobufStruct::ProtobufStructType::VARINT, (void *)std::time(0)};
-        Node6 = ProtobufStruct::TreeNode{
-            &Node6_1,
-            &Node8,
-            6,
-            ProtobufStruct::ProtobufStructType::LENGTH,
-        };
-        Node5 = ProtobufStruct::TreeNode{nullptr, &Node6, 5, ProtobufStruct::ProtobufStructType::VARINT, (void *)Utils::GetRandom(0, 2147483647)};
-    }
-    else
-        Node5 = ProtobufStruct::TreeNode{nullptr, &Node8, 5, ProtobufStruct::ProtobufStructType::VARINT, (void *)Utils::GetRandom(0, 2147483647)};
-    ProtobufStruct::TreeNode Node4{nullptr, &Node5, 4, ProtobufStruct::ProtobufStructType::VARINT, (void *)Utils::GetRandom(0, 2147483647)};
-    ProtobufStruct::TreeNode *Node3_1_2 = nullptr;
-    do
-    {
-        switch (Msg->MsgType)
-        {
-        case Message::MsgType::text:
-            Node3_1_2 = new ProtobufStruct::TreeNode{nullptr, Node3_1_2, 2, ProtobufStruct::ProtobufStructType::LENGTH, Message::Pack1(((Message::text *)Msg->Message)->text, ((Message::text *)Msg->Message)->AtQQ)};
-            break;
-        case Message::MsgType::classcal_face:
-            Node3_1_2 = new ProtobufStruct::TreeNode{nullptr, Node3_1_2, 2, ProtobufStruct::ProtobufStructType::LENGTH, Message::Pack2(((Message::classcal_face *)Msg->Message)->id)};
-            break;
-        case Message::MsgType::expression:
-
-            break;
-        case Message::MsgType::picture:
-        {
-            LPBYTE B = new byte[20];
-            memcpy(B, XBin::Int2Bin(20), 4);
-            memcpy(B + 4, ((Message::picture *)Msg->Message)->MD5, 16);
-
-            LPBYTE T = new byte[40];
-            memcpy(T, XBin::Int2Bin(36), 4);
-            memcpy(T + 4, XBin::Bin2HexEx(((Message::picture *)Msg->Message)->MD5, 16), 32);
-            memcpy(T + 36, ".gif", 4);
-
-            auto [ImageID, IP, Port, sig] = ImgStore_GroupPicUp(ToType == 1 ? ToNumber : 0, T, B, ((Message::picture *)Msg->Message)->Data.Length, ((Message::picture *)Msg->Message)->Width, ((Message::picture *)Msg->Message)->Height);
-            if (IP != 0 && Port != 0 && sig != nullptr)
-            {
-                PicUp_DataUp(ToType == 1 ? ToNumber : NULL, ((Message::picture *)Msg->Message)->Data.Contain, ((Message::picture *)Msg->Message)->Data.Length, ((Message::picture *)Msg->Message)->MD5, 2, IP, Port, sig);
-            }
-
-            Node3_1_2 = new ProtobufStruct::TreeNode{nullptr, Node3_1_2, 2, ProtobufStruct::ProtobufStructType::LENGTH, Message::Pack8(T, B, ImageID, ((Message::picture *)Msg->Message)->Data.Length, ((Message::picture *)Msg->Message)->Width, ((Message::picture *)Msg->Message)->Height)};
-            delete T, B;
-        }
-        break;
-        case Message::MsgType::xml:
-            break;
-        case Message::MsgType::reply:
-        {
-            Message::Msg *ReplyMsg = ((Message::reply *)Msg->Message)->Msg;
-            while (ReplyMsg != nullptr)
-            {
-            }
-        }
-        break;
-        case Message::MsgType::json:
-            Node3_1_2 = new ProtobufStruct::TreeNode{nullptr, Node3_1_2, 2, ProtobufStruct::ProtobufStructType::LENGTH, Message::Pack51(((Message::json *)Msg->Message)->text)};
-            break;
-        default:
-            break;
-        }
-    } while ((Msg = Msg->NextPoint) != nullptr);
-    Node3_1_2 = new ProtobufStruct::TreeNode{nullptr, Node3_1_2, 2, ProtobufStruct::ProtobufStructType::LENGTH, Message::Pack37()};
-    ProtobufStruct::TreeNode Node3_1{
-        Node3_1_2,
-        nullptr,
-        1,
-        ProtobufStruct::ProtobufStructType::LENGTH,
-    };
-    ProtobufStruct::TreeNode Node3{
-        &Node3_1,
-        &Node4,
-        3,
-        ProtobufStruct::ProtobufStructType::LENGTH,
-    };
-    ProtobufStruct::TreeNode Node2_3{nullptr, nullptr, 3, ProtobufStruct::ProtobufStructType::VARINT, (void *)0};
-    ProtobufStruct::TreeNode Node2_2{nullptr, &Node2_3, 2, ProtobufStruct::ProtobufStructType::VARINT, (void *)0};
-    ProtobufStruct::TreeNode Node2_1{nullptr, &Node2_2, 1, ProtobufStruct::ProtobufStructType::VARINT, (void *)1};
-    ProtobufStruct::TreeNode Node2{
-        &Node2_1,
-        &Node3,
-        2,
-        ProtobufStruct::ProtobufStructType::LENGTH,
-    };
-    ProtobufStruct::TreeNode Node1_1_1, Node1_1, Node1_2_1, Node1_2, Node1;
-
-    switch (ToType)
-    {
-    case 0:
-        Node1_1_1 = ProtobufStruct::TreeNode{nullptr, nullptr, 1, ProtobufStruct::ProtobufStructType::VARINT, (void *)ToNumber};
-        Node1_1 = ProtobufStruct::TreeNode{
-            &Node1_1_1,
-            nullptr,
-            1,
-            ProtobufStruct::ProtobufStructType::LENGTH,
-        };
-        Node1 = ProtobufStruct::TreeNode{
-            &Node1_1,
-            &Node2,
-            1,
-            ProtobufStruct::ProtobufStructType::LENGTH,
-        };
-        break;
-    case 1:
-        Node1_2_1 = ProtobufStruct::TreeNode{nullptr, nullptr, 1, ProtobufStruct::ProtobufStructType::VARINT, (void *)ToNumber};
-        Node1_2 = ProtobufStruct::TreeNode{
-            &Node1_2_1,
-            nullptr,
-            2,
-            ProtobufStruct::ProtobufStructType::LENGTH,
-        };
-        Node1 = ProtobufStruct::TreeNode{
-            &Node1_2,
-            &Node2,
-            1,
-            ProtobufStruct::ProtobufStructType::LENGTH,
-        };
-        break;
-    default:
-        throw "ToType not exist";
-        break;
-    }
-
-    Protobuf PB;
-    return Fun_Send_Sync<bool>(11, 1, "MessageSvc.PbSendMsg", PB.Pack(&Node1),
-                               [&](uint sso_seq, LPBYTE BodyBin)
-                                   -> bool
-                               {
-                                   UnProtobuf UnPB(BodyBin);
-
-                                   ProtobufStruct::TreeNode *tmp;
-                                   do
-                                   {
-                                       delete[] Node3_1_2->Data;
-                                       tmp = Node3_1_2->brother;
-                                       delete Node3_1_2;
-                                   } while ((Node3_1_2 = tmp) != nullptr);
-
-                                   return !UnPB.GetVarint(1);
-                               });
-}
-
 bool Android::PbMessageSvc_PbMsgWithDraw(const uint Target, const uint MsgId, const uint MsgRand)
 {
     ProtobufStruct::TreeNode Node2_5_1{nullptr, nullptr, 1, ProtobufStruct::ProtobufStructType::VARINT, (void *)0};
@@ -1368,150 +752,6 @@ void Android::ProfileService_Pb_ReqSystemMsgNew_Group()
                   {
                       UnProtobuf UnPB(BodyBin);
                   });
-}
-
-std::tuple<uint, uint, uint, LPBYTE> Android::ImgStore_GroupPicUp(const uint Group, const LPBYTE ImageName, const LPBYTE ImageMD5, const uint ImageLength, const uint ImageWidth, const uint ImageHeight)
-{
-    LPBYTE V = new byte[strlen(AndroidQQ_VERSION) + 4];
-    memcpy(V, XBin::Int2Bin(strlen(AndroidQQ_VERSION) + 4), 4);
-    memcpy(V + 4, AndroidQQ_VERSION, strlen(AndroidQQ_VERSION));
-
-    ProtobufStruct::TreeNode Node3_19{nullptr, nullptr, 19, ProtobufStruct::ProtobufStructType::VARINT, (void *)0};
-    ProtobufStruct::TreeNode Node3_15{nullptr, &Node3_19, 15, ProtobufStruct::ProtobufStructType::VARINT, (void *)1006};
-    ProtobufStruct::TreeNode Node3_13{nullptr, &Node3_15, 13, ProtobufStruct::ProtobufStructType::LENGTH, V};
-    ProtobufStruct::TreeNode Node3_12{nullptr, &Node3_13, 12, ProtobufStruct::ProtobufStructType::VARINT, (void *)1000};
-    ProtobufStruct::TreeNode Node3_11{nullptr, &Node3_12, 11, ProtobufStruct::ProtobufStructType::VARINT, (void *)ImageHeight};
-    ProtobufStruct::TreeNode Node3_10{nullptr, &Node3_11, 10, ProtobufStruct::ProtobufStructType::VARINT, (void *)ImageWidth};
-    ProtobufStruct::TreeNode Node3_9{nullptr, &Node3_10, 9, ProtobufStruct::ProtobufStructType::VARINT, (void *)1};
-    ProtobufStruct::TreeNode Node3_8{nullptr, &Node3_9, 8, ProtobufStruct::ProtobufStructType::VARINT, (void *)9};
-    ProtobufStruct::TreeNode Node3_7{nullptr, &Node3_8, 7, ProtobufStruct::ProtobufStructType::VARINT, (void *)5};
-    ProtobufStruct::TreeNode Node3_6{nullptr, &Node3_7, 6, ProtobufStruct::ProtobufStructType::LENGTH, ImageName};
-    ProtobufStruct::TreeNode Node3_5{nullptr, &Node3_6, 5, ProtobufStruct::ProtobufStructType::VARINT, (void *)ImageLength};
-    ProtobufStruct::TreeNode Node3_4{nullptr, &Node3_5, 4, ProtobufStruct::ProtobufStructType::LENGTH, ImageMD5};
-    ProtobufStruct::TreeNode Node3_3{nullptr, &Node3_4, 3, ProtobufStruct::ProtobufStructType::VARINT, (void *)0};
-    ProtobufStruct::TreeNode Node3_2{nullptr, &Node3_3, 2, ProtobufStruct::ProtobufStructType::VARINT, (void *)QQ.QQ};
-    ProtobufStruct::TreeNode Node3_1{nullptr, &Node3_2, 1, ProtobufStruct::ProtobufStructType::VARINT, (void *)Group};
-    ProtobufStruct::TreeNode Node3{
-        &Node3_1,
-        nullptr,
-        3,
-        ProtobufStruct::ProtobufStructType::LENGTH,
-    };
-    ProtobufStruct::TreeNode Node2{nullptr, &Node3, 2, ProtobufStruct::ProtobufStructType::VARINT, (void *)1};
-    ProtobufStruct::TreeNode Node1{nullptr, &Node2, 1, ProtobufStruct::ProtobufStructType::VARINT, (void *)3};
-
-    Protobuf PB;
-    return Fun_Send_Sync<std::tuple<uint, uint, uint, LPBYTE>>(11, 1, "ImgStore.GroupPicUp", PB.Pack(&Node1),
-                                                               [&](uint sso_seq, LPBYTE BodyBin)
-                                                                   -> std::tuple<uint, uint, uint, LPBYTE>
-                                                               {
-                                                                   UnProtobuf UnPB(BodyBin);
-
-                                                                   delete V;
-
-                                                                   LPBYTE sig;
-                                                                   uint IP, Port, ImageID;
-                                                                   UnPB.StepIn(3);
-                                                                   switch (UnPB.GetVarint(4))
-                                                                   {
-                                                                   case 0: //需要上传
-                                                                       //IP PORT为数组,这里就取第一组
-                                                                       IP = UnPB.GetVarint(6);
-                                                                       Port = UnPB.GetVarint(7);
-                                                                       sig = UnPB.GetBin(8);
-
-                                                                       return {ImageID, IP, Port, sig};
-                                                                   case 1:
-                                                                       ImageID = UnPB.GetVarint(9);
-
-                                                                       return {ImageID, NULL, NULL, nullptr};
-                                                                   };
-                                                               });
-}
-
-/// <summary>
-/// 上传文件
-/// </summary>
-/// <param name="Group">如不是群聊,此参数填NULL</param>
-/// <param name="TotalData"></param>
-/// <param name="TotalDataLength"></param>
-/// <param name="TotalDataMD5"></param>
-/// <param name="DataType">Image 2, Voice 29</param>
-/// <param name="IP"></param>
-/// <param name="Port"></param>
-/// <param name="sig"></param>
-/// <returns></returns>
-bool Android::PicUp_DataUp(const uint Group, const byte *TotalData, const uint TotalDataLength, const LPBYTE TotalDataMD5, const int DataType, const uint IP, const uint Port, const LPBYTE sig)
-{
-    Socket TCP;
-
-    char *ip = XBin::Int2IP(IP);
-    if (!TCP.Connect(ip, Port))
-    {
-        Log::AddLog(Log::LogType::NOTICE, Log::MsgType::OTHER, u8"Upload", u8"Connect upload server false");
-        return false;
-    };
-    delete[] ip;
-
-    //文件分片发送
-    uint Offset = 0, DataLength, Length;
-    Protobuf PB;
-    LPBYTE Bin;
-    Pack Pack(8500, false);
-    while ((DataLength = TotalDataLength - Offset) > 0)
-    {
-        if (DataLength > 0x2000)
-            DataLength = 0x2000;
-
-        ProtobufStruct::TreeNode Node2_9{nullptr, nullptr, 9, ProtobufStruct::ProtobufStructType::LENGTH, TotalDataMD5};
-        ProtobufStruct::TreeNode Node2_8{nullptr, &Node2_9, 8, ProtobufStruct::ProtobufStructType::LENGTH, Utils::MD5EX(TotalData + Offset, DataLength)};
-        ProtobufStruct::TreeNode Node2_6{nullptr, &Node2_8, 6, ProtobufStruct::ProtobufStructType::LENGTH, sig};
-        ProtobufStruct::TreeNode Node2_4{nullptr, &Node2_6, 4, ProtobufStruct::ProtobufStructType::VARINT, (void *)DataLength};
-        ProtobufStruct::TreeNode Node2_3{nullptr, &Node2_4, 3, ProtobufStruct::ProtobufStructType::VARINT, (void *)0};
-        ProtobufStruct::TreeNode Node2_2{nullptr, &Node2_3, 2, ProtobufStruct::ProtobufStructType::VARINT, (void *)TotalDataLength};
-        ProtobufStruct::TreeNode Node2{
-            &Node2_2,
-            nullptr,
-            2,
-            ProtobufStruct::ProtobufStructType::LENGTH,
-        };
-        ProtobufStruct::TreeNode Node1_10{nullptr, nullptr, 10, ProtobufStruct::ProtobufStructType::VARINT, (void *)2052};
-        ProtobufStruct::TreeNode Node1_8{nullptr, &Node1_10, 8, ProtobufStruct::ProtobufStructType::VARINT, (void *)DataType};
-        ProtobufStruct::TreeNode Node1_7{nullptr, &Node1_8, 7, ProtobufStruct::ProtobufStructType::VARINT, (void *)4096};
-        ProtobufStruct::TreeNode Node1_6{nullptr, &Node1_7, 6, ProtobufStruct::ProtobufStructType::VARINT, (void *)AndroidQQ_APPID};
-        ProtobufStruct::TreeNode Node1_5{nullptr, &Node1_6, 5, ProtobufStruct::ProtobufStructType::VARINT, (void *)0};
-        ProtobufStruct::TreeNode Node1_4{nullptr, &Node1_5, 4, ProtobufStruct::ProtobufStructType::VARINT, (void *)83048};
-        ProtobufStruct::TreeNode Node1_3{nullptr, &Node1_4, 3, ProtobufStruct::ProtobufStructType::LENGTH, (void *)"\0\0\0\x10PicUp.DataUp"};
-        ProtobufStruct::TreeNode Node1_2{nullptr, &Node1_3, 2, ProtobufStruct::ProtobufStructType::LENGTH, QQ.QQ_Str};
-        ProtobufStruct::TreeNode Node1_1{nullptr, &Node1_2, 1, ProtobufStruct::ProtobufStructType::VARINT, (void *)1};
-        ProtobufStruct::TreeNode Node1{
-            &Node1_1,
-            &Node2,
-            1,
-            ProtobufStruct::ProtobufStructType::LENGTH,
-        };
-        Bin = PB.Pack(&Node1);
-        Length = XBin::Bin2Int(Bin) - 4;
-
-        Pack.SetByte(0x28);
-        Pack.SetInt(Length);
-        Pack.SetInt(DataLength);
-        Pack.SetBin(Bin + 4, Length);
-        Pack.SetBin(TotalData + Offset, DataLength);
-        Pack.SetByte(0x29);
-
-        TCP.Send(Pack.GetAll(), Pack.Length());
-
-        delete Bin;
-        Offset += DataLength;
-    }
-    delete Pack.GetAll();
-
-    UnPack UnPack(TCP.Receive());
-    UnPack.GetByte();
-    Length = UnPack.GetInt();
-    UnPack.GetInt();
-    UnProtobuf UnPB(UnPack.GetBin(), Length);
 }
 
 void Android::Un_Tlv_Get(const unsigned short cmd, const byte *bin, const uint len)
@@ -2105,7 +1345,7 @@ void Android::Unpack_OnlinePush_PbPushGroupMsg(const LPBYTE BodyBin, const uint 
     if (GroupMsg.FromGroup == 635275515)
     {
         //QQ_SetGroupAdmin(GroupMsg.FromGroup, GroupMsg.FromQQ, true);
-        QQ_SendGroupMsg(GroupMsg.FromGroup, GroupMsg.Msg);
+        QQ_SendMsg(GroupMsg.FromGroup, 1, GroupMsg.Msg);
     }
 #endif
 
@@ -2154,15 +1394,15 @@ void Android::Unpack_OnlinePush_PbPushTransMsg(const LPBYTE BodyBin, const uint 
         UnPack.Skip(1);
         switch (UnPack.GetByte())
         {
-        case 0://cancle
+        case 0: //cancle
             ((Event::NoticeEvent::group_adminchange *)NoticeEvent.Information)->FromQQ = UnPack.GetInt();
             ((Event::NoticeEvent::group_adminchange *)NoticeEvent.Information)->Type = UnPack.GetByte();
             break;
-        case 1://set
+        case 1: //set
             ((Event::NoticeEvent::group_adminchange *)NoticeEvent.Information)->FromQQ = UnPack.GetInt();
             ((Event::NoticeEvent::group_adminchange *)NoticeEvent.Information)->Type = UnPack.GetByte();
             break;
-        case 0xFF://transfer
+        case 0xFF: //transfer
             ((Event::NoticeEvent::group_adminchange *)NoticeEvent.Information)->FromQQ = UnPack.GetInt();
             ((Event::NoticeEvent::group_adminchange *)NoticeEvent.Information)->Type = 2;
             break;
@@ -2210,7 +1450,268 @@ void Android::Unpack_OnlinePush_ReqPush(const LPBYTE BodyBin, const uint sso_seq
 
 void Android::Unpack_MessageSvc_PushNotify(const LPBYTE BodyBin, const uint sso_seq)
 {
-    MessageSvc_PbGetMsg();
+    ;
+    Fun_Send_Sync(11, 1, "MessageSvc.PbGetMsg", MessageSvc::PbGetMsg(),
+                  [&](uint sso_seq, LPBYTE BodyBin)
+                  {
+                      UnProtobuf UnPB(BodyBin);
+
+                      QQ.SyncCookies = UnPB.GetBin(3);
+                      UnPB.GetVarint(4);
+                      while (UnPB.GetField() == 5)
+                      {
+                          UnPB.StepIn(5);
+                          UnPB.GetVarint(3);
+                          while (UnPB.GetField() == 4)
+                          {
+                              Event::PrivateMsg PrivateMsg;
+                              UnPB.StepIn(4);
+                              UnPB.StepIn(1);
+                              PrivateMsg.FromQQ = UnPB.GetVarint(1);
+                              uint MsgType = UnPB.GetVarint(3);
+                              PrivateMsg.MsgType = UnPB.GetVarint(4);
+                              PrivateMsg.MsgID = UnPB.GetVarint(5);
+                              UnPB.StepOut();
+                              switch (MsgType)
+                              {
+                              case 33:
+                              {
+                                  UnPB.StepIn(3);
+                                  UnPack UnPack(UnPB.GetBin(2));
+                                  Event::NoticeEvent::NoticeEvent NoticeEvent{Event::NoticeEvent::NoticeEventType::group_memberchange, new Event::NoticeEvent::group_memberchange};
+                                  ((Event::NoticeEvent::group_memberchange *)NoticeEvent.Information)->FromGroup = UnPack.GetInt();
+                                  UnPack.Skip(1);
+                                  ((Event::NoticeEvent::group_memberchange *)NoticeEvent.Information)->FromQQ = UnPack.GetInt();
+                                  switch (UnPack.GetByte())
+                                  {
+                                  case 130:
+                                      ((Event::NoticeEvent::group_memberchange *)NoticeEvent.Information)->Type = 0;
+                                      break;
+                                  case 131:
+                                      ((Event::NoticeEvent::group_memberchange *)NoticeEvent.Information)->Type = 0;
+                                      ((Event::NoticeEvent::group_memberchange *)NoticeEvent.Information)->OperateQQ = UnPack.GetInt();
+                                      break;
+                                  }
+                                  UnPB.StepOut();
+                                  Event::OnNoticeMsg(&NoticeEvent);
+                                  Log::AddLog(Log::LogType::INFORMATION, Log::MsgType::OTHER, &NoticeEvent);
+                              }
+                              break;
+                              case 34:
+                              {
+                                  UnPB.StepIn(3);
+                                  UnPack UnPack(UnPB.GetBin(2));
+                                  Event::RequestEvent::RequestEvent RequestEvent{Event::RequestEvent::RequestEventType::add_group, new Event::RequestEvent::add_group};
+                                  ((Event::RequestEvent::add_group *)RequestEvent.Information)->FromGroup = UnPack.GetInt();
+                                  UnPack.Skip(1);
+                                  ((Event::RequestEvent::add_group *)RequestEvent.Information)->FromQQ = UnPack.GetInt();
+                                  switch (UnPack.GetByte())
+                                  {
+                                  case 130:
+                                      ((Event::RequestEvent::add_group *)RequestEvent.Information)->Type = 0;
+                                      break;
+                                  }
+                                  UnPB.StepOut();
+                                  Event::OnRequestMsg(&RequestEvent);
+                                  Log::AddLog(Log::LogType::INFORMATION, Log::MsgType::OTHER, &RequestEvent);
+                              }
+                              break;
+                              case 84:
+                                  break;
+                              case 166:
+                                  UnPB.StepIn(3);
+                                  UnPB.StepIn(1);
+                                  UnPB.StepIn(1);
+                                  PrivateMsg.SendTime = UnPB.GetVarint(2);
+                                  PrivateMsg.MsgRand = UnPB.GetVarint(3);
+                                  UnPB.StepOut();
+                                  while (UnPB.GetField() == 2)
+                                  {
+                                      UnPB.StepIn(2);
+                                      Message::Msg *ThisMsg = nullptr;
+                                      switch (UnPB.GetField())
+                                      {
+                                      case 1:
+                                          UnPack1(&UnPB, ThisMsg != nullptr ? ThisMsg->NextPoint : ThisMsg);
+                                          if (ThisMsg->NextPoint == nullptr)
+                                          {
+                                              PrivateMsg.Msg = ThisMsg;
+                                          }
+                                          else
+                                              ThisMsg = ThisMsg->NextPoint;
+                                          break;
+                                      case 2: //小黄豆
+                                          UnPack2(&UnPB, ThisMsg != nullptr ? ThisMsg->NextPoint : ThisMsg);
+                                          if (ThisMsg->NextPoint == nullptr)
+                                          {
+                                              PrivateMsg.Msg = ThisMsg;
+                                          }
+                                          else
+                                              ThisMsg = ThisMsg->NextPoint;
+                                          break;
+                                      case 4:
+                                          UnPB.StepIn(4);
+                                          if (ThisMsg != nullptr)
+                                              ThisMsg = ThisMsg->NextPoint = new Message::Msg{Message::MsgType::picture, nullptr, new Message::picture};
+                                          else
+                                              PrivateMsg.Msg = ThisMsg = new Message::Msg{Message::MsgType::picture, nullptr, new Message::picture};
+                                          ((Message::picture *)ThisMsg->Message)->Data.Length = UnPB.GetVarint(2);
+                                          UnPB.GetBin(((Message::picture *)ThisMsg->Message)->MD5, 7);
+                                          ((Message::picture *)ThisMsg->Message)->Data.URL = UnPB.GetStr(15);
+                                          ((Message::picture *)ThisMsg->Message)->Width = UnPB.GetVarint(21);
+                                          ((Message::picture *)ThisMsg->Message)->Height = UnPB.GetVarint(22);
+                                          UnPB.StepOut();
+                                          break;
+                                      case 5: //文件
+                                          break;
+                                      case 6: //原创表情
+                                          UnPack6(&UnPB, ThisMsg != nullptr ? ThisMsg->NextPoint : ThisMsg);
+                                          if (ThisMsg->NextPoint == nullptr)
+                                          {
+                                              PrivateMsg.Msg = ThisMsg;
+                                          }
+                                          else
+                                              ThisMsg = ThisMsg->NextPoint;
+                                          break;
+                                      case 8: //图片
+                                          UnPack8(&UnPB, ThisMsg != nullptr ? ThisMsg->NextPoint : ThisMsg);
+                                          if (ThisMsg->NextPoint == nullptr)
+                                          {
+                                              PrivateMsg.Msg = ThisMsg;
+                                          }
+                                          else
+                                              ThisMsg = ThisMsg->NextPoint;
+                                          break;
+                                      case 9: //气泡消息
+                                          /*
+                                4a 04 08 00 40 03
+                                [
+                                9 {
+                                  1: 0
+                                  8: 3
+                                }
+                                ]
+                                */
+                                          break;
+                                      case 12: //xml
+                                          UnPack12(&UnPB, ThisMsg != nullptr ? ThisMsg->NextPoint : ThisMsg);
+                                          if (ThisMsg->NextPoint == nullptr)
+                                          {
+                                              PrivateMsg.Msg = ThisMsg;
+                                          }
+                                          else
+                                              ThisMsg = ThisMsg->NextPoint;
+                                          break;
+                                      case 16:
+                                          /*
+                                82 01 0b 0a 05 65 6d 6d 6d 63 18 01 28 01
+                                [
+                                16 {
+                                  1 {
+                                    12: emmmc //发送人群名片
+                                  }
+                                  3: 1
+                                  5: 1
+                                }
+                                ]
+                                */
+                                          break;
+                                      case 24: //红包
+                                          UnPB.StepIn(24);
+                                          UnPB.StepIn(1);
+                                          {
+                                              char8_t *listid = UnPB.GetStr(9);
+                                              char8_t *authkey = UnPB.GetStr(10);
+                                              uint channel = UnPB.GetVarint(19);
+                                              delete[] listid, authkey;
+                                          }
+                                          UnPB.StepOut();
+                                          UnPB.StepOut();
+                                          break;
+                                      case 33: //小视频
+                                          break;
+                                      case 37:
+                                          /*
+                                aa 02 3e 50 00 60 00 68 00 9a 01 35 08 07 20 cb
+                                50 c8 01 00 f0 01 00 f8 01 00 90 02 00 98 03 00
+                                a0 03 00 b0 03 00 c0 03 00 d0 03 00 e8 03 00 8a
+                                04 02 10 02 90 04 80 40 b8 04 00 c0 04 00 ca 04
+                                00
+                                [
+                                37 {
+                                  10: 0
+                                  12: 0
+                                  13: 0
+                                  19 {
+                                    1: 7
+                                    4: 10315
+                                    25: 0
+                                    30: 0
+                                    31: 0
+                                    34: 0
+                                    51: 0
+                                    52: 0
+                                    54: 0
+                                   56: 0
+                                    58: 0
+                                    61: 0
+                                    65 {
+                                      2: 2
+                                    }
+                                    66: 8192
+                                    71: 0
+                                    72: 0
+                                    73: ""
+                                  }
+                                }
+                                ]
+                                */
+                                          break;
+                                      case 45: //回复
+                                          UnPack45(&UnPB, ThisMsg != nullptr ? ThisMsg->NextPoint : ThisMsg);
+                                          if (ThisMsg->NextPoint == nullptr)
+                                          {
+                                              PrivateMsg.Msg = ThisMsg;
+                                          }
+                                          else
+                                              ThisMsg = ThisMsg->NextPoint;
+                                          break;
+                                      case 51: //json
+                                          UnPack51(&UnPB, ThisMsg != nullptr ? ThisMsg->NextPoint : ThisMsg);
+                                          if (ThisMsg->NextPoint == nullptr)
+                                          {
+                                              PrivateMsg.Msg = ThisMsg;
+                                          }
+                                          else
+                                              ThisMsg = ThisMsg->NextPoint;
+                                          break;
+                                      case 53:
+                                          UnPB.StepIn(53);
+                                          UnPB.GetVarint(1);
+                                          //Todo 吃瓜等新表情,json等解析
+                                          UnPB.StepOut();
+                                          break;
+                                      default:
+                                          break;
+                                      }
+                                      UnPB.StepOut();
+                                  }
+                                  UnPB.StepOut();
+                                  UnPB.StepOut();
+
+                                  if (PrivateMsg.Msg != nullptr)
+                                      Event::OnPrivateMsg(&PrivateMsg);
+                                  Message::DestoryMsg(PrivateMsg.Msg);
+                                  break;
+                              default:
+                                  throw "Unknow msgtype";
+                                  break;
+                              }
+                              UnPB.StepOut();
+                          }
+                          UnPB.StepOut();
+                      }
+                  });
 }
 
 void Android::Unpack_MessageSvc_PushForceOffline(const LPBYTE BodyBin, const uint sso_seq)
@@ -2354,6 +1855,7 @@ int Android::QQ_Login_Second()
     QQ.Token.md52 = Utils::MD5(tmp, 24);
     QQ.Login = new QQ::Login;
     Fun_Connect();
+    QQ_SyncCookie();
 
 #if defined(RELEASE)
     QQ_SyncCookie();
@@ -2683,13 +2185,14 @@ void Android::QQ_SyncGroupMemberList(uint Group)
                       delete[] sBuffer;
                   });
 }
+
 /// <summary>
 /// Get QQ Online state
 /// </summary>
 /// <returns>true:online false:offline</returns>
 bool Android::QQ_Status()
 {
-    return QQ.Status != 21;
+    return QQ.Status != 21 && Connected;
 }
 
 const char8_t *Android::QQ_GetErrorMsg()
@@ -2725,7 +2228,33 @@ const QQ::Token *Android::QQ_Get_Token()
     return &QQ.Token;
 }
 
-const uint Android::QQ_Get_Account()
+uint Android::QQ_UploadImage(const uint Group, const LPBYTE ImageName, const LPBYTE ImageMD5, const uint ImageLength, const uint ImageWidth, const uint ImageHeight, const byte *Image)
+{
+
+    return Fun_Send_Sync<uint>(11, 1, "ImgStore.GroupPicUp", ImgStore::GroupPicUp(Group, ImageName, ImageMD5, ImageLength, ImageWidth, ImageHeight),
+                               [&](uint sso_seq, LPBYTE BodyBin)
+                                   -> uint
+                               {
+                                   UnProtobuf UnPB(BodyBin);
+
+                                   UnPB.StepIn(3);
+                                   switch (UnPB.GetVarint(4))
+                                   {
+                                   case 0: //需要上传
+                                       //IP PORT为数组,这里就取第一组
+                                       if (Image != nullptr)
+                                           PicUp::DataUp(Group, Image, ImageLength, ImageMD5, 2, UnPB.GetVarint(6), UnPB.GetVarint(7), UnPB.GetBin(8));
+                                       else
+                                           Log::AddLog(Log::LogType::WARNING, Log::MsgType::OTHER, u8"Upload image", u8"Upload failed");
+                                       return UnPB.GetVarint(9);
+                                   case 1:
+
+                                       return UnPB.GetVarint(9);
+                                   };
+                               });
+}
+
+uint Android::QQ_Get_Account()
 {
     return QQ.QQ;
 }
@@ -2740,7 +2269,7 @@ char *Android::QQ_GetCookies(const char *Host)
     char *Cookies = new char[50];
     strcpy(Cookies, "skey=");
     strcat(Cookies, QQ.Cookie.skey);
-    strcpy(Cookies, ";p_skey=");
+    strcat(Cookies, ";p_skey=");
     for (size_t i = 0; i < QQ.Cookie.p_skey.size(); i++)
     {
         if (!strcmp(QQ.Cookie.p_skey[i].host, Host))
@@ -2756,19 +2285,20 @@ bool Android::QQ_SendLike(const uint QQ, const int Times)
     return VisitorSvc_ReqFavorite(QQ, Times);
 }
 
-bool Android::QQ_SendGroupMsg(const uint Group, const Message::Msg *Msg)
+bool Android::QQ_SendMsg(const int ToNumber, const uint ToType, const Message::Msg *Msg)
 {
-    return MessageSvc_PbSendMsg(Group, 1, Msg);
+    return Fun_Send_Sync<bool>(11, 1, "MessageSvc.PbSendMsg", MessageSvc::PbSendMsg(ToNumber, ToType, Msg),
+                               [&](uint sso_seq, LPBYTE BodyBin)
+                                   -> bool
+                               {
+                                   UnProtobuf UnPB(BodyBin);
+                                   return !UnPB.GetVarint(1);
+                               });
 }
 
 bool Android::QQ_DrawGroupMsg(const uint Group, const uint MsgId, const uint MsgRand)
 {
     return PbMessageSvc_PbMsgWithDraw(Group, MsgId, MsgRand);
-}
-
-bool Android::QQ_SendPrivateMsg(const uint QQ, const Message::Msg *Msg)
-{
-    return MessageSvc_PbSendMsg(QQ, 2, Msg);
 }
 
 bool Android::QQ_DrawPrivateMsg(const uint Group, const uint MsgId, const uint MsgRand)

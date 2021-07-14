@@ -12,6 +12,17 @@ extern PluginSystem Plugin;
 #define FUNC(ReturnType, FuncName, ...) extern "C" __attribute__((visibility("default"))) ReturnType FuncName(__VA_ARGS__)
 #endif
 
+FUNC(uint32_t, getUin, const uint64_t AuthCode)
+{
+	if (Plugin.VieryAuth(AuthCode, 1))
+		return Sdk.QQ_Get_Account();
+	else
+	{
+		Log::AddLog(Log::LogType::WARNING, Log::MsgType::PROGRAM, Plugin.AuthCode2Name(AuthCode), u8"Plugin called getCookies which it don't have right.");
+		return 0;
+	}
+};
+
 FUNC(char *, getCookies, const uint64_t AuthCode, const char *Host)
 {
 	if (Plugin.VieryAuth(AuthCode, 1))
@@ -60,7 +71,7 @@ FUNC(bool, setDiscussLeave, const uint64_t AuthCode, const uint group_code)
 FUNC(bool, sendPrivateMsg, const uint64_t AuthCode, const uint QQ, const Message::Msg *Msg)
 {
 	if (Plugin.VieryAuth(AuthCode, 5))
-		return Sdk.QQ_SendPrivateMsg(QQ, Msg);
+		return Sdk.QQ_SendMsg(QQ, 2, Msg);
 	else
 	{
 		Log::AddLog(Log::LogType::WARNING, Log::MsgType::PROGRAM, Plugin.AuthCode2Name(AuthCode), u8"Plugin called sendPrivateMsg which it don't have right.");
@@ -71,7 +82,7 @@ FUNC(bool, sendPrivateMsg, const uint64_t AuthCode, const uint QQ, const Message
 FUNC(bool, sendGroupMsg, const uint64_t AuthCode, const uint Group, const Message::Msg *Msg)
 {
 	if (Plugin.VieryAuth(AuthCode, 6))
-		return Sdk.QQ_SendGroupMsg(Group, Msg);
+		return Sdk.QQ_SendMsg(Group, 1, Msg);
 	else
 	{
 		Log::AddLog(Log::LogType::WARNING, Log::MsgType::PROGRAM, Plugin.AuthCode2Name(AuthCode), u8"Plugin called sendGroupMsg which it don't have right.");
