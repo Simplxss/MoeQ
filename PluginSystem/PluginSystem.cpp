@@ -94,8 +94,7 @@ void PluginSystem::Load(
                     HMODULE Handle = LoadLibrary(PluginPath_);
                     if (Handle == NULL)
                     {
-                        ("LoadLibrary fail, GetLastError:%d", GetLastError());
-                        ("LoadLibrary fail, GetLastError:%d", GetLastError());
+                        Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"LoadPlugin", u8"LoadLibrary fail, GetLastError:%d", true, GetLastError());
                         continue;
                     }
                     typedef int(__stdcall * Initialize)(const uint64_t);
