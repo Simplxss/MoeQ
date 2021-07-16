@@ -23,9 +23,9 @@ The package management is [*vcpkg*](https://github.com/Microsoft/vcpkg), please 
 git clone https://github.com/microsoft/vcpkg
 cd vcpkg
 bootstrap-vcpkg.bat
-vcpkg install openssl:x64-mingw-static
-vcpkg install sqlite3:x64-mingw-static
-vcpkg install zlib:x64-mingw-static
+vcpkg install openssl:x64-windows
+vcpkg install sqlite3:x64-windows
+vcpkg install zlib:x64-windows
 vcpkg integrate install
 
 #Linux

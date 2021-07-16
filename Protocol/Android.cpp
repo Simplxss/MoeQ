@@ -1855,7 +1855,6 @@ int Android::QQ_Login_Second()
     QQ.Token.md52 = Utils::MD5(tmp, 24);
     QQ.Login = new QQ::Login;
     Fun_Connect();
-    QQ_SyncCookie();
 
 #if defined(RELEASE)
     QQ_SyncCookie();
