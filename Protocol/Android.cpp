@@ -2,7 +2,9 @@
 
 namespace Message
 {
-    void UnPack1(UnProtobuf *UnPB, Msg *&Msg)
+#define Func(id) void UnPack##id(UnProtobuf *UnPB, Msg *&Msg)
+
+    Func(1)
     {
         UnPB->StepIn(1);
         Msg = new Message::Msg{Message::MsgType::text, nullptr, new Message::text};
@@ -17,14 +19,29 @@ namespace Message
         }
         UnPB->StepOut();
     }
-    void UnPack2(UnProtobuf *UnPB, Msg *&Msg)
+    Func(2)
     {
         UnPB->StepIn(2);
         Msg = new Message::Msg{Message::MsgType::classcal_face, nullptr, new Message::classcal_face};
         ((Message::classcal_face *)Msg->Message)->id = UnPB->GetVarint(1);
         UnPB->StepOut();
     }
-    void UnPack6(UnProtobuf *UnPB, Msg *&Msg)
+    Func(4)
+    {
+        UnPB->StepIn(4);
+        Msg = new Message::Msg{Message::MsgType::picture, nullptr, new Message::picture};
+        ((Message::picture *)Msg->Message)->Data.Length = UnPB->GetVarint(2);
+        UnPB->GetBin(((Message::picture *)Msg->Message)->MD5, 7);
+        ((Message::picture *)Msg->Message)->Data.URL = UnPB->GetStr(15);
+        ((Message::picture *)Msg->Message)->Width = UnPB->GetVarint(21);
+        ((Message::picture *)Msg->Message)->Height = UnPB->GetVarint(22);
+        UnPB->StepOut();
+        Database::AddPicture((char *)((Message::picture *)Msg->Message)->MD5, ((Message::picture *)Msg->Message)->Data.URL, ((Message::picture *)Msg->Message)->Width, ((Message::picture *)Msg->Message)->Height, ((Message::picture *)Msg->Message)->Data.Length);
+    }
+    Func(5)
+    {
+    }
+    Func(6)
     {
         UnPB->StepIn(6);
         Msg = new Message::Msg{Message::MsgType::expression, nullptr, new Message::expression};
@@ -32,7 +49,7 @@ namespace Message
         ((Message::expression *)Msg->Message)->id = UnPB->GetVarint(5);
         UnPB->StepOut();
     }
-    void UnPack8(UnProtobuf *UnPB, Msg *&Msg)
+    Func(8)
     {
         UnPB->StepIn(8);
         Msg = new Message::Msg{Message::MsgType::picture, nullptr, new Message::picture};
@@ -44,7 +61,19 @@ namespace Message
         UnPB->StepOut();
         Database::AddPicture((char *)((Message::picture *)Msg->Message)->MD5, ((Message::picture *)Msg->Message)->Data.URL, ((Message::picture *)Msg->Message)->Width, ((Message::picture *)Msg->Message)->Height, ((Message::picture *)Msg->Message)->Data.Length);
     }
-    void UnPack12(UnProtobuf *UnPB, Msg *&Msg)
+    Func(9)
+    {
+        /*
+        4a 04 08 00 40 03
+        [
+        9 {
+          1: 0
+          8: 3
+        }
+        ]
+        */
+    }
+    Func(12)
     {
         Msg = new Message::Msg{Message::MsgType::xml, nullptr, new Message::xml};
         {
@@ -65,7 +94,76 @@ namespace Message
         }
         UnPB->StepOut();
     }
-    void UnPack45(UnProtobuf *UnPB, Msg *&Msg)
+    Func(16)
+    {
+        /*
+        82 01 0b 0a 05 65 6d 6d 6d 63 18 01 28 01
+        [
+        16 {
+          1 {
+            12: emmmc //发送人群名片
+          }
+          3: 1
+          5: 1
+        }
+        ]
+        */
+    }
+    Func(24)
+    {
+        UnPB->StepIn(24);
+        UnPB->StepIn(1);
+        {
+            char8_t *listid = UnPB->GetStr(9);
+            char8_t *authkey = UnPB->GetStr(10);
+            uint channel = UnPB->GetVarint(19);
+            delete[] listid, authkey;
+        }
+        UnPB->StepOut();
+        UnPB->StepOut();
+    }
+    Func(33)
+    {
+    }
+    Func(37)
+    {
+        /*
+        aa 02 3e 50 00 60 00 68 00 9a 01 35 08 07 20 cb
+        50 c8 01 00 f0 01 00 f8 01 00 90 02 00 98 03 00
+        a0 03 00 b0 03 00 c0 03 00 d0 03 00 e8 03 00 8a
+        04 02 10 02 90 04 80 40 b8 04 00 c0 04 00 ca 04
+        00
+        [
+        37 {
+          10: 0
+          12: 0
+          13: 0
+          19 {
+            1: 7
+            4: 10315
+            25: 0
+            30: 0
+            31: 0
+            34: 0
+            51: 0
+            52: 0
+            54: 0
+            56: 0
+            58: 0
+            61: 0
+            65 {
+              2: 2
+            }
+            66: 8192
+            71: 0
+            72: 0
+            73: ""
+          }
+        }
+        ]
+        */
+    }
+    Func(45)
     {
         UnPB->StepIn(45);
         Msg = new Message::Msg{Message::MsgType::reply, nullptr, new Message::reply};
@@ -104,7 +202,7 @@ namespace Message
         }
         UnPB->StepOut();
     }
-    void UnPack51(UnProtobuf *UnPB, Msg *&Msg)
+    Func(51)
     {
         UnPB->StepIn(51);
         Msg = new Message::Msg{Message::MsgType::json, nullptr, new Message::json};
@@ -126,6 +224,15 @@ namespace Message
         }
         UnPB->StepOut();
     }
+    Func(53)
+    {
+        UnPB->StepIn(53);
+        UnPB->GetVarint(1);
+        //Todo
+        UnPB->StepOut();
+    }
+
+#undef Func
 }
 
 Android::Android(const char *IMEI, const char IMSI[16], const byte GUID[16], const byte MAC[6], const char *_device, const char *Brand) : wtlogin(&QQ, &Device), StatSvc(&QQ, &Device), friendlist(&QQ), OidbSvc(&QQ), MessageSvc(&QQ), ImgStore(&QQ), PicUp(&QQ)
@@ -181,7 +288,7 @@ bool Android::Fun_Connect(const char *IP, const unsigned short Port)
             if (!TCP.Connect(Iconv::UnicodeToAnsi(IP).c_str(), 8080))
             {
                 delete[] IP;
-                return false;
+                throw "Connect failed";
             };
             delete[] IP;
 #endif
@@ -1185,157 +1292,39 @@ void Android::Unpack_OnlinePush_PbPushGroupMsg(const LPBYTE BodyBin, const uint 
         UnPB.StepIn(2);
         switch (UnPB.GetField())
         {
-        case 1: //文字和At
-            UnPack1(&UnPB, ThisMsg != nullptr ? ThisMsg->NextPoint : ThisMsg);
-            if (ThisMsg->NextPoint == nullptr)
-            {
-                GroupMsg.Msg = ThisMsg;
-            }
-            else
-                ThisMsg = ThisMsg->NextPoint;
-            break;
-        case 2: //小黄豆
-            UnPack2(&UnPB, ThisMsg != nullptr ? ThisMsg->NextPoint : ThisMsg);
-            if (ThisMsg->NextPoint == nullptr)
-            {
-                GroupMsg.Msg = ThisMsg;
-            }
-            else
-                ThisMsg = ThisMsg->NextPoint;
-            break;
-        case 5: //文件
-            break;
-        case 6: //原创表情
-            UnPack6(&UnPB, ThisMsg != nullptr ? ThisMsg->NextPoint : ThisMsg);
-            if (ThisMsg->NextPoint == nullptr)
-            {
-                GroupMsg.Msg = ThisMsg;
-            }
-            else
-                ThisMsg = ThisMsg->NextPoint;
-            break;
-        case 8: //图片
-            UnPack8(&UnPB, ThisMsg != nullptr ? ThisMsg->NextPoint : ThisMsg);
-            if (ThisMsg->NextPoint == nullptr)
-            {
-                GroupMsg.Msg = ThisMsg;
-            }
-            else
-                ThisMsg = ThisMsg->NextPoint;
-            break;
-        case 9: //气泡消息
-            /*
-            4a 04 08 00 40 03
-            [
-            9 {
-              1: 0
-              8: 3
-            }
-            ]
-            */
-            break;
-        case 12: //xml
-            UnPack12(&UnPB, ThisMsg != nullptr ? ThisMsg->NextPoint : ThisMsg);
-            if (ThisMsg->NextPoint == nullptr)
-            {
-                GroupMsg.Msg = ThisMsg;
-            }
-            else
-                ThisMsg = ThisMsg->NextPoint;
-            break;
-        case 16:
-            /*
-            82 01 0b 0a 05 65 6d 6d 6d 63 18 01 28 01
-            [
-            16 {
-              1 {
-                12: emmmc //发送人群名片
-              }
-              3: 1
-              5: 1
-            }
-            ]
-            */
-            break;
-        case 24: //红包
-            UnPB.StepIn(24);
-            UnPB.StepIn(1);
-            {
-                char8_t *listid = UnPB.GetStr(9);
-                char8_t *authkey = UnPB.GetStr(10);
-                uint channel = UnPB.GetVarint(19);
-                delete[] listid, authkey;
-            }
-            UnPB.StepOut();
-            UnPB.StepOut();
-            break;
-        case 33: //小视频
-            break;
-        case 37:
-            /*
-            aa 02 3e 50 00 60 00 68 00 9a 01 35 08 07 20 cb
-            50 c8 01 00 f0 01 00 f8 01 00 90 02 00 98 03 00
-            a0 03 00 b0 03 00 c0 03 00 d0 03 00 e8 03 00 8a
-            04 02 10 02 90 04 80 40 b8 04 00 c0 04 00 ca 04
-            00
-            [
-            37 {
-              10: 0
-              12: 0
-              13: 0
-              19 {
-                1: 7
-                4: 10315
-                25: 0
-                30: 0
-                31: 0
-                34: 0
-                51: 0
-                52: 0
-                54: 0
-               56: 0
-                58: 0
-                61: 0
-                65 {
-                  2: 2
-                }
-                66: 8192
-                71: 0
-                72: 0
-                73: ""
-              }
-            }
-            ]
-            */
-            break;
-        case 45: //回复
-            UnPack45(&UnPB, ThisMsg != nullptr ? ThisMsg->NextPoint : ThisMsg);
-            if (ThisMsg->NextPoint == nullptr)
-            {
-                GroupMsg.Msg = ThisMsg;
-            }
-            else
-                ThisMsg = ThisMsg->NextPoint;
-            break;
-        case 51: //json
-            UnPack51(&UnPB, ThisMsg != nullptr ? ThisMsg->NextPoint : ThisMsg);
-            if (ThisMsg->NextPoint == nullptr)
-            {
-                GroupMsg.Msg = ThisMsg;
-            }
-            else
-                ThisMsg = ThisMsg->NextPoint;
-            break;
-        case 53:
-            UnPB.StepIn(53);
-            UnPB.GetVarint(1);
-            //Todo 吃瓜等新表情,json等解析
-            UnPB.StepOut();
-            break;
-        default:
-            break;
+
+#define UnPack(id)                                 \
+    case id:                                       \
+        if (GroupMsg.Msg == nullptr)               \
+        {                                          \
+            UnPack##id(&UnPB, ThisMsg);            \
+            GroupMsg.Msg = ThisMsg;                \
+        }                                          \
+        else                                       \
+        {                                          \
+            UnPack##id(&UnPB, ThisMsg->NextPoint); \
+            ThisMsg = ThisMsg->NextPoint;          \
+        }                                          \
+        break;
+
+            UnPack(1);  //文字和At
+            UnPack(2);  //小黄豆
+            UnPack(5);  //文件
+            UnPack(6);  //原创表情
+            UnPack(8);  //图片
+            UnPack(9);  //气泡消息
+            UnPack(12); //xml
+            UnPack(16);
+            UnPack(24); //红包
+            UnPack(33); //小视频
+            UnPack(37);
+            UnPack(45); //回复
+            UnPack(51); //json
+            UnPack(53); //吃瓜等新表情
         }
         UnPB.StepOut();
+
+#undef UnPack
     }
     UnPB.StepOut();
     UnPB.StepOut();
@@ -1424,33 +1413,19 @@ void Android::Unpack_OnlinePush_PbC2CMsgSync(const LPBYTE BodyBin, const uint ss
 
 void Android::Unpack_OnlinePush_ReqPush(const LPBYTE BodyBin, const uint sso_seq)
 {
+    /*
     LPBYTE sBuffer;
     Unpack_Body_Request_Packet(BodyBin, sBuffer);
 
     UnJce UnJce(sBuffer);
-    std::vector<JceStruct::Map<char *, LPBYTE>> Map;
+    std::vector<JceStruct::Map<char *, std::vector<JceStruct::Map<char *, LPBYTE>>>> Map;
     UnJce.Read(Map, 0);
-
-    LPBYTE protobuf = (byte *)"\0\0\0\0";
-    int a = 0;
-    for (size_t i = 0; i < Map.size(); i++)
-    {
-        UnJce.Reset(Map[i].Value);
-        UnJce.Read(UnJce, 0);
-        std::vector<::UnJce> ReqPush;
-        UnJce.Read(ReqPush, 2);
-        for (size_t j = 0; j < ReqPush.size(); j++)
-        {
-            ReqPush[j].Read(protobuf, 8);
-        }
-        UnJce.Read(a, 3);
-    }
     //OnlinePush_RespPush(sso_seq, protobuf, a);
+    */
 }
 
 void Android::Unpack_MessageSvc_PushNotify(const LPBYTE BodyBin, const uint sso_seq)
 {
-    ;
     Fun_Send_Sync(11, 1, "MessageSvc.PbGetMsg", MessageSvc::PbGetMsg(),
                   [&](uint sso_seq, LPBYTE BodyBin)
                   {
@@ -1472,6 +1447,7 @@ void Android::Unpack_MessageSvc_PushNotify(const LPBYTE BodyBin, const uint sso_
                               PrivateMsg.MsgType = UnPB.GetVarint(4);
                               PrivateMsg.MsgID = UnPB.GetVarint(5);
                               UnPB.StepOut();
+                              printf("%l", MsgType);
                               switch (MsgType)
                               {
                               case 33:
@@ -1531,168 +1507,39 @@ void Android::Unpack_MessageSvc_PushNotify(const LPBYTE BodyBin, const uint sso_
                                       Message::Msg *ThisMsg = nullptr;
                                       switch (UnPB.GetField())
                                       {
-                                      case 1:
-                                          UnPack1(&UnPB, ThisMsg != nullptr ? ThisMsg->NextPoint : ThisMsg);
-                                          if (ThisMsg->NextPoint == nullptr)
-                                          {
-                                              PrivateMsg.Msg = ThisMsg;
-                                          }
-                                          else
-                                              ThisMsg = ThisMsg->NextPoint;
-                                          break;
-                                      case 2: //小黄豆
-                                          UnPack2(&UnPB, ThisMsg != nullptr ? ThisMsg->NextPoint : ThisMsg);
-                                          if (ThisMsg->NextPoint == nullptr)
-                                          {
-                                              PrivateMsg.Msg = ThisMsg;
-                                          }
-                                          else
-                                              ThisMsg = ThisMsg->NextPoint;
-                                          break;
-                                      case 4:
-                                          UnPB.StepIn(4);
-                                          if (ThisMsg != nullptr)
-                                              ThisMsg = ThisMsg->NextPoint = new Message::Msg{Message::MsgType::picture, nullptr, new Message::picture};
-                                          else
-                                              PrivateMsg.Msg = ThisMsg = new Message::Msg{Message::MsgType::picture, nullptr, new Message::picture};
-                                          ((Message::picture *)ThisMsg->Message)->Data.Length = UnPB.GetVarint(2);
-                                          UnPB.GetBin(((Message::picture *)ThisMsg->Message)->MD5, 7);
-                                          ((Message::picture *)ThisMsg->Message)->Data.URL = UnPB.GetStr(15);
-                                          ((Message::picture *)ThisMsg->Message)->Width = UnPB.GetVarint(21);
-                                          ((Message::picture *)ThisMsg->Message)->Height = UnPB.GetVarint(22);
-                                          UnPB.StepOut();
-                                          break;
-                                      case 5: //文件
-                                          break;
-                                      case 6: //原创表情
-                                          UnPack6(&UnPB, ThisMsg != nullptr ? ThisMsg->NextPoint : ThisMsg);
-                                          if (ThisMsg->NextPoint == nullptr)
-                                          {
-                                              PrivateMsg.Msg = ThisMsg;
-                                          }
-                                          else
-                                              ThisMsg = ThisMsg->NextPoint;
-                                          break;
-                                      case 8: //图片
-                                          UnPack8(&UnPB, ThisMsg != nullptr ? ThisMsg->NextPoint : ThisMsg);
-                                          if (ThisMsg->NextPoint == nullptr)
-                                          {
-                                              PrivateMsg.Msg = ThisMsg;
-                                          }
-                                          else
-                                              ThisMsg = ThisMsg->NextPoint;
-                                          break;
-                                      case 9: //气泡消息
-                                          /*
-                                4a 04 08 00 40 03
-                                [
-                                9 {
-                                  1: 0
-                                  8: 3
-                                }
-                                ]
-                                */
-                                          break;
-                                      case 12: //xml
-                                          UnPack12(&UnPB, ThisMsg != nullptr ? ThisMsg->NextPoint : ThisMsg);
-                                          if (ThisMsg->NextPoint == nullptr)
-                                          {
-                                              PrivateMsg.Msg = ThisMsg;
-                                          }
-                                          else
-                                              ThisMsg = ThisMsg->NextPoint;
-                                          break;
-                                      case 16:
-                                          /*
-                                82 01 0b 0a 05 65 6d 6d 6d 63 18 01 28 01
-                                [
-                                16 {
-                                  1 {
-                                    12: emmmc //发送人群名片
-                                  }
-                                  3: 1
-                                  5: 1
-                                }
-                                ]
-                                */
-                                          break;
-                                      case 24: //红包
-                                          UnPB.StepIn(24);
-                                          UnPB.StepIn(1);
-                                          {
-                                              char8_t *listid = UnPB.GetStr(9);
-                                              char8_t *authkey = UnPB.GetStr(10);
-                                              uint channel = UnPB.GetVarint(19);
-                                              delete[] listid, authkey;
-                                          }
-                                          UnPB.StepOut();
-                                          UnPB.StepOut();
-                                          break;
-                                      case 33: //小视频
-                                          break;
-                                      case 37:
-                                          /*
-                                aa 02 3e 50 00 60 00 68 00 9a 01 35 08 07 20 cb
-                                50 c8 01 00 f0 01 00 f8 01 00 90 02 00 98 03 00
-                                a0 03 00 b0 03 00 c0 03 00 d0 03 00 e8 03 00 8a
-                                04 02 10 02 90 04 80 40 b8 04 00 c0 04 00 ca 04
-                                00
-                                [
-                                37 {
-                                  10: 0
-                                  12: 0
-                                  13: 0
-                                  19 {
-                                    1: 7
-                                    4: 10315
-                                    25: 0
-                                    30: 0
-                                    31: 0
-                                    34: 0
-                                    51: 0
-                                    52: 0
-                                    54: 0
-                                   56: 0
-                                    58: 0
-                                    61: 0
-                                    65 {
-                                      2: 2
-                                    }
-                                    66: 8192
-                                    71: 0
-                                    72: 0
-                                    73: ""
-                                  }
-                                }
-                                ]
-                                */
-                                          break;
-                                      case 45: //回复
-                                          UnPack45(&UnPB, ThisMsg != nullptr ? ThisMsg->NextPoint : ThisMsg);
-                                          if (ThisMsg->NextPoint == nullptr)
-                                          {
-                                              PrivateMsg.Msg = ThisMsg;
-                                          }
-                                          else
-                                              ThisMsg = ThisMsg->NextPoint;
-                                          break;
-                                      case 51: //json
-                                          UnPack51(&UnPB, ThisMsg != nullptr ? ThisMsg->NextPoint : ThisMsg);
-                                          if (ThisMsg->NextPoint == nullptr)
-                                          {
-                                              PrivateMsg.Msg = ThisMsg;
-                                          }
-                                          else
-                                              ThisMsg = ThisMsg->NextPoint;
-                                          break;
-                                      case 53:
-                                          UnPB.StepIn(53);
-                                          UnPB.GetVarint(1);
-                                          //Todo 吃瓜等新表情,json等解析
-                                          UnPB.StepOut();
-                                          break;
-                                      default:
-                                          break;
+                                          
+#define UnPack(id)                                 \
+    case id:                                       \
+        if (PrivateMsg.Msg == nullptr)             \
+        {                                          \
+            UnPack##id(&UnPB, ThisMsg);            \
+            PrivateMsg.Msg = ThisMsg;              \
+        }                                          \
+        else                                       \
+        {                                          \
+            UnPack##id(&UnPB, ThisMsg->NextPoint); \
+            ThisMsg = ThisMsg->NextPoint;          \
+        }                                          \
+        break;
+
+                                          UnPack(1);  //文字和At
+                                          UnPack(2);  //小黄豆
+                                          UnPack(4);  //图片
+                                          UnPack(5);  //文件
+                                          UnPack(6);  //原创表情
+                                          UnPack(8);  //图片
+                                          UnPack(9);  //气泡消息
+                                          UnPack(12); //xml
+                                          UnPack(16);
+                                          UnPack(24); //红包
+                                          UnPack(33); //小视频
+                                          UnPack(37);
+                                          UnPack(45); //回复
+                                          UnPack(51); //json
+                                          UnPack(53); //吃瓜等新表情
+
+#undef UnPack
+
                                       }
                                       UnPB.StepOut();
                                   }
@@ -1829,11 +1676,14 @@ int Android::QQ_Login(const char *Password)
     QQ.Login = new QQ::Login;
     QQ.Login->RandKey = Utils::GetRandomBin(16);
     unsigned char PublicKey[] = {
-        0x04, 0x92, 0x8D, 0x88, 0x50, 0x67, 0x30, 0x88, 0xB3, 0x43, 0x26, 0x4E, 0x0C, 0x6B, 0xAC, 0xB8,
-        0x49, 0x6D, 0x69, 0x77, 0x99, 0xF3, 0x72, 0x11, 0xDE, 0xB2, 0x5B, 0xB7, 0x39, 0x06, 0xCB, 0x08,
-        0x9F, 0xEA, 0x96, 0x39, 0xB4, 0xE0, 0x26, 0x04, 0x98, 0xB5, 0x1A, 0x99, 0x2D, 0x50, 0x81, 0x3D,
-        0xA8};
-    Utils::Ecdh_Crypt(QQ.Login->ECDH, PublicKey, 49);
+        0x04, 0xEB, 0xCA, 0x94, 0xD7, 0x33, 0xE3, 0x99, 0xB2, 0xDB,
+        0x96, 0xEA, 0xCD, 0xD3, 0xF6, 0x9A, 0x8B, 0xB0, 0xF7, 0x42,
+        0x24, 0xE2, 0xB4, 0x4E, 0x33, 0x57, 0x81, 0x22, 0x11, 0xD2,
+        0xE6, 0x2E, 0xFB, 0xC9, 0x1B, 0xB5, 0x53, 0x09, 0x8E, 0x25,
+        0xE3, 0x3A, 0x79, 0x9A, 0xDC, 0x7F, 0x76, 0xFE, 0xB2, 0x08,
+        0xDA, 0x7C, 0x65, 0x22, 0xCD, 0xB0, 0x71, 0x9A, 0x30, 0x51,
+        0x80, 0xCC, 0x54, 0xA8, 0x2E};
+    Utils::Ecdh_Crypt(QQ.Login->ECDH, PublicKey, 65);
     Fun_Connect();
     Fun_Send_Sync(10, 2, "wtlogin.login", wtlogin::login(),
                   [&](uint sso_seq, LPBYTE BodyBin)

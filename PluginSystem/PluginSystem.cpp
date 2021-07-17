@@ -81,8 +81,6 @@ void PluginSystem::Load(
                         continue;
                     if (!wcscmp(fileinfo.name, L".."))
                         continue;
-                    uint i = PluginList.size();
-                    PluginList.resize(i + 1);
                     wchar_t PluginPath_[MAX_PATH + 1], PluginPath__[MAX_PATH + 1];
                     wcscpy(PluginPath_, PluginPath);
                     wcscat(PluginPath_, fileinfo.name);
@@ -131,19 +129,22 @@ void PluginSystem::Load(
                         d.Clear();
                         continue;
                     }
-                    PluginList[i].Name = new char8_t[d["name"].GetStringLength() + 1];
-                    memcpy(PluginList[i].Name, d["name"].GetString(), d["name"].GetStringLength());
-                    PluginList[i].Name[d["name"].GetStringLength()] = 0;
+
+                    Plugin ThisPlugin;
+
+                    ThisPlugin.Name = new char8_t[d["name"].GetStringLength() + 1];
+                    memcpy(ThisPlugin.Name, d["name"].GetString(), d["name"].GetStringLength());
+                    ThisPlugin.Name[d["name"].GetStringLength()] = 0;
                     if (!d.HasMember("appid"))
                     {
                         Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"LoadPlugin", u8"Json is incomplete");
                         d.Clear();
                         continue;
                     }
-                    PluginList[i].Appid = new char8_t[d["appid"].GetStringLength() + 1];
-                    memcpy(PluginList[i].Appid, d["appid"].GetString(), d["appid"].GetStringLength());
-                    PluginList[i].Appid[d["appid"].GetStringLength()] = 0;
-                    if (wcscmp(Iconv::Utf8ToUnicode(PluginList[i].Appid).c_str(), fileinfo.name))
+                    ThisPlugin.Appid = new char8_t[d["appid"].GetStringLength() + 1];
+                    memcpy(ThisPlugin.Appid, d["appid"].GetString(), d["appid"].GetStringLength());
+                    ThisPlugin.Appid[d["appid"].GetStringLength()] = 0;
+                    if (wcscmp(Iconv::Utf8ToUnicode(ThisPlugin.Appid).c_str(), fileinfo.name))
                     {
                         Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"LoadPlugin", u8"Appid is not same");
                         d.Clear();
@@ -155,31 +156,31 @@ void PluginSystem::Load(
                         d.Clear();
                         continue;
                     }
-                    PluginList[i].Version = new char8_t[d["version"].GetStringLength() + 1];
-                    memcpy(PluginList[i].Version, d["version"].GetString(), d["version"].GetStringLength());
-                    PluginList[i].Version[d["version"].GetStringLength()] = 0;
+                    ThisPlugin.Version = new char8_t[d["version"].GetStringLength() + 1];
+                    memcpy(ThisPlugin.Version, d["version"].GetString(), d["version"].GetStringLength());
+                    ThisPlugin.Version[d["version"].GetStringLength()] = 0;
                     if (!d.HasMember("author"))
                     {
                         Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"LoadPlugin", u8"Json is incomplete");
                         d.Clear();
                         continue;
                     }
-                    PluginList[i].Author = new char8_t[d["author"].GetStringLength() + 1];
-                    memcpy(PluginList[i].Author, d["author"].GetString(), d["author"].GetStringLength());
-                    PluginList[i].Author[d["author"].GetStringLength()] = 0;
+                    ThisPlugin.Author = new char8_t[d["author"].GetStringLength() + 1];
+                    memcpy(ThisPlugin.Author, d["author"].GetString(), d["author"].GetStringLength());
+                    ThisPlugin.Author[d["author"].GetStringLength()] = 0;
                     if (!d.HasMember("description"))
                     {
                         Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"LoadPlugin", u8"Json is incomplete");
                         d.Clear();
                         continue;
                     }
-                    PluginList[i].Description = new char8_t[d["description"].GetStringLength() + 1];
-                    memcpy(PluginList[i].Description, d["description"].GetString(), d["description"].GetStringLength());
-                    PluginList[i].Description[d["description"].GetStringLength()] = 0;
+                    ThisPlugin.Description = new char8_t[d["description"].GetStringLength() + 1];
+                    memcpy(ThisPlugin.Description, d["description"].GetString(), d["description"].GetStringLength());
+                    ThisPlugin.Description[d["description"].GetStringLength()] = 0;
                     if (d.HasMember("event"))
                     {
                         const rapidjson::Value &a = d["event"];
-                        PluginList[i].EventList.resize(a.Size());
+                        ThisPlugin.EventList.resize(a.Size());
                         uint j = 0;
                         bool error = false;
                         for (auto &v : a.GetArray())
@@ -191,7 +192,7 @@ void PluginSystem::Load(
                                 error = true;
                                 break;
                             }
-                            PluginList[i].EventList[j].type = v["type"].GetInt();
+                            ThisPlugin.EventList[j].type = v["type"].GetInt();
                             if (!v.HasMember("function"))
                             {
                                 Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"LoadPlugin", u8"Json is incomplete");
@@ -199,8 +200,8 @@ void PluginSystem::Load(
                                 error = true;
                                 break;
                             }
-                            PluginList[i].EventList[j].function = (void *)GetProcAddress(Handle, v["function"].GetString());
-                            if (PluginList[i].EventList[j].function == NULL)
+                            ThisPlugin.EventList[j].function = (void *)GetProcAddress(Handle, v["function"].GetString());
+                            if (ThisPlugin.EventList[j].function == NULL)
                             {
                                 Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"LoadPlugin", u8"GetProcAddress error, function name:%s", true, v["function"].GetString());
                                 d.Clear();
@@ -224,7 +225,7 @@ void PluginSystem::Load(
                                     error = true;
                                     break;
                                 }
-                                PluginList[i].EventList[j].subevent |= 1 << v_["id"].GetInt();
+                                ThisPlugin.EventList[j].subevent |= 1 << v_["id"].GetInt();
                                 if (!v_.HasMember("priority"))
                                 {
                                     Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"LoadPlugin", u8"Json is incomplete");
@@ -235,16 +236,16 @@ void PluginSystem::Load(
                                 switch (v_["id"].GetInt())
                                 {
                                 case 1:
-                                    PluginList[i].EventList[j].priority |= v_["priority"].GetInt();
+                                    ThisPlugin.EventList[j].priority |= v_["priority"].GetInt();
                                     break;
                                 case 2:
-                                    PluginList[i].EventList[j].priority |= v_["priority"].GetInt() << 2;
+                                    ThisPlugin.EventList[j].priority |= v_["priority"].GetInt() << 2;
                                     break;
                                 case 4:
-                                    PluginList[i].EventList[j].priority |= v_["priority"].GetInt() << 4;
+                                    ThisPlugin.EventList[j].priority |= v_["priority"].GetInt() << 4;
                                     break;
                                 case 8:
-                                    PluginList[i].EventList[j].priority |= v_["priority"].GetInt() << 6;
+                                    ThisPlugin.EventList[j].priority |= v_["priority"].GetInt() << 6;
                                     break;
                                 }
                             }
@@ -263,8 +264,8 @@ void PluginSystem::Load(
                             d.Clear();
                             continue;
                         }
-                        PluginList[i].Menu.function = (PluginSystem::Menu::Munu)GetProcAddress(Handle, d["menu"]["function"].GetString());
-                        if (PluginList[i].Menu.function == NULL)
+                        ThisPlugin.Menu.function = (PluginSystem::Menu::Munu)GetProcAddress(Handle, d["menu"]["function"].GetString());
+                        if (ThisPlugin.Menu.function == NULL)
                         {
                             Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"LoadPlugin", u8"GetProcAddress error, function name:%s", true, d["menu"]["function"].GetString());
                             d.Clear();
@@ -277,24 +278,25 @@ void PluginSystem::Load(
                             continue;
                         }
                         const rapidjson::Value &a = d["menu"]["caption"];
-                        PluginList[i].Menu.CaptionList.resize(a.Size());
+                        ThisPlugin.Menu.CaptionList.resize(a.Size());
                         uint k = 0;
                         for (auto &v : a.GetArray())
                         {
-                            PluginList[i].Menu.CaptionList[k] = new char8_t[v.GetStringLength() + 1];
-                            memcpy(PluginList[i].Menu.CaptionList[k], v.GetString(), v.GetStringLength());
-                            PluginList[i].Menu.CaptionList[k][v.GetStringLength()] = 0;
+                            ThisPlugin.Menu.CaptionList[k] = new char8_t[v.GetStringLength() + 1];
+                            memcpy(ThisPlugin.Menu.CaptionList[k], v.GetString(), v.GetStringLength());
+                            ThisPlugin.Menu.CaptionList[k][v.GetStringLength()] = 0;
                             k++;
                         }
                     }
                     if (d.HasMember("auth"))
                     {
                         for (size_t j = 0; j < d["auth"].Size(); j++)
-                            PluginList[i].Auth |= (1 << d["auth"][j].GetInt());
+                            ThisPlugin.Auth |= (1 << d["auth"][j].GetInt());
                     }
 
-                    PluginList[i].AuthCode = Utils::GetRandom();
-                    _Initialize(PluginList[i].AuthCode);
+                    ThisPlugin.AuthCode = Utils::GetRandom();
+                    _Initialize(ThisPlugin.AuthCode);
+                    PluginList.emplace(PluginList.end(), &ThisPlugin);
                 }
             } while (!_wfindnexti64(handle, &fileinfo));
             _findclose(handle);
@@ -337,8 +339,7 @@ void PluginSystem::Load(
                         continue;
                     if (!strcmp(dirent->d_name, ".."))
                         continue;
-                    uint i = PluginList.size();
-                    PluginList.resize(i + 1);
+
                     char PluginPath_[PATH_MAX + 1], PluginPath__[PATH_MAX + 1];
                     strcpy(PluginPath_, PluginPath);
                     strcat(PluginPath_, dirent->d_name);
@@ -387,19 +388,22 @@ void PluginSystem::Load(
                         d.Clear();
                         return;
                     }
-                    PluginList[i].Name = new char8_t[d["name"].GetStringLength() + 1];
-                    memcpy(PluginList[i].Name, d["name"].GetString(), d["name"].GetStringLength());
-                    PluginList[i].Name[d["name"].GetStringLength()] = 0;
+
+                    Plugin ThisPlugin;
+
+                    ThisPlugin.Name = new char8_t[d["name"].GetStringLength() + 1];
+                    memcpy(ThisPlugin.Name, d["name"].GetString(), d["name"].GetStringLength());
+                    ThisPlugin.Name[d["name"].GetStringLength()] = 0;
                     if (!d.HasMember("appid"))
                     {
                         Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"LoadPlugin", u8"Json is incomplete");
                         d.Clear();
                         return;
                     }
-                    PluginList[i].Appid = new char8_t[d["appid"].GetStringLength() + 1];
-                    memcpy(PluginList[i].Appid, d["appid"].GetString(), d["appid"].GetStringLength());
-                    PluginList[i].Appid[d["appid"].GetStringLength()] = 0;
-                    if (strcmp((const char *)PluginList[i].Appid, dirent->d_name))
+                    ThisPlugin.Appid = new char8_t[d["appid"].GetStringLength() + 1];
+                    memcpy(ThisPlugin.Appid, d["appid"].GetString(), d["appid"].GetStringLength());
+                    ThisPlugin.Appid[d["appid"].GetStringLength()] = 0;
+                    if (strcmp((const char *)ThisPlugin.Appid, dirent->d_name))
                     {
                         Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"LoadPlugin", u8"Appid is not same");
                         d.Clear();
@@ -411,31 +415,31 @@ void PluginSystem::Load(
                         d.Clear();
                         return;
                     }
-                    PluginList[i].Version = new char8_t[d["version"].GetStringLength() + 1];
-                    memcpy(PluginList[i].Version, d["version"].GetString(), d["version"].GetStringLength());
-                    PluginList[i].Version[d["version"].GetStringLength()] = 0;
+                    ThisPlugin.Version = new char8_t[d["version"].GetStringLength() + 1];
+                    memcpy(ThisPlugin.Version, d["version"].GetString(), d["version"].GetStringLength());
+                    ThisPlugin.Version[d["version"].GetStringLength()] = 0;
                     if (!d.HasMember("author"))
                     {
                         Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"LoadPlugin", u8"Json is incomplete");
                         d.Clear();
                         return;
                     }
-                    PluginList[i].Author = new char8_t[d["author"].GetStringLength() + 1];
-                    memcpy(PluginList[i].Author, d["author"].GetString(), d["author"].GetStringLength());
-                    PluginList[i].Author[d["author"].GetStringLength()] = 0;
+                    ThisPlugin.Author = new char8_t[d["author"].GetStringLength() + 1];
+                    memcpy(ThisPlugin.Author, d["author"].GetString(), d["author"].GetStringLength());
+                    ThisPlugin.Author[d["author"].GetStringLength()] = 0;
                     if (!d.HasMember("description"))
                     {
                         Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"LoadPlugin", u8"Json is incomplete");
                         d.Clear();
                         return;
                     }
-                    PluginList[i].Description = new char8_t[d["description"].GetStringLength() + 1];
-                    memcpy(PluginList[i].Description, d["description"].GetString(), d["description"].GetStringLength());
-                    PluginList[i].Description[d["description"].GetStringLength()] = 0;
+                    ThisPlugin.Description = new char8_t[d["description"].GetStringLength() + 1];
+                    memcpy(ThisPlugin.Description, d["description"].GetString(), d["description"].GetStringLength());
+                    ThisPlugin.Description[d["description"].GetS5tringLength()] = 0;
                     if (d.HasMember("event"))
                     {
                         const rapidjson::Value &a = d["event"];
-                        PluginList[i].EventList.resize(a.Size());
+                        ThisPlugin.EventList.resize(a.Size());
                         uint j = 0;
                         bool error = false;
                         for (auto &v : a.GetArray())
@@ -447,7 +451,7 @@ void PluginSystem::Load(
                                 error = true;
                                 break;
                             }
-                            PluginList[i].EventList[j].type = v["type"].GetInt();
+                            ThisPlugin.EventList[j].type = v["type"].GetInt();
                             if (!v.HasMember("function"))
                             {
                                 Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"LoadPlugin", u8"Json is incomplete");
@@ -455,8 +459,8 @@ void PluginSystem::Load(
                                 error = true;
                                 break;
                             }
-                            PluginList[i].EventList[j].function = dlsym(Handle, v["function"].GetString());
-                            if (PluginList[i].EventList[j].function == NULL)
+                            ThisPlugin.EventList[j].function = dlsym(Handle, v["function"].GetString());
+                            if (ThisPlugin.EventList[j].function == NULL)
                             {
                                 Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"LoadPlugin", u8"GetProcAddress error, function name:%s", true, v["function"].GetString());
                                 d.Clear();
@@ -480,7 +484,7 @@ void PluginSystem::Load(
                                     error = true;
                                     break;
                                 }
-                                PluginList[i].EventList[j].subevent |= 1 << v_["id"].GetInt();
+                                ThisPlugin.EventList[j].subevent |= 1 << v_["id"].GetInt();
                                 if (!v_.HasMember("priority"))
                                 {
                                     Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"LoadPlugin", u8"Json is incomplete");
@@ -491,16 +495,16 @@ void PluginSystem::Load(
                                 switch (v_["id"].GetInt())
                                 {
                                 case 1:
-                                    PluginList[i].EventList[j].priority |= v_["priority"].GetInt();
+                                    ThisPlugin.EventList[j].priority |= v_["priority"].GetInt();
                                     break;
                                 case 2:
-                                    PluginList[i].EventList[j].priority |= v_["priority"].GetInt() << 2;
+                                    ThisPlugin.EventList[j].priority |= v_["priority"].GetInt() << 2;
                                     break;
                                 case 4:
-                                    PluginList[i].EventList[j].priority |= v_["priority"].GetInt() << 4;
+                                    ThisPlugin.EventList[j].priority |= v_["priority"].GetInt() << 4;
                                     break;
                                 case 8:
-                                    PluginList[i].EventList[j].priority |= v_["priority"].GetInt() << 6;
+                                    ThisPlugin.EventList[j].priority |= v_["priority"].GetInt() << 6;
                                     break;
                                 }
                             }
@@ -519,8 +523,8 @@ void PluginSystem::Load(
                             d.Clear();
                             return;
                         }
-                        PluginList[i].Menu.function = (PluginSystem::Menu::Munu)dlsym(Handle, d["menu"]["function"].GetString());
-                        if (PluginList[i].Menu.function == NULL)
+                        ThisPlugin.Menu.function = (PluginSystem::Menu::Munu)dlsym(Handle, d["menu"]["function"].GetString());
+                        if (ThisPlugin.Menu.function == NULL)
                         {
                             Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"LoadPlugin", u8"GetProcAddress error, function name:%s", true, d["menu"]["function"].GetString());
                             d.Clear();
@@ -533,24 +537,25 @@ void PluginSystem::Load(
                             return;
                         }
                         const rapidjson::Value &a = d["menu"]["caption"];
-                        PluginList[i].Menu.CaptionList.resize(a.Size());
+                        ThisPlugin.Menu.CaptionList.resize(a.Size());
                         uint k = 0;
                         for (auto &v : a.GetArray())
                         {
-                            PluginList[i].Menu.CaptionList[k] = new char8_t[v.GetStringLength() + 1];
-                            memcpy(PluginList[i].Menu.CaptionList[k], v.GetString(), v.GetStringLength());
-                            PluginList[i].Menu.CaptionList[k][v.GetStringLength()] = 0;
+                            ThisPlugin.Menu.CaptionList[k] = new char8_t[v.GetStringLength() + 1];
+                            memcpy(ThisPlugin.Menu.CaptionList[k], v.GetString(), v.GetStringLength());
+                            ThisPlugin.Menu.CaptionList[k][v.GetStringLength()] = 0;
                             k++;
                         }
                     }
                     if (d.HasMember("auth"))
                     {
                         for (size_t j = 0; j < d["auth"].Size(); j++)
-                            PluginList[i].Auth |= (1 << d["auth"][j].GetInt());
+                            ThisPlugin.Auth |= (1 << d["auth"][j].GetInt());
                     }
 
-                    PluginList[i].AuthCode = Utils::GetRandom();
-                    _Initialize(PluginList[i].AuthCode);
+                    ThisPlugin.AuthCode = Utils::GetRandom();
+                    _Initialize(ThisPlugin.AuthCode);
+                    PluginList.emplace(PluginList.end(), &ThisPlugin);
                 }
             }
             closedir(dir);

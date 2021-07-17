@@ -88,7 +88,7 @@ bool Utils::Ecdh_Crypt(ECDHKEY &ECDHKEY, const byte *pubkey, const byte pubkeyle
     EC_POINT *p_ecdh2_public;
 
     //generate key
-    ecdh = EC_KEY_new_by_curve_name(711);
+    ecdh = EC_KEY_new_by_curve_name(415);
     if (ecdh == NULL)
     {
         EC_KEY_free(ecdh);
