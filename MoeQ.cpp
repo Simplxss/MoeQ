@@ -166,7 +166,6 @@ int main()
                 return 0;
             }
             Sdk.QQ_Login_Finish();
-            SaveToken(QQ, Sdk.QQ_Get_Token(), DataFilePath);
         }
         else
             throw "First login";

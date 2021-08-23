@@ -207,6 +207,7 @@ void Database::Init()
 
     if (sqlite3_exec(Database_Log,
                      "CREATE TABLE IF NOT EXISTS Log("
+                     "Time       INTEGER ,"
                      "LogType    INTEGER ,"
                      "MsgType    INTEGER ,"
                      "Type       TEXT    ,"
@@ -396,15 +397,16 @@ void Database::AddLog(const Log::LogType LogType, const Log::MsgType MsgType, co
 {
     sqlite3_stmt *pStmt;
     if (sqlite3_prepare_v2(Database_Log,
-                           "INSERT INTO Log(LogType,MsgType,Type,Msg) VALUES(?,?,?,?);", 59, &pStmt, nullptr) != SQLITE_OK)
+                           "INSERT INTO Log(Time,LogType,MsgType,Type,Msg) VALUES(?,?,?,?,?);", 66, &pStmt, nullptr) != SQLITE_OK)
     {
         Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"Insert into 'Log' error", (const char8_t *)sqlite3_errmsg(Database_Log));
         return;
     }
-    sqlite3_bind_int64(pStmt, 1, static_cast<int>(LogType));
-    sqlite3_bind_int64(pStmt, 2, static_cast<int>(MsgType));
-    sqlite3_bind_text(pStmt, 3, (const char *)Type, -1, 0);
-    sqlite3_bind_text(pStmt, 4, (const char *)Msg, -1, 0);
+    sqlite3_bind_int64(pStmt, 1, time(NULL));
+    sqlite3_bind_int64(pStmt, 2, static_cast<int>(LogType));
+    sqlite3_bind_int64(pStmt, 3, static_cast<int>(MsgType));
+    sqlite3_bind_text(pStmt, 4, (const char *)Type, -1, 0);
+    sqlite3_bind_text(pStmt, 5, (const char *)Msg, -1, 0);
 
     if (sqlite3_step(pStmt) != SQLITE_DONE)
     {
