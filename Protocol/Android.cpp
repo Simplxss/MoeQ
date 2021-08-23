@@ -1706,7 +1706,7 @@ int Android::QQ_Login_Second()
     QQ.Login = new QQ::Login;
     Fun_Connect();
 
-#if defined(RELEASE)
+#if 1
     QQ_SyncCookie();
 #endif
     return QQ.Login->state;

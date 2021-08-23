@@ -53,8 +53,6 @@ The compilers that we use are [*MinGW64*](http://winlibs.com/) or *MSVC* on Wind
 
 There are a lot of features of c++11 and c++20 using by this project, please notice the support of your compiler.
 
-**Significant: If you use *MinGW64* to build your program, please replace all "\\:" in "path-to-build\CMakeFiles\MoeQ.dir\compiler_depend.make" to ":"**
-
 # Achieved
 
 ## Protocol

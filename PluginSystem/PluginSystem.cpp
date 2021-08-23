@@ -296,7 +296,7 @@ void PluginSystem::Load(
 
                     ThisPlugin.AuthCode = Utils::GetRandom();
                     _Initialize(ThisPlugin.AuthCode);
-                    PluginList.emplace(PluginList.end(), &ThisPlugin);
+                    PluginList.emplace(PluginList.end(), std::move(ThisPlugin));
                 }
             } while (!_wfindnexti64(handle, &fileinfo));
             _findclose(handle);
@@ -435,7 +435,7 @@ void PluginSystem::Load(
                     }
                     ThisPlugin.Description = new char8_t[d["description"].GetStringLength() + 1];
                     memcpy(ThisPlugin.Description, d["description"].GetString(), d["description"].GetStringLength());
-                    ThisPlugin.Description[d["description"].GetS5tringLength()] = 0;
+                    ThisPlugin.Description[d["description"].GetStringLength()] = 0;
                     if (d.HasMember("event"))
                     {
                         const rapidjson::Value &a = d["event"];
@@ -555,7 +555,7 @@ void PluginSystem::Load(
 
                     ThisPlugin.AuthCode = Utils::GetRandom();
                     _Initialize(ThisPlugin.AuthCode);
-                    PluginList.emplace(PluginList.end(), &ThisPlugin);
+                    PluginList.emplace(PluginList.end(), std::move(ThisPlugin));
                 }
             }
             closedir(dir);

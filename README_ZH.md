@@ -53,9 +53,6 @@ cd vcpkg
 
 本程序使用了许多的c++11和c++20特性, 请注意编译器的支持性.
 
-**注意:如果你使用MinGW64来构建程序, 请替换"path-to-build\CMakeFiles\MoeQ.dir\compiler_depend.make"文件中所有的"\:"为":"**
-
-
 # 依赖项
 
 感谢以下这些项目铸就了今天的这个项目!
