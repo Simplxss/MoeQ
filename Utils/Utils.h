@@ -26,9 +26,11 @@ namespace Utils
 {
 	struct ECDHKEY
 	{
+		int pubkeyLen;
+
 		byte sharekey[24];
-		byte pubkey[25];
-		byte prikey[29]; //Warning:Maybe only 28 bytes
+		byte pubkey[50];
+		byte prikey[50];
 	};
 	uint64_t GetRandom(const uint64_t mini = 0, const uint64_t max = 9223372036854775807);
 	char *GetRandomLetter(const uint length);
@@ -40,7 +42,7 @@ namespace Utils
 	byte *Sha256(const byte *bin, const size_t length);
 
 	bool Ecdh_Crypt(ECDHKEY &ECDHKEY, const byte *pubkey, const byte pubkeylen);
-	byte *Ecdh_CountSharekey(const byte *prikey, const byte publickey[25]);
+	byte *Ecdh_CountSharekey(const int publickeyLen, const byte *prikey, const byte *publickey);
 
 	uint DES_ECB_Encrypt(byte *_key, byte *data, uint len, byte *&bin);
 

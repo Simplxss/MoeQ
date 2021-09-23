@@ -19,6 +19,74 @@ void Debug()
 {
 }
 
+QQ::Token LoadToken(char (&QQ)[],
+#if defined(_WIN_PLATFORM_)
+                    const wchar_t *
+#endif
+
+#if defined(_LINUX_PLATFORM_)
+                    const char *
+#endif
+                        DataFilePath)
+{
+    QQ::Token Token;
+
+    std::ifstream input(DataFilePath);
+    char Json[1000] = {0};
+    if (!input.is_open())
+        throw "First login";
+
+    input.read(Json, 1000);
+    Json[input.gcount()] = 0;
+
+    //issue closed
+    //A big 坑
+    //某些编译器(此处点名某MinGW-w64 V10.2.0 http://winlibs.com/)最后一行会重复读一次!!!!
+    //wsl下gcc-10编译的没得问题
+
+    input.close();
+
+    rapidjson::Document d;
+    d.Parse<rapidjson::kParseCommentsFlag>(Json);
+
+    if (d.HasParseError())
+        throw "First login";
+
+    if (!(d.HasMember("QQ") && d.HasMember("A2") && d.HasMember("TGT") && d.HasMember("TGTkey") && d.HasMember("D2Key") && d.HasMember("wtSessionTicket") && d.HasMember("wtSessionTicketKey") && d.HasMember("token_16A") && d.HasMember("md5") && d.HasMember("ksid")))
+        throw "First login";
+
+    memcpy(QQ, d["QQ"].GetString(), d["QQ"].GetStringLength());
+
+    if (XBin::Hex2BinEx(d["A2"].GetString(), Token.A2) != 64)
+        throw "A2 len error";
+
+    if (XBin::Hex2BinEx(d["TGT"].GetString(), Token.TGT) != 72)
+        throw "TGT len error";
+
+    if (XBin::Hex2BinEx(d["TGTkey"].GetString(), Token.TGTkey) != 16)
+        throw "TGTkey len error";
+
+    if (XBin::Hex2BinEx(d["D2Key"].GetString(), Token.D2Key) != 16)
+        throw "D2Key len error";
+
+    if (XBin::Hex2BinEx(d["wtSessionTicket"].GetString(), Token.wtSessionTicket) != 48)
+        throw "wtSessionTicket len error";
+
+    if (XBin::Hex2BinEx(d["wtSessionTicketKey"].GetString(), Token.wtSessionTicketKey) != 16)
+        throw "wtSessionTicketKey len error";
+
+    if (XBin::Hex2BinEx(d["token_16A"].GetString(), Token.token_16A) != 56)
+        throw "token_16A len error";
+
+    if (XBin::Hex2BinEx(d["md5"].GetString(), Token.md5) != 16)
+        throw "md5 len error";
+
+    if (XBin::Hex2BinEx(d["ksid"].GetString(), Token.ksid) != 16)
+        throw "ksid len error";
+
+    return Token;
+}
+
 void SaveToken(const char *QQ,
                const QQ::Token *Token,
 #if defined(_WIN_PLATFORM_)
@@ -65,7 +133,6 @@ void SaveToken(const char *QQ,
 
 int main()
 {
-    QQ::Token Token;
     char QQ[12];
 #if defined(_WIN_PLATFORM_)
     SetConsoleOutputCP(65001);
@@ -100,62 +167,14 @@ int main()
 
     try
     {
-        std::ifstream input(DataFilePath);
-        char Json[1000] = {0};
-        if (!input.is_open())
-        {
-            Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"LoadData", u8"Read Json error");
-            throw "First login";
-        }
-        input.read(Json, 1000);
-        Json[input.gcount()] = 0;
-        //A big 坑
-        //某些编译器(此处点名某MinGW-w64 V10.2.0 http://winlibs.com/)最后一行会重复读一次!!!!
-        //wsl下gcc-10编译的没得问题
-        input.close();
+        QQ::Token Token = LoadToken(QQ, DataFilePath);
 
-        rapidjson::Document d;
-        d.Parse<rapidjson::kParseCommentsFlag>(Json);
+        char c[1];
 
-        if (d.HasParseError())
-        {
-            Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"LoadData", u8"Parse Json fail, ParseErrorCode:%d, ErrorOffset:%ul", true, d.GetParseError(), d.GetErrorOffset());
-            throw "First login";
-        }
+        std::cout << "Second Login?(Y/N) ";
+        std::cin >> c;
 
-        if (!(d.HasMember("QQ") && d.HasMember("A2") && d.HasMember("TGT") && d.HasMember("TGTkey") && d.HasMember("D2Key") && d.HasMember("wtSessionTicket") && d.HasMember("wtSessionTicketKey") && d.HasMember("token_16A") && d.HasMember("md5") && d.HasMember("ksid")))
-            throw "First login";
-
-        memcpy(QQ, d["QQ"].GetString(), d["QQ"].GetStringLength());
-
-        if (XBin::Hex2BinEx(d["A2"].GetString(), Token.A2) != 64)
-            throw "A2 len error";
-
-        if (XBin::Hex2BinEx(d["TGT"].GetString(), Token.TGT) != 72)
-            throw "TGT len error";
-
-        if (XBin::Hex2BinEx(d["TGTkey"].GetString(), Token.TGTkey) != 16)
-            throw "TGTkey len error";
-
-        if (XBin::Hex2BinEx(d["D2Key"].GetString(), Token.D2Key) != 16)
-            throw "D2Key len error";
-
-        if (XBin::Hex2BinEx(d["wtSessionTicket"].GetString(), Token.wtSessionTicket) != 48)
-            throw "wtSessionTicket len error";
-
-        if (XBin::Hex2BinEx(d["wtSessionTicketKey"].GetString(), Token.wtSessionTicketKey) != 16)
-            throw "wtSessionTicketKey len error";
-
-        if (XBin::Hex2BinEx(d["token_16A"].GetString(), Token.token_16A) != 56)
-            throw "token_16A len error";
-
-        if (XBin::Hex2BinEx(d["md5"].GetString(), Token.md5) != 16)
-            throw "md5 len error";
-
-        if (XBin::Hex2BinEx(d["ksid"].GetString(), Token.ksid) != 16)
-            throw "ksid len error";
-
-        if (true) //懒得做选择了,直接二次登录
+        if (c[0] == 'Y')
         {
             Sdk.QQ_Init(QQ);
             Sdk.QQ_Set_Token(&Token);
@@ -172,13 +191,20 @@ int main()
     }
     catch (...)
     { //一次登录
+
+        std::cout << "Start first login\n";
+
     login:
         char Password[20];
+        std::cout << "Please input your account:";
         std::cin >> QQ;
+        Sdk.QQ_Init(QQ);
+
+        std::cout << "Please input your password:";
         std::cin >> Password;
         int state;
-        Sdk.QQ_Init(QQ);
         state = Sdk.QQ_Login(Password);
+
     check:
         char SmsCode[7], Ticket[200];
         switch (state)
@@ -194,41 +220,41 @@ int main()
             goto check;
         case LOGIN_VERIY_SMS:
             Log::AddLog(Log::LogType::INFORMATION, Log::MsgType::OTHER, u8"Login", u8"Driver Lock");
+
             char notice[200];
             strcpy(notice, "Send Sms to ");
             strcat(notice, Sdk.QQ_Get_Viery_PhoneNumber());
-            strcat(notice, " ?");
-            /* Todo 设备锁
-            switch (MessageBoxA(nullptr, notice, "Driver Lock", MB_OKCANCEL))
+            strcat(notice, " ?(Y/N) ");
+            char c[1];
+            std::cin >> c;
+
+            if (c[0] == 'Y')
             {
-            case IDOK:
                 Sdk.QQ_Send_Sms();
                 std::cin >> SmsCode;
                 state = Sdk.QQ_Viery_Sms(SmsCode);
                 break;
-            case IDCANCEL:
+            }
+            else
+                goto login;
+            default:
+                Log::AddLog(Log::LogType::INFORMATION, Log::MsgType::OTHER, u8"Login", u8"Login failed, error code: %d, error message: %s.", true, state, Sdk.QQ_GetErrorMsg());
                 return 0;
             }
-            */
-            break;
-        default:
-            Log::AddLog(Log::LogType::INFORMATION, Log::MsgType::OTHER, u8"Login", u8"Login failed, error code: %d, error message: %s.", true, state, Sdk.QQ_GetErrorMsg());
-            return 0;
+            Sdk.QQ_Login_Finish();
         }
-        Sdk.QQ_Login_Finish();
-    }
 
-    SaveToken(QQ, Sdk.QQ_Get_Token(), DataFilePath);
+        SaveToken(QQ, Sdk.QQ_Get_Token(), DataFilePath);
 
-    Sdk.QQ_Online();
+        Sdk.QQ_Online();
 #if defined(DEBUG)
-    Debug();
+        Debug();
 #endif
 
-    char a[99];
-    std::cin >> a;
+        char a[99];
+        std::cin >> a;
 
-    SaveToken(QQ, Sdk.QQ_Get_Token(), DataFilePath);
+        SaveToken(QQ, Sdk.QQ_Get_Token(), DataFilePath);
 
-    return 0;
-}
+        return 0;
+    }

@@ -1218,9 +1218,9 @@ void Android::Unpack_wtlogin_login(const LPBYTE BodyBin, const uint sso_seq)
     Tea::decrypt(key, Buffer, len, data);
     delete[] key;
     UnPack.Reset(&data);
-    const byte *publickey = nullptr;
-    publickey = UnPack.GetBin(UnPack.GetShort());
-    const byte *sharekey = Utils::Ecdh_CountSharekey(QQ.Login->ECDH.prikey, publickey);
+    const int pubkeyLen = UnPack.GetShort();
+    const byte *publickey = UnPack.GetBin(pubkeyLen);
+    const byte *sharekey = Utils::Ecdh_CountSharekey(pubkeyLen, QQ.Login->ECDH.prikey, publickey);
     key = Utils::MD5(sharekey, 24);
     delete[] sharekey;
     std::vector<byte> buffer;
@@ -1303,7 +1303,8 @@ void Android::Unpack_OnlinePush_PbPushGroupMsg(const LPBYTE BodyBin, const uint 
         else                                       \
         {                                          \
             UnPack##id(&UnPB, ThisMsg->NextPoint); \
-            ThisMsg = ThisMsg->NextPoint;          \
+            if (ThisMsg->NextPoint != nullptr)     \
+                ThisMsg = ThisMsg->NextPoint;      \
         }                                          \
         break;
 
@@ -1507,7 +1508,7 @@ void Android::Unpack_MessageSvc_PushNotify(const LPBYTE BodyBin, const uint sso_
                                       Message::Msg *ThisMsg = nullptr;
                                       switch (UnPB.GetField())
                                       {
-                                          
+
 #define UnPack(id)                                 \
     case id:                                       \
         if (PrivateMsg.Msg == nullptr)             \
@@ -1539,7 +1540,6 @@ void Android::Unpack_MessageSvc_PushNotify(const LPBYTE BodyBin, const uint sso_
                                           UnPack(53); //吃瓜等新表情
 
 #undef UnPack
-
                                       }
                                       UnPB.StepOut();
                                   }

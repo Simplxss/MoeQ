@@ -104,7 +104,8 @@ bool Utils::Ecdh_Crypt(ECDHKEY &ECDHKEY, const byte *pubkey, const byte pubkeyle
 
     group = EC_KEY_get0_group(ecdh);
     /* 1==> Set ecdh1's public and privat key. */
-    if (!EC_POINT_point2oct(group, EC_KEY_get0_public_key(ecdh), POINT_CONVERSION_COMPRESSED, ECDHKEY.pubkey, 25, NULL))
+    ECDHKEY.pubkeyLen = 41;
+    if (!EC_POINT_point2oct(group, EC_KEY_get0_public_key(ecdh), POINT_CONVERSION_COMPRESSED, ECDHKEY.pubkey, 41, NULL))
     {
         EC_KEY_free(ecdh);
         throw "EC_POINT oct2point error.";
@@ -136,7 +137,7 @@ bool Utils::Ecdh_Crypt(ECDHKEY &ECDHKEY, const byte *pubkey, const byte pubkeyle
     return true;
 }
 
-byte *Utils::Ecdh_CountSharekey(const byte *prikey, const byte publickey[25])
+byte *Utils::Ecdh_CountSharekey(const int publickeyLen, const byte *prikey, const byte *publickey)
 {
     int len;
     EC_KEY *ecdh;
@@ -155,7 +156,7 @@ byte *Utils::Ecdh_CountSharekey(const byte *prikey, const byte publickey[25])
     /* 2==> Set ecdh2's public key */
     group = EC_KEY_get0_group(ecdh);
     p_ecdh2_public = EC_POINT_new(group);
-    EC_POINT_oct2point(group, p_ecdh2_public, publickey, 25, NULL);
+    EC_POINT_oct2point(group, p_ecdh2_public, publickey, publickeyLen, NULL);
 
     if (!EC_KEY_set_public_key(ecdh, p_ecdh2_public))
     {

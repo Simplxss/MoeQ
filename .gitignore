@@ -3,6 +3,7 @@
 
 # Build results
 build/*
+release/*
 
 # data
 data/*

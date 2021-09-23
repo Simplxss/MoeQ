@@ -27,8 +27,8 @@ LPBYTE wtlogin::Make_Body_PC(byte *Buffer, const uint BufferLen, const bool emp)
         Pack.SetBin(QQ->Login->RandKey, 16);
         Pack.SetBin((byte *)"\1\2", 2);
 
-        Pack.SetShort(25);
-        Pack.SetBin(QQ->Login->ECDH.pubkey, 25);
+        Pack.SetShort(QQ->Login->ECDH.pubkeyLen);
+        Pack.SetBin(QQ->Login->ECDH.pubkey, QQ->Login->ECDH.pubkeyLen);
     }
     {
         std::vector<byte> data;
