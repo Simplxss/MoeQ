@@ -88,7 +88,7 @@ bool Utils::Ecdh_Crypt(ECDHKEY &ECDHKEY, const byte *pubkey, const byte pubkeyle
     EC_POINT *p_ecdh2_public;
 
     //generate key
-    ecdh = EC_KEY_new_by_curve_name(415);
+    ecdh = EC_KEY_new_by_curve_name(711);
     if (ecdh == NULL)
     {
         EC_KEY_free(ecdh);
@@ -104,8 +104,8 @@ bool Utils::Ecdh_Crypt(ECDHKEY &ECDHKEY, const byte *pubkey, const byte pubkeyle
 
     group = EC_KEY_get0_group(ecdh);
     /* 1==> Set ecdh1's public and privat key. */
-    ECDHKEY.pubkeyLen = 41;
-    if (!EC_POINT_point2oct(group, EC_KEY_get0_public_key(ecdh), POINT_CONVERSION_COMPRESSED, ECDHKEY.pubkey, 41, NULL))
+    ECDHKEY.pubkeyLen = 25;
+    if (!EC_POINT_point2oct(group, EC_KEY_get0_public_key(ecdh), POINT_CONVERSION_COMPRESSED, ECDHKEY.pubkey, 25, NULL))
     {
         EC_KEY_free(ecdh);
         throw "EC_POINT oct2point error.";

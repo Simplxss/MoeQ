@@ -47,7 +47,7 @@ cd vcpkg
 ./vcpkg integrate install
 ```
 
-Then, add "-DCMAKE_TOOLCHAIN_FILE=path" into your cmake command.
+Then, add "-DCMAKE_TOOLCHAIN_FILE=path_to_your_vcpkg" into your cmake command.
 
 The compilers that we use are [*MinGW64*](http://winlibs.com/) or *MSVC* on Windows and *gcc-10* on Linux.
 
@@ -155,10 +155,12 @@ If you just want to use the protocol,  following is the simplest way of using th
 ```c++
 #include "\Protocol\Android.h"
 
+//IMEI 861891778567   IMSI 460013521635791   GUID 86A445BF44A2C287597618F6F36EB68C   MAC 4F923C3D4568   4F:92:3C:3D:45:68
+//Remember to change it randomly
 Android Sdk("861891778567", 
             "460013521635791", 
             (const byte*)"\x86\xA4\x45\xBF\x44\xA2\xC2\x87\x59\x76\x18\xF6\xF3\x6E\xB6\x8C", 
-            (const byte*)"\0\0\0\0\0\2", 
+            (const byte*)"\x4F\x92\x3C\x3D\x45\x68", 
             "XiaoMi", 
             "MIX Alpha");
 Sdk.QQ_Init("10001");

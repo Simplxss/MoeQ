@@ -13,8 +13,13 @@ bool DevMode = true;
 PluginSystem Plugin;
 
 //GUID 86A445BF44A2C287597618F6F36EB68C   MAC 4F923C3D4568   4F:92:3C:3D:45:68
-Android Sdk("861891778567", "460013521635791", (const byte *)"\x86\xA4\x45\xBF\x44\xA2\xC2\x87\x59\x76\x18\xF6\xF3\x6E\xB6\x8C", (const byte *)"\x4F\x92\x3C\x3D\x45\x68", "Alpha", "XiaoMi");
-
+Android Sdk("861891778567", 
+            "460013521635791", 
+            (const byte*)"\x86\xA4\x45\xBF\x44\xA2\xC2\x87\x59\x76\x18\xF6\xF3\x6E\xB6\x8C", 
+            (const byte*)"\x4F\x92\x3C\x3D\x45\x68", 
+            "XiaoMi", 
+            "MIX Alpha");
+            
 void Debug()
 {
 }
@@ -169,7 +174,7 @@ int main()
     {
         QQ::Token Token = LoadToken(QQ, DataFilePath);
 
-        char c[1];
+        char c[2];
 
         std::cout << "Second Login?(Y/N) ";
         std::cin >> c;
