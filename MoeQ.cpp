@@ -13,13 +13,13 @@ bool DevMode = true;
 PluginSystem Plugin;
 
 //GUID 86A445BF44A2C287597618F6F36EB68C   MAC 4F923C3D4568   4F:92:3C:3D:45:68
-Android Sdk("861891778567", 
-            "460013521635791", 
-            (const byte*)"\x86\xA4\x45\xBF\x44\xA2\xC2\x87\x59\x76\x18\xF6\xF3\x6E\xB6\x8C", 
-            (const byte*)"\x4F\x92\x3C\x3D\x45\x68", 
-            "XiaoMi", 
+Android Sdk("861891778567",
+            "460013521635791",
+            (const byte *)"\x86\xA4\x45\xBF\x44\xA2\xC2\x87\x59\x76\x18\xF6\xF3\x6E\xB6\x8C",
+            (const byte *)"\x4F\x92\x3C\x3D\x45\x68",
+            "XiaoMi",
             "MIX Alpha");
-            
+
 void Debug()
 {
 }
@@ -211,7 +211,7 @@ int main()
         state = Sdk.QQ_Login(Password);
 
     check:
-        char SmsCode[7], Ticket[200];
+        char Ticket[200];
         switch (state)
         {
         case LOGIN_SUCCESS:
@@ -230,36 +230,38 @@ int main()
             strcpy(notice, "Send Sms to ");
             strcat(notice, Sdk.QQ_Get_Viery_PhoneNumber());
             strcat(notice, " ?(Y/N) ");
+            std::cout << notice;
             char c[1];
             std::cin >> c;
 
             if (c[0] == 'Y')
             {
                 Sdk.QQ_Send_Sms();
+                char SmsCode[7];
                 std::cin >> SmsCode;
                 state = Sdk.QQ_Viery_Sms(SmsCode);
-                break;
+                goto check;
             }
             else
                 goto login;
-            default:
-                Log::AddLog(Log::LogType::INFORMATION, Log::MsgType::OTHER, u8"Login", u8"Login failed, error code: %d, error message: %s.", true, state, Sdk.QQ_GetErrorMsg());
-                return 0;
-            }
-            Sdk.QQ_Login_Finish();
+        default:
+            Log::AddLog(Log::LogType::INFORMATION, Log::MsgType::OTHER, u8"Login", u8"Login failed, error code: %d, error message: %s.", true, state, Sdk.QQ_GetErrorMsg());
+            return 0;
         }
+        Sdk.QQ_Login_Finish();
+    }
 
-        SaveToken(QQ, Sdk.QQ_Get_Token(), DataFilePath);
+    SaveToken(QQ, Sdk.QQ_Get_Token(), DataFilePath);
 
-        Sdk.QQ_Online();
+    Sdk.QQ_Online();
 #if defined(DEBUG)
-        Debug();
+    Debug();
 #endif
 
-        char a[99];
-        std::cin >> a;
+    char a[99];
+    std::cin >> a;
 
-        SaveToken(QQ, Sdk.QQ_Get_Token(), DataFilePath);
+    SaveToken(QQ, Sdk.QQ_Get_Token(), DataFilePath);
 
-        return 0;
-    }
+    return 0;
+}

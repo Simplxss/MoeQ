@@ -576,29 +576,27 @@ void PluginSystem::Load(
 #endif
 
     std::ifstream input(SettingFilePath);
-    if (!input.is_open())
+    if (input.is_open())
     {
-        Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"LoadPlugin", u8"Read Setting Json error");
-        return;
-    }
-    char Json[1000] = {0};
-    input.read(Json, 1000);
-    Json[input.gcount()] = 0;
-    input.close();
+        char Json[1000] = {0};
+        input.read(Json, 1000);
+        Json[input.gcount()] = 0;
+        input.close();
 
-    rapidjson::Document d;
-    d.Parse<rapidjson::kParseCommentsFlag>(Json);
+        rapidjson::Document d;
+        d.Parse<rapidjson::kParseCommentsFlag>(Json);
 
-    if (d.HasParseError())
-    {
-        Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"LoadPlugin", u8"Parse Setting Json fail, ParseErrorCode:%d, ErrorOffset:%llu", true, d.GetParseError(), d.GetErrorOffset());
-        return;
-    }
-    for (size_t i = 0; i < PluginList.size(); i++)
-    {
-        if (d.HasMember((const char *)PluginList[i].Appid))
-            if (d[(const char *)PluginList[i].Appid].HasMember("enable"))
-                PluginList[i].Enable = d[(const char *)PluginList[i].Appid]["enable"].GetBool();
+        if (d.HasParseError())
+        {
+            Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"LoadPlugin", u8"Parse Setting Json fail, ParseErrorCode:%d, ErrorOffset:%llu", true, d.GetParseError(), d.GetErrorOffset());
+            return;
+        }
+        for (size_t i = 0; i < PluginList.size(); i++)
+        {
+            if (d.HasMember((const char *)PluginList[i].Appid))
+                if (d[(const char *)PluginList[i].Appid].HasMember("enable"))
+                    PluginList[i].Enable = d[(const char *)PluginList[i].Appid]["enable"].GetBool();
+        }
     }
 
     LoadEvent();
