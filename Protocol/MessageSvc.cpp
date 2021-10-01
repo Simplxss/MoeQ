@@ -343,7 +343,7 @@ LPBYTE MessageSvc::PbSendMsg(const uint ToNumber, const byte ToType, const Messa
     ProtobufStruct::TreeNode *tmp;
     do
     {
-        delete[] Node3_1_2->Data;
+        delete[] (LPBYTE)Node3_1_2->Data;
         tmp = Node3_1_2->brother;
         delete Node3_1_2;
     } while ((Node3_1_2 = tmp) != nullptr);

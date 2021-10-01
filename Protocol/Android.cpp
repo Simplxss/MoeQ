@@ -2110,6 +2110,7 @@ uint Android::QQ_UploadImage(const uint Group, const LPBYTE ImageName, const LPB
 
                                        return UnPB.GetVarint(9);
                                    };
+                                   return 0;
                                });
 }
 

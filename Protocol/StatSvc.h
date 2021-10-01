@@ -17,7 +17,7 @@ public:
     };
 
 public:
-    virtual LPBYTE Make_Body_Request_Packet(const byte iVersion, const int iRequestId, const char *sServantName, const char *sFuncName, byte *sBuffer, uint Bufferlen){};
+    virtual LPBYTE Make_Body_Request_Packet(const byte iVersion, const int iRequestId, const char *sServantName, const char *sFuncName, byte *sBuffer, uint Bufferlen) { return LPBYTE(); };
 
 public:
     LPBYTE Register(const byte state = 0);

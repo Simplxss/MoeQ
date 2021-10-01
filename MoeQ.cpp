@@ -142,9 +142,10 @@ int main()
 #if defined(_WIN_PLATFORM_)
     SetConsoleOutputCP(65001);
     wchar_t szFilePath[MAX_PATH + 1], DataFilePath[MAX_PATH + 1], DllFilePath[MAX_PATH + 1] = {0};
-    _wgetcwd(szFilePath, MAX_PATH);
+    GetModuleFileName(NULL, szFilePath, MAX_PATH);
+    (wcsrchr(szFilePath, _T('\\')))[1] = 0;
     wcscpy(DataPath, szFilePath);
-    wcscat(DataPath, L"\\data\\");
+    wcscat(DataPath, L"data\\");
 #endif
 #if defined(_LINUX_PLATFORM_)
     char szFilePath[PATH_MAX + 1], DataFilePath[PATH_MAX + 1], DllFilePath[PATH_MAX + 1] = {0};

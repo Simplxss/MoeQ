@@ -15,7 +15,7 @@ public:
     };
 
 public:
-    virtual uint QQ_UploadImage(const uint Group, const LPBYTE ImageName, const LPBYTE ImageMD5, const uint ImageLength, const uint ImageWidth, const uint ImageHeight, const byte *Image = nullptr){};
+    virtual uint QQ_UploadImage(const uint Group, const LPBYTE ImageName, const LPBYTE ImageMD5, const uint ImageLength, const uint ImageWidth, const uint ImageHeight, const byte *Image = nullptr) { return uint(); };
 
 public:
     LPBYTE PbGetMsg();

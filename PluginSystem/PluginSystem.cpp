@@ -50,7 +50,7 @@ void PluginSystem::Load(
 #if defined(_WIN_PLATFORM_)
     wchar_t PluginPath[MAX_PATH + 1];
     wcscpy(PluginPath, szFilePath);
-    wcscat(PluginPath, L"\\app\\*.mpk");
+    wcscat(PluginPath, L"app\\*.mpk");
     long long handle;
     _wfinddata64_t fileinfo;
     handle = _wfindfirsti64(PluginPath, &fileinfo);
@@ -67,7 +67,7 @@ void PluginSystem::Load(
     {
         wchar_t _PluginPath[MAX_PATH + 1];
         wcscpy(PluginPath, szFilePath);
-        wcscat(PluginPath, L"\\dev\\");
+        wcscat(PluginPath, L"dev\\");
         wcscpy(_PluginPath, PluginPath);
         wcscat(_PluginPath, L"*");
         handle = _wfindfirsti64(_PluginPath, &fileinfo);

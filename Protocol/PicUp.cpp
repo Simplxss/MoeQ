@@ -83,4 +83,5 @@ bool PicUp::DataUp(const uint Group, const byte *TotalData, const uint TotalData
     Length = UnPack.GetInt();
     UnPack.GetInt();
     UnProtobuf UnPB(UnPack.GetBin(), Length);
+    return true;
 }
