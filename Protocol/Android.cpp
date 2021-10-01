@@ -1448,7 +1448,6 @@ void Android::Unpack_MessageSvc_PushNotify(const LPBYTE BodyBin, const uint sso_
                               PrivateMsg.MsgType = UnPB.GetVarint(4);
                               PrivateMsg.MsgID = UnPB.GetVarint(5);
                               UnPB.StepOut();
-                              printf("%l", MsgType);
                               switch (MsgType)
                               {
                               case 33:
