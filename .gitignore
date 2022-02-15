@@ -1,10 +1,11 @@
+# VS config
+.vs/*
+CMakeSettings.json
+
 # VSCode config
 .vscode/*
 
 # Build results
+out/*
 build/*
 release/*
-
-# data
-data/*
-dev/*

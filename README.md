@@ -6,52 +6,19 @@ Language: **`English`** [`简体中文`](https://github.com/YuFanXing/MoeQ/blob/
 
 It is still a *semi-finished product* now. If you want a *ready-made robot* frame, please go to the next door [*mirai*](https://github.com/mamoe/mirai).
 
-Some codes and names of variate are referred to *mirai*.
-
 Because of busy school, I can't spare time to continue updating this project on my own, so I opened sources.
 
 **Wish you can make it better!**
 
 # Build
 
-It is developed by VSCode with environment of Windows 10 Pro & WSL.
+It is developed by VSCode with environment of Windows 11 & WSL.
 
-The package management is [*vcpkg*](https://github.com/Microsoft/vcpkg), please run following command to install dependencies.
+The package management is [*vcpkg*](https://github.com/Microsoft/vcpkg).
 
-```bash
-#Windows
-git clone https://github.com/microsoft/vcpkg
-cd vcpkg
-bootstrap-vcpkg.bat
-vcpkg install openssl:x64-windows
-vcpkg install sqlite3:x64-windows
-vcpkg install zlib:x64-windows
-vcpkg integrate install
+The compilers that we use are [*MinGW64*](http://winlibs.com/) on Windows and *gcc-10* on Linux.
 
-#Linux
-git clone https://github.com/microsoft/vcpkg
-cd vcpkg
-./bootstrap-vcpkg.sh
-./vcpkg install openssl:x64-linux
-./vcpkg install sqlite3:x64-linux
-./vcpkg install zlib:x64-linux
-./vcpkg integrate install
-
-#MacOS
-git clone https://github.com/microsoft/vcpkg
-cd vcpkg
-./bootstrap-vcpkg.sh
-./vcpkg install openssl:x64-macos
-./vcpkg install sqlite3:x64-macos
-./vcpkg install zlib:x64-macos
-./vcpkg integrate install
-```
-
-Then, add "-DCMAKE_TOOLCHAIN_FILE=path_to_your_vcpkg" into your cmake command.
-
-The compilers that we use are [*MinGW64*](http://winlibs.com/) or *MSVC* on Windows and *gcc-10* on Linux.
-
-There are a lot of features of c++11 and c++20 using by this project, please notice the support of your compiler.
+There are a lot of features of c++11 and c++20 using by this project, please notice the support of your compilers.
 
 # Achieved
 

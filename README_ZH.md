@@ -6,50 +6,17 @@
 
 它现在还是一个半成品, 如果你想要的是一个成品的机器人框架, 请去[*mirai*](https://www.google.com).
 
-部分协议代码和变量名参考*mirai*.
-
 由于学业繁忙, 我无力继续支撑这个项目, 于是将其开源.
 
 **希望你们的努力能让它变得更好!**
 
 # 构建
 
-此项目在Windows 10 Pro & WSL环境下使用VSCode进行开发.
+此项目在Windows 11 & WSL下使用VSCode进行开发.
 
-本项目使用了[*vcpkg*](https://github.com/Microsoft/vcpkg)作为包管理器, 请先执行如下命令来安装必要的依赖.
+本项目使用了[*vcpkg*](https://github.com/Microsoft/vcpkg)作为包管理器.
 
-```bash
-#Windows
-git clone https://github.com/microsoft/vcpkg
-cd vcpkg
-bootstrap-vcpkg.bat
-vcpkg install openssl:x64-windows
-vcpkg install sqlite3:x64-windows
-vcpkg install zlib:x64-windows
-vcpkg integrate install
-
-#Linux
-git clone https://github.com/microsoft/vcpkg
-cd vcpkg
-./bootstrap-vcpkg.sh
-./vcpkg install openssl:x64-linux
-./vcpkg install sqlite3:x64-linux
-./vcpkg install zlib:x64-linux
-./vcpkg integrate install
-
-#MacOS
-git clone https://github.com/microsoft/vcpkg
-cd vcpkg
-./bootstrap-vcpkg.sh
-./vcpkg install openssl:x64-macos
-./vcpkg install sqlite3:x64-macos
-./vcpkg install zlib:x64-macos
-./vcpkg integrate install
-```
-
-接着, 请添加"-DCMAKE_TOOLCHAIN_FILE=path"到CMake的命令行中.
-
-本项目在Windows上使用的编译器为[*MinGW64*](http://winlibs.com/)或*MSVC*, Linux上使用的编译器为*gcc-10*.
+本项目在Windows上使用的编译器为[*MinGW64*](http://winlibs.com/), Linux上使用的编译器为*gcc-10*.
 
 本程序使用了许多的c++11和c++20特性, 请注意编译器的支持性.
 

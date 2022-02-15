@@ -5,24 +5,16 @@ set(TARGET_NAME MoeQ)
 
 set(CMAKE_CXX_STANDARD 20)
 
-if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
-    if ("${CMAKE_SYSTEM_NAME}" STREQUAL "Windows")
-    set(VCPKG_TARGET_TRIPLET x64-windows)
-    link_libraries(ws2_32 wsock32)
-    endif()
-
-    if ("${CMAKE_SYSTEM_NAME}" STREQUAL "Linux")
-    set(VCPKG_TARGET_TRIPLET x64-linux)
-    endif()
-
-    if ("${CMAKE_SYSTEM_NAME}" STREQUAL "Darwin")
-    set(VCPKG_TARGET_TRIPLET x64-macos)
-    endif()
+if (MSVC)
+    add_compile_options("$<$<C_COMPILER_ID:MSVC>:/utf-8>")
+    add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
 endif()
 
 if ("${CMAKE_SYSTEM_NAME}" STREQUAL "Windows")
     add_definitions(-D _WIN_PLATFORM_)
     add_definitions(-D UNICODE)
+
+    link_libraries(ws2_32 wsock32)
 endif()
 
 if ("${CMAKE_SYSTEM_NAME}" STREQUAL "Linux")
@@ -51,10 +43,6 @@ find_package(unofficial-sqlite3 CONFIG REQUIRED)
 
 file(GLOB_RECURSE SOURCES "Protocol/*.cpp" "PluginSystem/*.cpp" "Utils/*.cpp")
 add_executable(${TARGET_NAME} ${SOURCES} "MoeQ.cpp")
-
-if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
-    target_compile_options(${TARGET_NAME} INTERFACE $<$<CXX_COMPILER_ID:MSVC>:/utf-8>)
-endif()
 
 target_link_libraries(${TARGET_NAME} PRIVATE ZLIB::ZLIB)
 target_link_libraries(${TARGET_NAME} PRIVATE unofficial::sqlite3::sqlite3)

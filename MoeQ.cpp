@@ -44,11 +44,6 @@ QQ::Token LoadToken(char (&QQ)[],
     input.read(Json, 1000);
     Json[input.gcount()] = 0;
 
-    //issue closed
-    //A big 坑
-    //某些编译器(此处点名某MinGW-w64 V10.2.0 http://winlibs.com/)最后一行会重复读一次!!!!
-    //wsl下gcc-10编译的没得问题
-
     input.close();
 
     rapidjson::Document d;

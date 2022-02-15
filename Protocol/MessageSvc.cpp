@@ -16,8 +16,8 @@ namespace Message
             {
                 memcpy(B, "\0\0\0\x11\0\1\0\0\0\5\0\0\0\0\0\0\0", 17);
                 memcpy(B + 11, XBin::Int2Bin(AtQQ), 4);
-                Text = u8"@";
-                //Todo
+                Text = u8"@nick";
+                //Todo 获取昵称
                 //strcat(Text,)
             }
             uint len = strlen((char *)Text);

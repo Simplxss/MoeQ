@@ -1,0 +1,3 @@
+openssl
+sqlite3
+zlib

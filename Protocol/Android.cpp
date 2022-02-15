@@ -2,9 +2,9 @@
 
 namespace Message
 {
-#define Func(id) void UnPack##id(UnProtobuf *UnPB, Msg *&Msg)
+#define FUNC(id) void UnPack##id(UnProtobuf *UnPB, Msg *&Msg)
 
-    Func(1)
+    FUNC(1)
     {
         UnPB->StepIn(1);
         Msg = new Message::Msg{Message::MsgType::text, nullptr, new Message::text};
@@ -19,14 +19,14 @@ namespace Message
         }
         UnPB->StepOut();
     }
-    Func(2)
+    FUNC(2)
     {
         UnPB->StepIn(2);
         Msg = new Message::Msg{Message::MsgType::classcal_face, nullptr, new Message::classcal_face};
         ((Message::classcal_face *)Msg->Message)->id = UnPB->GetVarint(1);
         UnPB->StepOut();
     }
-    Func(4)
+    FUNC(4)
     {
         UnPB->StepIn(4);
         Msg = new Message::Msg{Message::MsgType::picture, nullptr, new Message::picture};
@@ -38,10 +38,10 @@ namespace Message
         UnPB->StepOut();
         Database::AddPicture((char *)((Message::picture *)Msg->Message)->MD5, ((Message::picture *)Msg->Message)->Data.URL, ((Message::picture *)Msg->Message)->Width, ((Message::picture *)Msg->Message)->Height, ((Message::picture *)Msg->Message)->Data.Length);
     }
-    Func(5)
+    FUNC(5)
     {
     }
-    Func(6)
+    FUNC(6)
     {
         UnPB->StepIn(6);
         Msg = new Message::Msg{Message::MsgType::expression, nullptr, new Message::expression};
@@ -49,7 +49,7 @@ namespace Message
         ((Message::expression *)Msg->Message)->id = UnPB->GetVarint(5);
         UnPB->StepOut();
     }
-    Func(8)
+    FUNC(8)
     {
         UnPB->StepIn(8);
         Msg = new Message::Msg{Message::MsgType::picture, nullptr, new Message::picture};
@@ -61,7 +61,7 @@ namespace Message
         UnPB->StepOut();
         Database::AddPicture((char *)((Message::picture *)Msg->Message)->MD5, ((Message::picture *)Msg->Message)->Data.URL, ((Message::picture *)Msg->Message)->Width, ((Message::picture *)Msg->Message)->Height, ((Message::picture *)Msg->Message)->Data.Length);
     }
-    Func(9)
+    FUNC(9)
     {
         /*
         4a 04 08 00 40 03
@@ -73,7 +73,7 @@ namespace Message
         ]
         */
     }
-    Func(12)
+    FUNC(12)
     {
         Msg = new Message::Msg{Message::MsgType::xml, nullptr, new Message::xml};
         {
@@ -94,7 +94,7 @@ namespace Message
         }
         UnPB->StepOut();
     }
-    Func(16)
+    FUNC(16)
     {
         /*
         82 01 0b 0a 05 65 6d 6d 6d 63 18 01 28 01
@@ -109,7 +109,7 @@ namespace Message
         ]
         */
     }
-    Func(24)
+    FUNC(24)
     {
         UnPB->StepIn(24);
         UnPB->StepIn(1);
@@ -122,10 +122,10 @@ namespace Message
         UnPB->StepOut();
         UnPB->StepOut();
     }
-    Func(33)
+    FUNC(33)
     {
     }
-    Func(37)
+    FUNC(37)
     {
         /*
         aa 02 3e 50 00 60 00 68 00 9a 01 35 08 07 20 cb
@@ -163,7 +163,7 @@ namespace Message
         ]
         */
     }
-    Func(45)
+    FUNC(45)
     {
         UnPB->StepIn(45);
         Msg = new Message::Msg{Message::MsgType::reply, nullptr, new Message::reply};
@@ -202,7 +202,7 @@ namespace Message
         }
         UnPB->StepOut();
     }
-    Func(51)
+    FUNC(51)
     {
         UnPB->StepIn(51);
         Msg = new Message::Msg{Message::MsgType::json, nullptr, new Message::json};
@@ -224,7 +224,7 @@ namespace Message
         }
         UnPB->StepOut();
     }
-    Func(53)
+    FUNC(53)
     {
         UnPB->StepIn(53);
         UnPB->GetVarint(1);
@@ -232,7 +232,7 @@ namespace Message
         UnPB->StepOut();
     }
 
-#undef Func
+#undef FUNC
 }
 
 Android::Android(const char *IMEI, const char IMSI[16], const byte GUID[16], const byte MAC[6], const char *_device, const char *Brand) : wtlogin(&QQ, &Device), StatSvc(&QQ, &Device), friendlist(&QQ), OidbSvc(&QQ), MessageSvc(&QQ), ImgStore(&QQ), PicUp(&QQ)
@@ -1716,9 +1716,7 @@ int Android::QQ_Login_Second()
     QQ.Login = new QQ::Login;
     Fun_Connect();
 
-#if RELEASE
     QQ_SyncCookie();
-#endif
     return QQ.Login->state;
 }
 
