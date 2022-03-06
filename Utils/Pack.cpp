@@ -375,6 +375,11 @@ void Pack::SetStr(const char *str)
 	ByteOutputStream::SetBin((byte *)str, len);
 }
 
+void Pack::SetStr(const char8_t *str)
+{
+	SetStr((const char*)str);
+}
+
 void Pack::SetStr_(const char *str)
 {
 	unsigned int len = strlen(str);

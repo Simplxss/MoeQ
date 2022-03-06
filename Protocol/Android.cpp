@@ -228,7 +228,7 @@ namespace Message
     {
         UnPB->StepIn(53);
         UnPB->GetVarint(1);
-        //Todo
+        // Todo
         UnPB->StepOut();
     }
 
@@ -348,12 +348,12 @@ int Android::Fun_Send(const uint PacketType, const byte EncodeType, const char *
         }
         Pack.SetInt(strlen(ServiceCmd) + 4);
         Pack.SetStr(ServiceCmd);
-        Pack.SetInt(8); //MsgCookie len + 4
+        Pack.SetInt(8); // MsgCookie len + 4
         Pack.SetBin(QQ.MsgCookie, 4);
-        Pack.SetInt(strlen(Device.IMEI) + 4); //IMEI len + 4
+        Pack.SetInt(strlen(Device.IMEI) + 4); // IMEI len + 4
         Pack.SetStr(Device.IMEI);
         Pack.SetInt(4);
-        Pack.SetShort(34); //Version len + 2
+        Pack.SetShort(34); // Version len + 2
         Pack.SetStr(QQ.Version);
         Pack.SetInt(4);
         break;
@@ -545,9 +545,13 @@ void Android::Fun_Receice(const LPBYTE bin)
         condition_variable.wait(ulock);
     }
     else
-    {
-        Fun_Handle(ServiceCmd, BodyBin, sso_seq);
-    }
+        try
+        {
+            Fun_Handle(ServiceCmd, BodyBin, sso_seq);
+        }
+        catch (...)
+        {
+        };
     delete[] ServiceCmd;
     delete[] bin;
     if (CompressType)
@@ -609,7 +613,7 @@ void Android::Fun_Life_Event()
 #endif
         QQ_Heart_Beat();
         if (!(time % 1919))
-            QQ_SyncCookie(); //提前45s防止plugin用了失效的cookie
+            QQ_SyncCookie(); //提前45s防止plugin正好取了失效的cookie
         ++time;
     } while (QQ_Status());
 }
@@ -683,24 +687,24 @@ void Android::SQQzoneSvc_getUndealCount()
 void Android::OnlinePush_RespPush(const LPBYTE protobuf, const int a)
 {
     Jce Jce;
-    Jce.Write(QQ.QQ, 0);    //lFromUin
-    Jce.Write(0, 1);        //uMsgTime
-    Jce.Write(24042, 2);    //shMsgSeq
-    Jce.Write(protobuf, 3); //vMsgCookies
-    Jce.Write(0, 4);        //wCmd
-    Jce.Write(0, 5);        //uMsgType
-    Jce.Write(0, 6);        //uAppId
-    Jce.Write(0, 7);        //lSendTime
-    Jce.Write(0, 8);        //ssoSeq
-    Jce.Write(0, 9);        //ssoIp
-    Jce.Write(0, 10);       //clientIp
+    Jce.Write(QQ.QQ, 0);    // lFromUin
+    Jce.Write(0, 1);        // uMsgTime
+    Jce.Write(24042, 2);    // shMsgSeq
+    Jce.Write(protobuf, 3); // vMsgCookies
+    Jce.Write(0, 4);        // wCmd
+    Jce.Write(0, 5);        // uMsgType
+    Jce.Write(0, 6);        // uAppId
+    Jce.Write(0, 7);        // lSendTime
+    Jce.Write(0, 8);        // ssoSeq
+    Jce.Write(0, 9);        // ssoIp
+    Jce.Write(0, 10);       // clientIp
 
     const std::vector<::Jce *> list{&Jce};
 
     ::Jce Jce_;
     Jce_.Write(QQ.QQ, 0);
     Jce_.Write(&list, 1);
-    Jce_.Write(a, 2); //unknow
+    Jce_.Write(a, 2); // unknow
     Jce_.Write(0, 4);
 
     Jce.Write(&Jce_, 0);
@@ -757,7 +761,7 @@ bool Android::VisitorSvc_ReqFavorite(const uint QQ, const int Times)
                                        {
                                            UnJce.Reset(Map[i].Value[j].Value);
                                            UnJce.Read(UnJce, 0);
-                                           //Todo
+                                           // Todo
                                            delete[] Map[i].Value[j].Key;
                                            delete[] Map[i].Value[j].Value;
                                        }
@@ -977,7 +981,7 @@ void Android::Un_Tlv_Get(const unsigned short cmd, const byte *bin, const uint l
         if (QQ.Nick != nullptr)
             delete[] QQ.Nick;
         byte length = UnPack.GetByte();
-        QQ.Nick = new char8_t[length];
+        QQ.Nick = new char8_t[length + 1];
         QQ.Nick[length] = 0;
         memcpy(QQ.Nick, UnPack.GetBin(length), length);
     }
@@ -998,8 +1002,8 @@ void Android::Un_Tlv_Get(const unsigned short cmd, const byte *bin, const uint l
         break;
     case 0x130:
         UnPack.GetShort();
-        UnPack.GetInt();  //time
-        UnPack.GetBin(4); //ip
+        UnPack.GetInt();  // time
+        UnPack.GetBin(4); // ip
         break;
     case 0x133:
         if (QQ.Token.wtSessionTicket != nullptr)
@@ -1170,9 +1174,9 @@ void Android::Un_Tlv_Get(const unsigned short cmd, const byte *bin, const uint l
     case 0x537:
         UnPack.GetShort();
         UnPack.GetInt();
-        UnPack.GetInt(); //QQ
+        UnPack.GetInt(); // QQ
         UnPack.GetByte();
-        UnPack.GetBin(4); //IP
+        UnPack.GetBin(4); // IP
         UnPack.GetInt();  // Time
         UnPack.GetInt();  // appid
         break;
@@ -1252,7 +1256,7 @@ void Android::Unpack_wtlogin_login(const LPBYTE BodyBin, const uint sso_seq)
     switch (Result)
     {
     case 180:
-        //To do
+        // To do
         break;
     case 204:
         Fun_Send_Sync(10, 2, "wtlogin.login", wtlogin::login_Viery_204(),
@@ -1314,13 +1318,13 @@ void Android::Unpack_OnlinePush_PbPushGroupMsg(const LPBYTE BodyBin, const uint 
             UnPack(6);  //原创表情
             UnPack(8);  //图片
             UnPack(9);  //气泡消息
-            UnPack(12); //xml
+            UnPack(12); // xml
             UnPack(16);
             UnPack(24); //红包
             UnPack(33); //小视频
             UnPack(37);
             UnPack(45); //回复
-            UnPack(51); //json
+            UnPack(51); // json
             UnPack(53); //吃瓜等新表情
         }
         UnPB.StepOut();
@@ -1334,8 +1338,16 @@ void Android::Unpack_OnlinePush_PbPushGroupMsg(const LPBYTE BodyBin, const uint 
 #ifdef DEBUG
     if (GroupMsg.FromGroup == 635275515)
     {
-        //QQ_SetGroupAdmin(GroupMsg.FromGroup, GroupMsg.FromQQ, true);
-        QQ_SendMsg(GroupMsg.FromGroup, 1, GroupMsg.Msg);
+        if (GroupMsg.Msg->MsgType == Message::MsgType::text)
+            if (strcmp((char *)((Message::text *)GroupMsg.Msg->Message)->text, "pause"))
+            {
+                DebugBreak();
+            }
+            else
+            {
+                // QQ_SetGroupAdmin(GroupMsgY.FromGroup, GroupMsg.FromQQ, true);
+                QQ_SendMsg(GroupMsg.FromGroup, 1, GroupMsg.Msg);
+            }
     }
 #endif
 
@@ -1384,15 +1396,15 @@ void Android::Unpack_OnlinePush_PbPushTransMsg(const LPBYTE BodyBin, const uint 
         UnPack.Skip(1);
         switch (UnPack.GetByte())
         {
-        case 0: //cancle
+        case 0: // cancle
             ((Event::NoticeEvent::group_adminchange *)NoticeEvent.Information)->FromQQ = UnPack.GetInt();
             ((Event::NoticeEvent::group_adminchange *)NoticeEvent.Information)->Type = UnPack.GetByte();
             break;
-        case 1: //set
+        case 1: // set
             ((Event::NoticeEvent::group_adminchange *)NoticeEvent.Information)->FromQQ = UnPack.GetInt();
             ((Event::NoticeEvent::group_adminchange *)NoticeEvent.Information)->Type = UnPack.GetByte();
             break;
-        case 0xFF: //transfer
+        case 0xFF: // transfer
             ((Event::NoticeEvent::group_adminchange *)NoticeEvent.Information)->FromQQ = UnPack.GetInt();
             ((Event::NoticeEvent::group_adminchange *)NoticeEvent.Information)->Type = 2;
             break;
@@ -1530,13 +1542,13 @@ void Android::Unpack_MessageSvc_PushNotify(const LPBYTE BodyBin, const uint sso_
                                           UnPack(6);  //原创表情
                                           UnPack(8);  //图片
                                           UnPack(9);  //气泡消息
-                                          UnPack(12); //xml
+                                          UnPack(12); // xml
                                           UnPack(16);
                                           UnPack(24); //红包
                                           UnPack(33); //小视频
                                           UnPack(37);
                                           UnPack(45); //回复
-                                          UnPack(51); //json
+                                          UnPack(51); // json
                                           UnPack(53); //吃瓜等新表情
 
 #undef UnPack
@@ -1563,7 +1575,7 @@ void Android::Unpack_MessageSvc_PushNotify(const LPBYTE BodyBin, const uint sso_
 
 void Android::Unpack_MessageSvc_PushForceOffline(const LPBYTE BodyBin, const uint sso_seq)
 {
-    QQ_Offline();
+    // QQ_Offline();
 }
 
 void Android::Unpack_StatSvc_SvcReqMSFLoginNotify(const LPBYTE BodyBin, const uint sso_seq)
@@ -1610,9 +1622,9 @@ void Android::Unpack_ConfigPushSvc_PushReq(const LPBYTE BodyBin, const uint sso_
             int type;
             UnJce.Read(type, 1);
 
-            type = 0; //Todo,暂时懒得搞重定向
+            type = 0; // Todo,暂时懒得搞重定向
 
-            if (type == 1) //need redirect
+            if (type == 1) // need redirect
             {
                 Log::AddLog(Log::LogType::NOTICE, Log::MsgType::OTHER, u8"Online", u8"Need Redirect");
                 LPBYTE ips;
@@ -1629,7 +1641,7 @@ void Android::Unpack_ConfigPushSvc_PushReq(const LPBYTE BodyBin, const uint sso_
                 ipl[r].Read(IP, 1);
                 ipl[r].Read(Port, 2);
 
-                //Fun_Connect(IP, Port);
+                // Fun_Connect(IP, Port);
                 QQ_Online();
 
                 delete[] IP;
@@ -1675,7 +1687,7 @@ int Android::QQ_Login(const char *Password)
     QQ.Token.TGTkey = Utils::GetRandomBin(16);
     QQ.Login = new QQ::Login;
     QQ.Login->RandKey = Utils::GetRandomBin(16);
-    //711
+    // 711
     unsigned char PublicKey[] = {
         0x04, 0x92, 0x8D, 0x88, 0x50, 0x67, 0x30, 0x88, 0xB3, 0x43,
         0x26, 0x4E, 0x0C, 0x6B, 0xAC, 0xB8, 0x49, 0x6D, 0x69, 0x77,
@@ -1788,12 +1800,11 @@ char *Android::QQ_Get_Viery_PhoneNumber()
 
 void Android::QQ_Online()
 {
-    QQ.Status = 11;
-    QQ_SetOnlineType(11);
+    QQ_SetOnlineType(QQ.Status = 11);
     std::thread Thread(std::bind(&Android::Fun_Life_Event, this));
     Thread.detach();
-    //friendlist_getFriendGroupList(0);
-    //friendlist_GetTroopListReqV2();
+    // friendlist_getFriendGroupList(0);
+    // friendlist_GetTroopListReqV2();
 }
 
 void Android::QQ_Offline()
@@ -1984,7 +1995,7 @@ void Android::QQ_SyncGroupList()
                       {
                           UnJce.Reset(Map[i].Value);
                           UnJce.Read(UnJce, 0);
-                          //UnJce.Read(totoal_group_count, 1);
+                          // UnJce.Read(totoal_group_count, 1);
 
                           std::vector<::UnJce> Groups;
                           UnJce.Read(Groups, 5);
@@ -2098,7 +2109,7 @@ uint Android::QQ_UploadImage(const uint Group, const LPBYTE ImageName, const LPB
                                    switch (UnPB.GetVarint(4))
                                    {
                                    case 0: //需要上传
-                                       //IP PORT为数组,这里就取第一组
+                                       // IP PORT为数组,这里就取第一组
                                        if (Image != nullptr)
                                            PicUp::DataUp(Group, Image, ImageLength, ImageMD5, 2, UnPB.GetVarint(6), UnPB.GetVarint(7), UnPB.GetBin(8));
                                        else
@@ -2161,7 +2172,7 @@ bool Android::QQ_DrawGroupMsg(const uint Group, const uint MsgId, const uint Msg
 
 bool Android::QQ_DrawPrivateMsg(const uint Group, const uint MsgId, const uint MsgRand)
 {
-    //return PbMessageSvc_PbMsgWithDraw(Group, MsgId, MsgRand);
+    // return PbMessageSvc_PbMsgWithDraw(Group, MsgId, MsgRand);
     return true;
 }
 
@@ -2210,7 +2221,7 @@ bool Android::QQ_SetGroupMemberCard(const uint Group, const uint QQ, const char 
                                [&](uint sso_seq, LPBYTE BodyBin)
                                    -> bool
                                {
-                                   //Todo
+                                   // Todo
                                    return true;
                                });
 }

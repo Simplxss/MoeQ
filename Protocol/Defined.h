@@ -37,7 +37,7 @@ namespace Message
         uint32_t Length = 0;
         byte *Contain = nullptr;
         char8_t *URL = nullptr;
-        char *Location = nullptr;
+        char8_t *Location = nullptr;
     };
 
     struct Msg
@@ -50,7 +50,7 @@ namespace Message
     struct text
     {
         char8_t *text;
-        uint32_t AtQQ; //if text == nullptr,this is a at,0=AtAll
+        uint32_t AtQQ; // if text == nullptr,this is a at,0=AtAll
     };
 
     struct classcal_face
@@ -135,8 +135,8 @@ namespace Event
 {
     enum class ReturnType
     {
-        ignore, //Ignore 忽略
-        block,  //Block 阻塞
+        ignore, // Ignore 忽略
+        block,  // Block 阻塞
     };
 
     namespace LifeCycleEvent
@@ -154,11 +154,11 @@ namespace Event
     {
         enum class NoticeEventType
         {
-            group_fileupload,   //Group file upload 群文件上传
-            group_adminchange,  //Group administrator changes 群管理员变动
-            group_memberchange, //The change in the number of group members 群成员数量变动
-            group_mute,         //Group ban 群禁言
-            friend_added,       //Friend added 好友已添加
+            group_fileupload,   // Group file upload 群文件上传
+            group_adminchange,  // Group administrator changes 群管理员变动
+            group_memberchange, // The change in the number of group members 群成员数量变动
+            group_mute,         // Group ban 群禁言
+            friend_added,       // Friend added 好友已添加
         };
 
         struct NoticeEvent
@@ -169,8 +169,8 @@ namespace Event
 
         struct FileInfo
         {
-            char *Name;
-            char *ID;
+            char8_t *Name;
+            char8_t *ID;
             unsigned long long size;
         };
 
@@ -191,7 +191,7 @@ namespace Event
             uint32_t Type; // 0 Increase(Don't include Invited) 增加(不包括被邀请) 1 Invited 被邀请 2 Decrease(Don't include kicked and disband) 减少(不包括被踢和解散) 3 Kicked 被踢 4 Disband 解散
             uint32_t FromGroup;
             uint32_t FromQQ;
-            uint32_t OperateQQ; //Type为1,3可用
+            uint32_t OperateQQ; // Type为1,3可用
         };
         struct group_mute
         {
@@ -216,9 +216,9 @@ namespace Event
 
         enum class ReturnType
         {
-            agree,    //Agree 同意
-            disagree, //Disagree 不同意
-            ignore,   //Ignore 忽略
+            agree,    // Agree 同意
+            disagree, // Disagree 不同意
+            ignore,   // Ignore 忽略
         };
 
         struct RequestEvent
@@ -287,7 +287,8 @@ namespace Log
         PROGRAM = 1,
         PRIVATE = 2,
         _GROUP = 3,
-        OTHER = 4
+        PLUGIN = 4,
+        OTHER = 5
     };
 
     struct Log
@@ -301,44 +302,44 @@ namespace Log
 
 namespace QQ
 {
-    struct Token
-    {
-        byte *A2 = nullptr; //64
-        byte *A5 = nullptr;
-        byte *A8 = nullptr;
-        byte *D2Key = nullptr;              //16
-        byte *wtSessionTicket = nullptr;    //48
-        byte *wtSessionTicketKey = nullptr; //16
-        byte *StSig = nullptr;
-        byte *StKey = nullptr;
-        byte *token_16A = nullptr; //56
-        byte *md5 = nullptr;       //16
-        byte *md52 = nullptr;      //16
-        byte *TGT = nullptr;       //72
-        byte *TGTkey = nullptr;    //16
-        byte *ksid = nullptr;      //16
-    };
     struct FriendInfo
     {
         uint QQ;
-        char *Nick;
+        char8_t *Nick;
         int status;
-        char *Remark;
+        char8_t *Remark;
     };
     struct GroupMemberInfo
     {
         uint QQ;
-        char *Nick;
+        char8_t *Nick;
     };
     struct GroupInfo
     {
         uint GroupCode;
-        char *GroupName;
+        char8_t *GroupName;
         uint MasterQQ;
         short MemberCount;
         byte SelfIdentity;
     };
 
+    struct Token
+    {
+        byte *A2 = nullptr; // 64
+        byte *A5 = nullptr;
+        byte *A8 = nullptr;
+        byte *D2Key = nullptr;              // 16
+        byte *wtSessionTicket = nullptr;    // 48
+        byte *wtSessionTicketKey = nullptr; // 16
+        byte *StSig = nullptr;
+        byte *StKey = nullptr;
+        byte *token_16A = nullptr; // 56
+        byte *md5 = nullptr;       // 16
+        byte *md52 = nullptr;      // 16
+        byte *TGT = nullptr;       // 72
+        byte *TGTkey = nullptr;    // 16
+        byte *ksid = nullptr;      // 16
+    };
     struct Login
     {
         Utils::ECDHKEY ECDH;
@@ -346,8 +347,8 @@ namespace QQ
         byte *VieryToken1 = nullptr;
         byte *VieryToken2 = nullptr;
         byte *ClientPow = nullptr;
-        byte *token_402 = nullptr; //8
-        byte *token_403 = nullptr; //8
+        byte *token_402 = nullptr; // 8
+        byte *token_403 = nullptr; // 8
         byte *Viery_Image = nullptr;
         char *Viery_Ticket = nullptr;
         char *PhoneNumber = nullptr;
@@ -376,7 +377,7 @@ namespace QQ
         byte Status = 21;
         char8_t *ErrorMsg = nullptr;
         std::atomic_int SsoSeq;
-        unsigned char *MsgCookie = nullptr; //4
+        unsigned char *MsgCookie = nullptr; // 4
         LPBYTE SyncCookies = nullptr;
         char Version[33] = "|\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0|" AndroidQQ_VERSION_;
         ::QQ::Login *Login = nullptr;

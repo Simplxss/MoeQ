@@ -163,8 +163,8 @@ void Message::DestoryMsg(Message::Msg *Msg)
 
 void Database::Init()
 {
-#if defined(_WIN_PLATFORM_)
     char *zErrMsg = nullptr;
+#if defined(_WIN_PLATFORM_)
     wchar_t DatabaseFilePath[261], DatabaseLogPath[261] = {0};
 
     wcscpy(DatabaseLogPath, DataPath);
@@ -185,7 +185,6 @@ void Database::Init()
 #endif
 
 #if defined(_LINUX_PLATFORM_)
-    char *zErrMsg = nullptr;
     char DatabaseFilePath[261], DatabaseLogPath[261] = {0};
 
     strcpy(DatabaseLogPath, DataPath);
@@ -552,6 +551,9 @@ void Log::DesplayThread()
             case MsgType::OTHER:
                 std::cout << "Other";
                 break;
+            case MsgType::PLUGIN:
+                std::cout << "Plugin";
+                break;
             case MsgType::_GROUP:
                 std::cout << "Group";
                 break;
@@ -616,10 +618,9 @@ void Log::AddLog(const LogType LogType, const MsgType MsgType, const wchar_t *Ty
 
 void Log::AddLog(const LogType LogType, const MsgType MsgType, const char8_t *Type, const char8_t *MsgFormat, const bool Format, ...)
 {
-    char8_t *Msg;
-
     if (Format)
     {
+        char8_t Msg[999];
         va_list args;
         va_start(args, Format);
         vsprintf((char *)Msg, (char *)MsgFormat, args);
@@ -719,7 +720,7 @@ void Log::AddLog(const LogType LogType, const MsgType MsgType, const Event::Requ
         MsgSteam += (char8_t *)std::to_string(((Event::RequestEvent::add_group *)RequestEvent->Information)->FromQQ).c_str();
         MsgSteam += u8" ";
         MsgSteam += (char8_t *)std::to_string(((Event::RequestEvent::add_group *)RequestEvent->Information)->Type).c_str();
-        //MsgSteam += ((Event::RequestEvent::add_group*)RequestEvent->Information)->msg;
+        // MsgSteam += ((Event::RequestEvent::add_group*)RequestEvent->Information)->msg;
         LogQueue.push(Log({LogType, MsgType, u8"add_group", MsgSteam}));
         break;
     }

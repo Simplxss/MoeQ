@@ -125,6 +125,7 @@ public:
 	void Read(float& f, const byte tag);
 	void Read(double& d, const byte tag);
 	void Read(char*& str, const byte tag);
+	void Read(char8_t*& str, const byte tag);
 	void Read(LPBYTE& bin, const byte tag);
 	template <typename Key, typename Value>
 	void Read(std::vector<JceStruct::Map<Key, Value>>& Map, const byte tag)

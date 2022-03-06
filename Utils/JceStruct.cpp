@@ -325,6 +325,31 @@ void UnJce::Read(double& d, const byte tag)
 /// </summary>
 /// <param name="str">用完记得delete</param>
 /// <param name="tag"></param>
+void UnJce::Read(char8_t*& str, const byte tag)
+{
+	uint32_t len;
+	switch (SkipToTag(tag))
+	{
+	case JceStruct::JceStructType::STRING1:
+		len = GetByte();
+		break;
+	case JceStruct::JceStructType::STRING4:
+		len = GetInt();
+		break;
+	default:
+		throw "not str type";
+		return;
+	};
+	str = new char8_t[len + 1];
+	memcpy(str, GetStr(len), len);
+	str[len] = 0;
+}
+
+/// <summary>
+/// read STRING1&STRING4
+/// </summary>
+/// <param name="str">用完记得delete</param>
+/// <param name="tag"></param>
 void UnJce::Read(char*& str, const byte tag)
 {
 	uint32_t len;

@@ -1,5 +1,7 @@
+#include "MoeQ.h"
+
 #if defined(_WIN_PLATFORM_)
-wchar_t DataPath[MAX_PATH + 1];
+wchar_t DataPath[MAX_PATH + 1]; // "~/data/"
 #endif
 
 #if defined(_LINUX_PLATFORM_)
@@ -10,7 +12,7 @@ bool DevMode = true;
 
 PluginSystem Plugin;
 
-//GUID 86A445BF44A2C287597618F6F36EB68C   MAC 4F923C3D4568   4F:92:3C:3D:45:68
+// GUID 86A445BF44A2C287597618F6F36EB68C   MAC 4F923C3D4568   4F:92:3C:3D:45:68
 Android Sdk("861891778567",
             "460013521635791",
             (const byte *)"\x86\xA4\x45\xBF\x44\xA2\xC2\x87\x59\x76\x18\xF6\xF3\x6E\xB6\x8C",
@@ -240,7 +242,7 @@ int main()
                 goto login;
         default:
             Log::AddLog(Log::LogType::INFORMATION, Log::MsgType::OTHER, u8"Login", u8"Login failed, error code: %d, error message: %s.", true, state, Sdk.QQ_GetErrorMsg());
-            return 0;
+            goto login;
         }
         Sdk.QQ_Login_Finish();
     }
