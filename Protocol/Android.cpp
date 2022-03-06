@@ -258,7 +258,7 @@ Android::Android(const char *IMEI, const char IMSI[16], const byte GUID[16], con
     Device.WiFiName = "Wifi";
     Device.BSSID = "a"; //不知道什么东西
     Device.QIMEI = "a"; //算法不明
-    QQ.SsoSeq = Utils::GetRandom(1231123, 99999999);
+    QQ.SsoSeq = Utils::GetRandom(12123, 9999);
     QQ.MsgCookie = Utils::GetRandomBin(4);
 
 #if defined(_WIN_PLATFORM_)
@@ -1192,7 +1192,7 @@ void Android::Un_Tlv_Get(const unsigned short cmd, const byte *bin, const uint l
 
         break;
     default:
-        throw "Unknown Tlv";
+        //throw "Unknown Tlv";
         break;
     }
 }
