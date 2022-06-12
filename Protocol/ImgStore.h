@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Defined.h"
+#include "Definition.h"
 #include "../Utils/Protobuf.h"
 
 class ImgStore

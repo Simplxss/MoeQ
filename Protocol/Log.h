@@ -4,7 +4,7 @@
 #include <queue>
 #include <condition_variable>
 
-#include "../Protocol/Defined.h"
+#include "../Protocol/Definition.h"
 #include "../Utils/Utils.h"
 
 namespace Message

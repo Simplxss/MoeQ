@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Defined.h"
+#include "Definition.h"
 #include "Tlv.h"
 
 class wtlogin

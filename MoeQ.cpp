@@ -227,7 +227,7 @@ int main()
             strcat(notice, Sdk.QQ_Get_Viery_PhoneNumber());
             strcat(notice, " ?(Y/N) ");
             std::cout << notice;
-            char c[1];
+            char c[2];
             std::cin >> c;
 
             if (c[0] == 'Y')

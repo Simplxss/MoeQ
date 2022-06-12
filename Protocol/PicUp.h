@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Defined.h"
+#include "Definition.h"
 #include "Log.h"
 #include "../Utils/Protobuf.h"
 #include "../Utils/Socket.h"
