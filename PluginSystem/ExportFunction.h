@@ -81,22 +81,9 @@ FUNC(bool, setGroupLeave, const uint32_t group_code)
 	return false;
 };
 
-FUNC(bool, setDiscussLeave, const uint32_t group_code)
-{
-	if (Plugin.VieryAuth(AuthCode, 4))
-	{
-		return false;
-	}
-	else
-	{
-		Log::AddLog(Log::LogType::WARNING, Log::MsgType::PLUGIN, Plugin.AuthCode2Name(AuthCode), u8"Plugin called setGroupLeave which it don't have right.");
-		return false;
-	}
-};
-
 FUNC(bool, sendPrivateMsg, const uint32_t QQ, const Message::Msg *Msg)
 {
-	if (Plugin.VieryAuth(AuthCode, 5))
+	if (Plugin.VieryAuth(AuthCode, 4))
 		return Sdk.QQ_SendMsg(QQ, 2, Msg);
 	else
 	{
@@ -107,19 +94,8 @@ FUNC(bool, sendPrivateMsg, const uint32_t QQ, const Message::Msg *Msg)
 
 FUNC(bool, sendGroupMsg, const uint32_t Group, const Message::Msg *Msg)
 {
-	if (Plugin.VieryAuth(AuthCode, 6))
+	if (Plugin.VieryAuth(AuthCode, 5))
 		return Sdk.QQ_SendMsg(Group, 1, Msg);
-	else
-	{
-		Log::AddLog(Log::LogType::WARNING, Log::MsgType::PLUGIN, Plugin.AuthCode2Name(AuthCode), u8"Plugin called sendGroupMsg which it don't have right.");
-		return false;
-	}
-};
-
-FUNC(bool, sendDisscussMsg, const uint32_t Disscuss, const Message::Msg *Msg)
-{
-	if (Plugin.VieryAuth(AuthCode, 7))
-		return Sdk.QQ_SendDisscussMsg(Disscuss, Msg);
 	else
 	{
 		Log::AddLog(Log::LogType::WARNING, Log::MsgType::PLUGIN, Plugin.AuthCode2Name(AuthCode), u8"Plugin called sendGroupMsg which it don't have right.");
@@ -129,7 +105,7 @@ FUNC(bool, sendDisscussMsg, const uint32_t Disscuss, const Message::Msg *Msg)
 
 FUNC(bool, drawPrivateMsg, const uint32_t QQ, const uint64_t MsgID_)
 {
-	if (Plugin.VieryAuth(AuthCode, 8))
+	if (Plugin.VieryAuth(AuthCode, 6))
 	{
 		auto [MsgID, MsgRand] = Database::GetPrivateMsg(MsgID_);
 		return Sdk.QQ_DrawPrivateMsg(QQ, MsgID, MsgRand);
@@ -143,7 +119,7 @@ FUNC(bool, drawPrivateMsg, const uint32_t QQ, const uint64_t MsgID_)
 
 FUNC(bool, drawGroupMsg, const uint32_t Group, const uint64_t MsgID_)
 {
-	if (Plugin.VieryAuth(AuthCode, 8))
+	if (Plugin.VieryAuth(AuthCode, 6))
 	{
 		auto [MsgID, MsgRand] = Database::GetGroupMsg(MsgID_);
 		return Sdk.QQ_DrawGroupMsg(Group, MsgID, MsgRand);
@@ -157,7 +133,7 @@ FUNC(bool, drawGroupMsg, const uint32_t Group, const uint64_t MsgID_)
 
 FUNC(bool, setGroupBan, const uint32_t Group, const uint32_t QQ, const uint32_t Time)
 {
-	if (Plugin.VieryAuth(AuthCode, 9))
+	if (Plugin.VieryAuth(AuthCode, 7))
 	{
 		if (QQ == 0)
 			return Sdk.QQ_SetGroupBan(Group, Time);
@@ -173,7 +149,7 @@ FUNC(bool, setGroupBan, const uint32_t Group, const uint32_t QQ, const uint32_t 
 
 FUNC(bool, setGroupKick, const uint32_t Group, const uint32_t QQ, const bool Forever)
 {
-	if (Plugin.VieryAuth(AuthCode, 10))
+	if (Plugin.VieryAuth(AuthCode, 8))
 		return Sdk.QQ_KickGroupMember(Group, QQ, Forever);
 	else
 	{
@@ -184,7 +160,7 @@ FUNC(bool, setGroupKick, const uint32_t Group, const uint32_t QQ, const bool For
 
 FUNC(bool, setGroupAdmin, const uint32_t Group, const uint32_t QQ, const bool Set)
 {
-	if (Plugin.VieryAuth(AuthCode, 11))
+	if (Plugin.VieryAuth(AuthCode, 9))
 		return Sdk.QQ_SetGroupAdmin(Group, QQ, Set);
 	else
 	{
@@ -195,7 +171,7 @@ FUNC(bool, setGroupAdmin, const uint32_t Group, const uint32_t QQ, const bool Se
 
 FUNC(bool, setGroupMemberTitle, const uint32_t Group, const uint32_t QQ, const char *Title)
 {
-	if (Plugin.VieryAuth(AuthCode, 12))
+	if (Plugin.VieryAuth(AuthCode, 10))
 		return Sdk.QQ_SetGroupMemberTitle(Group, QQ, Title);
 	else
 	{
@@ -206,7 +182,7 @@ FUNC(bool, setGroupMemberTitle, const uint32_t Group, const uint32_t QQ, const c
 
 FUNC(bool, setGroupMemberCard, const uint32_t Group, const uint32_t QQ, const char *Card)
 {
-	if (Plugin.VieryAuth(AuthCode, 13))
+	if (Plugin.VieryAuth(AuthCode, 11))
 		return Sdk.QQ_SetGroupMemberCard(Group, QQ, Card);
 	else
 	{
@@ -217,7 +193,7 @@ FUNC(bool, setGroupMemberCard, const uint32_t Group, const uint32_t QQ, const ch
 
 FUNC(void, getGroupMemberInfo, const uint32_t Group, const uint32_t QQ){
 	/*
-	if (Plugin.VieryAuth(AuthCode, 14)) Sdk.QQ_GetGroupMemberInfo(Group, QQ);
+	if (Plugin.VieryAuth(AuthCode, 12)) Sdk.QQ_GetGroupMemberInfo(Group, QQ);
 	else
 	{
 		Log::AddLog(Log::LogType::WARNING, Log::MsgType::PLUGIN, Plugin.AuthCode2Name(AuthCode), u8"Plugin called setGroupMemberCard which it don't have right.");
@@ -226,7 +202,7 @@ FUNC(void, getGroupMemberInfo, const uint32_t Group, const uint32_t QQ){
 
 FUNC(void, getStrangerInfo, const uint32_t QQ){
 	/*
-	if (Plugin.VieryAuth(AuthCode, 15)) Sdk.QQ_GetStrangerInfo(QQ);
+	if (Plugin.VieryAuth(AuthCode, 13)) Sdk.QQ_GetStrangerInfo(QQ);
 	else
 	{
 		Log::AddLog(Log::LogType::WARNING, Log::MsgType::PLUGIN, Plugin.AuthCode2Name(AuthCode), u8"Plugin called setGroupMemberCard which it don't have right.");
@@ -235,7 +211,7 @@ FUNC(void, getStrangerInfo, const uint32_t QQ){
 
 FUNC(void, getGroupInfo, const uint32_t Group){
 	/*
-	if (Plugin.VieryAuth(AuthCode, 16)) Sdk.QQ_GetGroupInfo(Group);
+	if (Plugin.VieryAuth(AuthCode, 14)) Sdk.QQ_GetGroupInfo(Group);
 	else
 	{
 		Log::AddLog(Log::LogType::WARNING, Log::MsgType::PLUGIN, Plugin.AuthCode2Name(AuthCode), u8"Plugin called setGroupMemberCard which it don't have right.");
@@ -244,7 +220,7 @@ FUNC(void, getGroupInfo, const uint32_t Group){
 
 FUNC(LPBYTE, getFriendList)
 {
-	if (Plugin.VieryAuth(AuthCode, 17))
+	if (Plugin.VieryAuth(AuthCode, 15))
 	{
 		const std::vector<QQ::FriendInfo> *FriendList = Sdk.QQ_GetFriendList();
 		Pack Pack(FriendList->size() * 40 + 8, true);
@@ -270,7 +246,7 @@ FUNC(LPBYTE, getFriendList)
 
 FUNC(LPBYTE, getGroupList)
 {
-	if (Plugin.VieryAuth(AuthCode, 18))
+	if (Plugin.VieryAuth(AuthCode, 16))
 	{
 		const std::vector<QQ::GroupInfo> *GroupList = Sdk.QQ_GetGroupList();
 		Pack Pack(GroupList->size() * 30 + 8, true);
@@ -296,7 +272,7 @@ FUNC(LPBYTE, getGroupList)
 
 FUNC(LPBYTE, getGroupMemberList, uint32_t group_code)
 {
-	if (Plugin.VieryAuth(AuthCode, 19))
+	if (Plugin.VieryAuth(AuthCode, 17))
 	{
 		const std::vector<QQ::GroupMemberInfo> *GroupMemberList = Sdk.QQ_GetGroupMemberList(group_code);
 		if (GroupMemberList == nullptr)
@@ -322,7 +298,7 @@ FUNC(LPBYTE, getGroupMemberList, uint32_t group_code)
 
 FUNC(LPBYTE, getGroupAdminList, uint32_t group_code)
 {
-	if (Plugin.VieryAuth(AuthCode, 20))
+	if (Plugin.VieryAuth(AuthCode, 18))
 	{
 		const std::vector<uint32_t> *AdminList = Sdk.QQ_GetGroupAdminList(group_code);
 		Pack Pack(AdminList->size() * 4 + 8, true);

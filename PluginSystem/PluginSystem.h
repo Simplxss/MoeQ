@@ -69,7 +69,7 @@ private:
 	std::vector<LifeCycleEvent> LifeCycleEventList[4]; //4 subevents
 
 	typedef ::Event::ReturnType(__stdcall *MessageEvent)(const ::Target::Target *, const ::Message::Msg *, const uint64_t);
-	std::vector<MessageEvent> MessageEventList[3]; //3 subevents
+	std::vector<MessageEvent> MessageEventList[2]; //2 subevents
 
 	typedef ::Event::ReturnType(__stdcall *NoticeEvent)(const ::Event::NoticeEvent::NoticeEvent *);
 	std::vector<NoticeEvent> NoticeEventList[4]; //4 subevents
@@ -82,7 +82,7 @@ private:
 	std::vector<LifeCycleEvent> LifeCycleEventList[4]; //4 subevents
 
 	typedef ::Event::ReturnType (*MessageEvent)(const ::Target::Target *, const ::Message::Msg *, const uint64_t);
-	std::vector<MessageEvent> MessageEventList[3]; //3 subevents
+	std::vector<MessageEvent> MessageEventList[2]; //2 subevents
 
 	typedef ::Event::ReturnType (*NoticeEvent)(const ::Event::NoticeEvent::NoticeEvent *);
 	std::vector<NoticeEvent> NoticeEventList[4]; //4 subevents

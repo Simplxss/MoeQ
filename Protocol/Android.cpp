@@ -258,7 +258,7 @@ Android::Android(const char *IMEI, const char IMSI[16], const byte GUID[16], con
     Device.WiFiName = "Wifi";
     Device.BSSID = "a"; //不知道什么东西
     Device.QIMEI = "a"; //算法不明
-    QQ.SsoSeq = Utils::GetRandom(12123, 9999);
+    QQ.SsoSeq = Utils::GetRandom(1123, 9999);
     QQ.MsgCookie = Utils::GetRandomBin(4);
 
 #if defined(_WIN_PLATFORM_)
@@ -647,7 +647,7 @@ LPBYTE Android::Make_Body_Request_Packet(const byte iVersion, const int iRequest
 
 void Android::SQQzoneSvc_getUndealCount()
 {
-    Jce Jce;
+    Jce Jce(true);
     /*
     SQQzoneSvc.getUndealCount
     02 08 76 38 1B 12 00 0F 42 5B 23 00 00 00 00 B9 F8 23 A2 36 1A 56 31 5F 41 4E 44 5F 53 51 5F 38 2E 34 2E 31 5F 31 34 34 32 5F 59 59 42 5F 44 46 1E 51 7A 6F 6E 65 4E 65 77 53 65 72 76 69 63 65 2E 67 65 74 55 6E 64 65 61 6C 43 6F 75 6E 74 56 F7 73 63 72 65 65 6E 5F 77 69 64 74 68 3D 39 30 30 26 73 63 72 65 65 6E 5F 68 65 69 67 68 74 3D 31 36 30 30 26 69 3D 38 36 33 30 36 34 30 31 30 34 38 34 33 35 32 26 69 6D 73 69 3D 34 36 30 30 37 31 32 38 38 31 31 33 39 39 35 26 6D 61 63 3D 44 30 3A 43 36 3A 33 37 3A 44 44 3A 38 42 3A 35 46 26 6D 3D 4D 49 20 39 26 6F 3D 35 2E 31 2E 31 26 61 3D 32 32 26 73 63 3D 31 26 73 64 3D 30 26 70 3D 39 30 30 2A 31 36 30 30 26 66 3D 58 69 61 6F 6D 69 26 6D 6D 3D 33 30 33 38 26 63 66 3D 32 34 30 37 26 63 63 3D 32 26 61 69 64 3D 66 38 30 31 34 36 34 66 63 62 64 38 38 34 39 30 26 71 69 6D 65 69 3D 38 36 36 31 37 34 35 37 31 35 36 38 30 35 30 26 73 68 61 72 70 50 3D 31 26 6E 3D 77 69 66 69 26 6C 6F 6E 67 69 74 75 64 65 3D 26 6C 61 74 69 74 75 64 65 3D 6A 00 40 1D 00 0C 28 00 01 00 01 1D 00 00 01 00 0B 7A 0C 1C 2C 3D 00 00 06 00 00 00 00 00 00 0B 8D 00 01 01 39 08 00 02 06 0E 67 65 74 55 6E 64 65 61 6C 43 6F 75 6E 74 18 00 01 06 20 4E 53 5F 55 4E 44 45 41 4C 5F 43 4F 55 4E 54 2E 6D 6F 62 69 6C 65 5F 63 6F 75 6E 74 5F 72 65 71 1D 00 01 00 DC 0A 0C 10 01 20 03 48 00 01 0C 1C 58 00 0B 01 03 EA 12 5F 2B D2 F3 00 21 12 5F 2B D3 D3 01 03 F0 12 5F 2B D2 F3 01 03 E9 12 5F 2B D2 F3 01 03 EF 12 5F 2B D2 F3 01 03 ED 12 5F 2A E6 40 00 23 12 5F 2B D2 F3 01 03 EC 12 5F 2A E6 6D 03 00 00 00 00 FF FF FF FF 12 5F 2B D3 D4 01 03 EB 12 5F 2A E6 40 01 03 F2 12 5F 2A E6 40 66 00 78 00 03 00 01 1A 0A 00 01 10 01 0B 19 00 01 0A 02 3D DA 31 58 16 00 26 00 0B 26 00 3C 46 00 56 00 66 00 7C 8C 0B 00 02 1A 0A 0C 10 02 0B 19 00 01 0A 0C 16 00 26 00 0B 26 00 3C 46 00 56 00 66 00 7C 8C 0B 01 03 EE 1A 0A 0C 1C 0B 19 00 01 0A 0C 16 00 26 00 0B 26 00 3C 46 00 56 00 66 00 7C 8C 0B 88 00 01 00 21 16 01 30 96 00 AC C8 0C 0B 06 07 68 6F 73 74 75 69 6E 18 00 01 06 05 69 6E 74 36 34 1D 00 00 09 03 00 00 00 00 B9 F8 23 A2 9D 00 01 00 A2 08 00 03 06 0B 62 75 73 69 43 6F 6D 70 43 74 6C 18 00 01 06 1B 51 4D 46 5F 50 52 4F 54 4F 43 41 4C 2E 51 6D 66 42 75 73 69 43 6F 6E 74 72 6F 6C 1D 00 00 08 0A 0C 11 01 39 20 01 0B 06 0F 77 6E 73 5F 73 64 6B 5F 76 65 72 73 69 6F 6E 18 00 01 06 05 69 6E 74 33 32 1D 00 00 02 00 01 06 0D 63 6F 6E 66 5F 69 6E 66 6F 5F 72 65 71 18 00 01 06 22 51 4D 46 5F 50 52 4F 54 4F 43 41 4C 2E 6D 6F 62 69 6C 65 5F 67 65 74 5F 63 6F 6E 66 69 67 5F 72 65 71 1D 00 00 0B 0A 02 00 0F 42 5B 10 66 26 00 0B AC BC
@@ -722,27 +722,27 @@ void Android::OnlinePush_RespPush(const LPBYTE protobuf, const int a)
 
 bool Android::VisitorSvc_ReqFavorite(const uint QQ, const int Times)
 {
-    Jce Jce, _Jce;
+    Jce Jce, Jce_;
     Jce.Write(this->QQ.QQ, 0);
     Jce.Write(1, 1);
     Jce.Write(1265524299, 2);
     Jce.Write(1, 3);
     Jce.Write(0, 4);
 
-    _Jce.Write(&Jce, 0);
-    _Jce.Write(QQ, 1);
-    _Jce.Write(0, 2);
-    _Jce.Write(66, 2);
-    _Jce.Write(Times, 2);
+    Jce_.Write(&Jce, 0);
+    Jce_.Write(QQ, 1);
+    Jce_.Write(0, 2);
+    Jce_.Write(66, 2);
+    Jce_.Write(Times, 2);
 
-    _Jce.Write(&_Jce, 0);
-    LPBYTE bin = _Jce.GetAll_();
+    Jce_.Write(&Jce_, 0);
+    LPBYTE bin = Jce_.GetAll_();
 
     const std::vector<JceStruct::Map<const char *, const LPBYTE>> JceMap{JceStruct::Map<const char *, const LPBYTE>{"ReqFavorite", bin}};
-    _Jce.Write(&JceMap, 0);
+    Jce_.Write(&JceMap, 0);
     delete[] bin;
 
-    uint len = _Jce.GetAll(bin);
+    uint len = Jce_.GetAll(bin);
 
     LPBYTE sBuffer;
     return Fun_Send_Sync<bool>(11, 1, "VisitorSvc.ReqFavorite", Make_Body_Request_Packet(3, 0, "VisitorSvc", "ReqFavorite", bin, len),
@@ -2109,12 +2109,19 @@ uint Android::QQ_UploadImage(const uint Group, const LPBYTE ImageName, const LPB
                                    switch (UnPB.GetVarint(4))
                                    {
                                    case 0: //需要上传
-                                       // IP PORT为数组,这里就取第一组
+                                   {
                                        if (Image != nullptr)
-                                           PicUp::DataUp(Group, Image, ImageLength, ImageMD5, 2, UnPB.GetVarint(6), UnPB.GetVarint(7), UnPB.GetBin(8));
+                                       {
+                                           // IP PORT为数组,这里就取第一组
+                                           // 从右向左入栈,因此这里需要分开写
+                                           uint IP = UnPB.GetVarint(6);
+                                           uint Port = UnPB.GetVarint(7);
+                                           PicUp::DataUp(Group, Image, ImageLength, ImageMD5, 2, IP, Port, UnPB.GetBin(8));
+                                       }
                                        else
                                            Log::AddLog(Log::LogType::WARNING, Log::MsgType::OTHER, u8"Upload image", u8"Upload failed");
                                        return UnPB.GetVarint(9);
+                                   }
                                    case 1:
 
                                        return UnPB.GetVarint(9);
@@ -2154,6 +2161,7 @@ bool Android::QQ_SendLike(const uint QQ, const int Times)
     return VisitorSvc_ReqFavorite(QQ, Times);
 }
 
+/// <param name="ToType">接收者类型 2 Friend 1 Group</param>
 bool Android::QQ_SendMsg(const int ToNumber, const uint ToType, const Message::Msg *Msg)
 {
     return Fun_Send_Sync<bool>(11, 1, "MessageSvc.PbSendMsg", MessageSvc::PbSendMsg(ToNumber, ToType, Msg),
@@ -2174,11 +2182,6 @@ bool Android::QQ_DrawPrivateMsg(const uint Group, const uint MsgId, const uint M
 {
     // return PbMessageSvc_PbMsgWithDraw(Group, MsgId, MsgRand);
     return true;
-}
-
-bool Android::QQ_SendDisscussMsg(const uint Disscuss, const Message::Msg *Msg)
-{
-    return false;
 }
 
 bool Android::QQ_KickGroupMember(const uint Group, const uint QQ, const bool Forever)

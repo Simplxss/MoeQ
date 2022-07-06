@@ -118,6 +118,8 @@ public:
 	void SetBin(const std::vector<byte> *bin);
 	void SetBin_(const byte *bin, const uint32_t len);
 	void SetBin_(const LPBYTE bin);
+	byte *GetAll(bool Length = false);
+	uint32_t GetAll(byte *&bin, bool Length = false);
 	byte *GetAll_(bool Length = false);
 	uint32_t GetAll_(byte *&bin, bool Length = false);
 	uint32_t GetLeftSpace();

@@ -79,7 +79,7 @@ void Jce::Write(const char* str, const byte tag)
 }
 
 /// <summary>
-/// 写自身时新的Jce Length为true,写其他时会销毁
+/// 写自身时,Length=true
 /// </summary>
 /// <param name="Jce"></param>
 /// <param name="tag"></param>
@@ -96,12 +96,11 @@ void Jce::Write(Jce* Jce, const byte tag)
 	}
 	else
 	{
-		WriteHead(JceStruct::JceStructType::STRUCT_BEGIN, tag);
 		byte* bin;
 		uint32_t len = (*Jce).GetAll(bin);
+		WriteHead(JceStruct::JceStructType::STRUCT_BEGIN, tag);
 		Pack::SetBin(bin, len);
 		WriteHead(JceStruct::JceStructType::STRUCT_END, tag);
-		delete[] bin;
 	}
 }
 
@@ -137,8 +136,8 @@ void Jce::Write(const uint32_t i, const byte tag)
 }
 
 /// <summary>
-/// 初始化时Length要为true
-/// 可以重用,需调用Clean,但要注意返回值会被复写,
+/// 构造时Length要为true
+/// 可以重用,但要注意返回值会被复写,
 /// </summary>
 /// <returns></returns>
 LPBYTE Jce::GetAll()
@@ -148,7 +147,7 @@ LPBYTE Jce::GetAll()
 }
 
 /// <summary>
-/// 可以重用,需调用Clean,但要注意bin会被复写
+/// 可以重用,但要注意bin会被复写
 /// </summary>
 /// <param name="bin"></param>
 /// <returns></returns>
@@ -158,8 +157,8 @@ uint32_t Jce::GetAll(byte*& bin)
 }
 
 /// <summary>
-/// 初始化时Length要为true
-/// 可以重用,无需调用Clean
+/// 构造时Length要为true
+/// 可以重用
 /// </summary>
 /// <returns></returns>
 LPBYTE Jce::GetAll_(bool Length)
@@ -169,17 +168,12 @@ LPBYTE Jce::GetAll_(bool Length)
 }
 
 /// <summary>
-/// 可以重用,无需调用Clean
+/// 可以重用
 /// </summary>
 /// <returns></returns>
 uint32_t Jce::GetAll_(byte*& bin, bool Length)
 {
 	return Pack::GetAll_(bin, Length);
-}
-
-void Jce::Clean(bool Length)
-{
-	Pack::Reset(Length);
 }
 
 

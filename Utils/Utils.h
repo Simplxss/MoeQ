@@ -4,11 +4,6 @@
 #include <random>
 #include <iostream>
 
-#if defined(_WIN_PLATFORM_)
-#include <tchar.h>
-#include <stringapiset.h>
-#endif
-
 #include <zlib.h>
 #include <sqlite3.h>
 #include <openssl/sha.h>
@@ -17,6 +12,11 @@
 #include <openssl/des.h>
 
 #include "../include/rapidjson/document.h"
+
+#if defined(_WIN_PLATFORM_)
+#include <tchar.h>
+#include <stringapiset.h>
+#endif
 
 typedef unsigned char byte;
 typedef unsigned int uint;

@@ -37,7 +37,6 @@ namespace Message
         uint32_t Length = 0;
         byte *Contain = nullptr;
         char8_t *URL = nullptr;
-        char8_t *Location = nullptr;
     };
 
     struct Msg
@@ -66,8 +65,8 @@ namespace Message
 
     struct picture
     {
-        uint32_t Width = 0;
-        uint32_t Height = 0;
+        int64_t Width = 0;
+        int64_t Height = 0;
         byte *MD5 = nullptr;
         Message::Data Data;
     };
@@ -103,7 +102,6 @@ namespace Target
     {
         _private = 0,
         group = 1,
-        discuss = 2,
     };
 
     struct Target
@@ -122,11 +120,6 @@ namespace Target
     struct group
     {
         const uint32_t FromGroup;
-        const uint32_t FromQQ;
-    };
-    struct discuss
-    {
-        const uint32_t FromDiscuss;
         const uint32_t FromQQ;
     };
 }

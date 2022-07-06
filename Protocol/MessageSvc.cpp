@@ -197,12 +197,12 @@ LPBYTE MessageSvc::PbGetMsg()
 /// 发送消息(群聊,私聊)
 /// </summary>
 /// <param name="ToNumber"></param>
-/// <param name="ToType">接收者类型 0 Friend 1 Group</param>
+/// <param name="ToType">接收者类型 2 Friend 1 Group</param>
 /// <param name="Msg"></param>
 /// <returns></returns>
 LPBYTE MessageSvc::PbSendMsg(const uint ToNumber, const byte ToType, const Message::Msg *Msg)
 {
-    ProtobufStruct::TreeNode Node8{nullptr, nullptr, 8, ProtobufStruct::ProtobufStructType::VARINT, (void *)(ToType == 0 ? 2 : 1)};
+    ProtobufStruct::TreeNode Node8{nullptr, nullptr, 8, ProtobufStruct::ProtobufStructType::VARINT, (void *)ToType};
     ProtobufStruct::TreeNode Node5, Node6, Node6_1, Node6_2, Node6_3, Node6_4, Node6_5, Node6_9, Node6_11, Node6_12, Node6_13, Node6_14;
     if (ToType == 0)
     {

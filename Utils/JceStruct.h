@@ -77,7 +77,6 @@ public:
 	uint32_t GetAll(byte*& bin);
 	LPBYTE GetAll_(bool Length = false);
 	uint32_t GetAll_(byte*& bin, bool Length = false);
-	void Clean(bool Length);
 };
 
 class UnJce :

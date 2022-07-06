@@ -23,7 +23,7 @@ LPBYTE friendlist::getFriendGroupList(const int StartIndex)
     Jce.Write(&JceMap, 0);
     delete[] bin;
 
-    uint len = Jce.GetAll_(bin);
+    uint len = Jce.GetAll(bin);
 
     LPBYTE sBuffer;
     return Make_Body_Request_Packet(3, 0, "mqq.IMService.FriendListServiceServantObj", "GetFriendListReq", bin, len);
@@ -44,7 +44,7 @@ LPBYTE friendlist::GetTroopListReqV2()
     Jce.Write(&JceMap, 0);
     delete[] bin;
 
-    uint len = Jce.GetAll_(bin);
+    uint len = Jce.GetAll(bin);
 
     return Make_Body_Request_Packet(3, 0, "mqq.IMService.FriendListServiceServantObj", "GetTroopListReqV2Simplify", bin, len);
 }
@@ -75,7 +75,7 @@ LPBYTE friendlist::getTroopMemberList(const uint Group)
 
 LPBYTE friendlist::ModifyGroupCardReq(const uint Group, const uint QQ, const char *NewGroupCard)
 {
-    Jce Jce;
+    Jce Jce,Jce_;
     Jce.Write(QQ, 0);
     Jce.Write(1, 1);
     Jce.Write(NewGroupCard, 2);
@@ -85,15 +85,14 @@ LPBYTE friendlist::ModifyGroupCardReq(const uint Group, const uint QQ, const cha
     Jce.Write("", 6);
 
     const std::vector<::Jce *> list{&Jce};
-
-    ::Jce Jce_;
+    
     Jce_.Write(0, 0);
     Jce_.Write(Group, 1);
     Jce_.Write(0, 2);
     Jce_.Write(&list, 3);
 
     Jce.Write(&Jce_, 0);
-    LPBYTE bin = Jce.GetAll_(false);
+    LPBYTE bin = Jce.GetAll_();
 
     const std::vector<JceStruct::Map<const char *, const LPBYTE>> JceMap{JceStruct::Map<const char *, const LPBYTE>{"MGCREQ", bin}};
     Jce.Write(&JceMap, 0);

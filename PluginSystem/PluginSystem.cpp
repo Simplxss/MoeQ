@@ -564,7 +564,7 @@ void PluginSystem::Load(
 #endif
 
 #if defined(_WIN_PLATFORM_)
-    wchar_t SettingFilePath[PATH_MAX + 1];
+    wchar_t SettingFilePath[MAX_PATH + 1];
     wcscpy(SettingFilePath, DataPath);
     wcscat(SettingFilePath, L"setting.json");
 #endif
@@ -651,7 +651,7 @@ void PluginSystem::LoadEvent()
     {
         for (size_t j = 0; j < EventList_.size(); j++)
         {
-            for (size_t k = 0; k < 3; k++)
+            for (size_t k = 0; k < 2; k++)
             {
                 if ((EventList_[j].subevent & (1 << k)) == 0)
                     continue;

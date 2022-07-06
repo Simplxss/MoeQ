@@ -12,10 +12,11 @@ LPBYTE OidbSvc::_0x55c_1(const uint Group, const uint QQ, const bool Set)
     Pack.SetInt(Group);
     Pack.SetInt(QQ);
     Pack.SetByte(Set);
+    Pack.SetLength();
 
     ProtobufStruct::TreeNode Node4{nullptr, nullptr, 4, ProtobufStruct::ProtobufStructType::LENGTH, Pack.GetAll()};
-    ProtobufStruct::TreeNode Node2{nullptr, nullptr, 2, ProtobufStruct::ProtobufStructType::VARINT, (void *)1};
-    ProtobufStruct::TreeNode Node1{nullptr, nullptr, 1, ProtobufStruct::ProtobufStructType::VARINT, (void *)1372};
+    ProtobufStruct::TreeNode Node2{nullptr, &Node4, 2, ProtobufStruct::ProtobufStructType::VARINT, (void *)1};
+    ProtobufStruct::TreeNode Node1{nullptr, &Node2, 1, ProtobufStruct::ProtobufStructType::VARINT, (void *)1372};
 
     Protobuf PB;
     return PB.Pack(&Node1);
@@ -34,6 +35,8 @@ LPBYTE OidbSvc::_0x570_8(const uint Group, const uint QQ, const uint Time)
     Pack.SetBin((byte *)"\x20\0\1", 3);
     Pack.SetInt(QQ);
     Pack.SetInt(Time);
+    Pack.SetLength();
+    
     ProtobufStruct::TreeNode Node4{nullptr, nullptr, 4, ProtobufStruct::ProtobufStructType::LENGTH, Pack.GetAll()};
     ProtobufStruct::TreeNode Node3{nullptr, &Node4, 3, ProtobufStruct::ProtobufStructType::VARINT, (void *)0};
     ProtobufStruct::TreeNode Node2{nullptr, &Node3, 2, ProtobufStruct::ProtobufStructType::VARINT, (void *)8};
@@ -151,11 +154,11 @@ LPBYTE OidbSvc::_0x8fc_2(const uint Group, const uint QQ, const char *Title)
         nullptr,
         nullptr,
         7,
-        ProtobufStruct::ProtobufStructType::LENGTH,
-    }; //群名片
-    ProtobufStruct::TreeNode Node4_3_6{nullptr, &Node4_3_7, 6, ProtobufStruct::ProtobufStructType::VARINT, (void *)4294967295};
+        ProtobufStruct::ProtobufStructType::LENGTH,T
+    };
+    ProtobufStruct::TreeNode Node4_3_6{nullptr, &Node4_3_7, 6, ProtobufStruct::ProtobufStructType::VARINT, (void *)-1};
     ProtobufStruct::TreeNode Node4_3_5{nullptr, &Node4_3_6, 5, ProtobufStruct::ProtobufStructType::LENGTH, T};
-    ProtobufStruct::TreeNode Node4_3_1{nullptr, &Node4_3_5, 1, ProtobufStruct::ProtobufStructType::VARINT, (void *)2257382492};
+    ProtobufStruct::TreeNode Node4_3_1{nullptr, &Node4_3_5, 1, ProtobufStruct::ProtobufStructType::VARINT, (void *)QQ};
     ProtobufStruct::TreeNode Node4_3{
         &Node4_3_1,
         nullptr,

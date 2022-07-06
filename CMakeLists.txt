@@ -1,7 +1,5 @@
 cmake_minimum_required(VERSION 3.0.0)
 
-
-
 project(MoeQ)
 set(TARGET_NAME MoeQ)
 
@@ -37,7 +35,7 @@ if ("${CMAKE_BUILD_TYPE}" STREQUAL "Release")
     add_definitions(-D RELEASE)
 endif()
 
-add_definitions(-D X64)
+add_definitions(-D _AMD64_)
 
 find_package(ZLIB REQUIRED)
 find_package(OpenSSL REQUIRED)

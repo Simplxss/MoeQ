@@ -24,6 +24,11 @@ bool PicUp::DataUp(const uint Group, const byte *TotalData, const uint TotalData
     };
     delete[] ip;
 
+    int len = strlen(QQ->QQ_Str);
+    LPBYTE T = new byte[len + 4];
+    memcpy(T, XBin::Int2Bin(len + 4), 4);
+    memcpy(T + 4, QQ->QQ_Str, len);
+
     //文件分片发送
     uint Offset = 0, DataLength, Length;
     Protobuf PB;
@@ -53,7 +58,7 @@ bool PicUp::DataUp(const uint Group, const byte *TotalData, const uint TotalData
         ProtobufStruct::TreeNode Node1_5{nullptr, &Node1_6, 5, ProtobufStruct::ProtobufStructType::VARINT, (void *)0};
         ProtobufStruct::TreeNode Node1_4{nullptr, &Node1_5, 4, ProtobufStruct::ProtobufStructType::VARINT, (void *)83048};
         ProtobufStruct::TreeNode Node1_3{nullptr, &Node1_4, 3, ProtobufStruct::ProtobufStructType::LENGTH, (void *)"\0\0\0\x10PicUp.DataUp"};
-        ProtobufStruct::TreeNode Node1_2{nullptr, &Node1_3, 2, ProtobufStruct::ProtobufStructType::LENGTH, QQ->QQ_Str};
+        ProtobufStruct::TreeNode Node1_2{nullptr, &Node1_3, 2, ProtobufStruct::ProtobufStructType::LENGTH, T};
         ProtobufStruct::TreeNode Node1_1{nullptr, &Node1_2, 1, ProtobufStruct::ProtobufStructType::VARINT, (void *)1};
         ProtobufStruct::TreeNode Node1{
             &Node1_1,
@@ -73,10 +78,9 @@ bool PicUp::DataUp(const uint Group, const byte *TotalData, const uint TotalData
 
         TCP.Send(Pack.GetAll(), Pack.Length());
 
-        delete Bin;
         Offset += DataLength;
     }
-    delete Pack.GetAll();
+    delete[] Bin,Pack.GetAll(),T,sig;
 
     UnPack UnPack(TCP.Receive());
     UnPack.GetByte();

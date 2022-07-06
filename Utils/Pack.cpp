@@ -424,6 +424,26 @@ void Pack::SetBin_(const LPBYTE bin)
 	delete[] bin;
 }
 
+//返回且清空
+byte *Pack::GetAll(bool Length)
+{
+	ByteOutputStream::Reset();
+	if (Length)
+		ByteOutputStream::Skip(4);
+	return ByteOutputStream::GetAll();
+}
+
+//返回且清空
+uint32_t Pack::GetAll(byte *&bin, bool Length)
+{
+	uint32_t len = ByteOutputStream::Length();
+	bin = ByteOutputStream::GetAll();
+	ByteOutputStream::Reset();
+	if (Length)
+		ByteOutputStream::Skip(4);
+	return len;
+}
+
 //申请新的内存返回且清空
 byte *Pack::GetAll_(bool Length)
 {
