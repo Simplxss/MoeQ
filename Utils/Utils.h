@@ -9,6 +9,7 @@
 #include <openssl/sha.h>
 #include <openssl/md5.h>
 #include <openssl/ecdh.h>
+#include <openssl/evp.h>
 #include <openssl/des.h>
 
 #include "../include/rapidjson/document.h"
@@ -26,11 +27,11 @@ namespace Utils
 {
 	struct ECDHKEY
 	{
+		const BIGNUM *prikey;
+		byte pubkey[100];
 		int pubkeyLen;
-
-		byte sharekey[24];
-		byte pubkey[50];
-		byte prikey[50];
+		byte sharekey[100];
+		int sharekeyLen;
 	};
 	uint64_t GetRandom(const uint64_t mini = 0, const uint64_t max = 9223372036854775807);
 	char *GetRandomLetter(const uint length);
@@ -41,8 +42,8 @@ namespace Utils
 	LPBYTE MD5EX(const byte *bin, const size_t length);
 	byte *Sha256(const byte *bin, const size_t length);
 
-	bool Ecdh_Crypt(ECDHKEY &ECDHKEY, const byte *pubkey, const byte pubkeylen);
-	byte *Ecdh_CountSharekey(const int publickeyLen, const byte *prikey, const byte *publickey);
+	bool Ecdh_Crypt(ECDHKEY &ECDHKEY, byte* SvrPubKey, int SvrPubKeyLen);
+	bool Ecdh_CountSharekey(ECDHKEY &ECDHKEY);
 
 	uint DES_ECB_Encrypt(byte *_key, byte *data, uint len, byte *&bin);
 

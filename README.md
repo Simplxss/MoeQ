@@ -6,8 +6,6 @@ Language: **`English`** [`简体中文`](https://github.com/YuFanXing/MoeQ/blob/
 
 It is still a *semi-finished product* now. If you want a *ready-made robot* frame, please go to the next door [*mirai*](https://github.com/mamoe/mirai).
 
-Because of busy school, I can't spare time to continue updating this project on my own, so I opened sources.
-
 **Wish you can make it better!**
 
 # Build
@@ -96,7 +94,7 @@ But, you **CAN'T** add features like *send or receive red envelopes*.
 
 File: `./Protocol/Android.cpp` 
 
-Version: *8.5.5*
+Version: *8.8.0*
 
 |               Function Name               |              Usage              |
 | :---------------------------------------: | :-----------------------------: |
@@ -140,10 +138,11 @@ if (state == LOGIN_SUCCESS)
 
 Thanks to the following projects for making this project greater!
 
-1. ***[rapidjson](https://github.com/Tencent/rapidjson)***
-2. ***[openssl](https://github.com/openssl/openssl)***
-3. ***[sqlite3](https://sqlite.org/)***
-4. ***[zlib](https://github.com/madler/zlib)***
+1. ***[imageinfo](https://github.com/xiaozhuai/imageinfo)***
+2. ***[rapidjson](https://github.com/Tencent/rapidjson)***
+3. ***[openssl](https://github.com/openssl/openssl)***
+4. ***[sqlite3](https://github.com/sqlite/sqlite)***
+5. ***[zlib](https://github.com/madler/zlib)***
 
 **If it is not necessary,  please don't add more dependencies.**
 

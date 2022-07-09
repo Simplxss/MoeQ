@@ -10,5 +10,6 @@
 
 #include "include/rapidjson/filewritestream.h"
 #include "include/rapidjson/prettywriter.h"
+#include "include/imageinfo/imageinfo.hpp"
 
 #include "PluginSystem/ExportFunction.h"

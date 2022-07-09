@@ -1,4 +1,3 @@
-#include "include/imageinfo/imageinfo.hpp"
 #include "MoeQ.h"
 
 #if defined(_WIN_PLATFORM_)
@@ -23,8 +22,9 @@ Android Sdk("861891778567",
 
 void Debug()
 {
+    
     //以二进制方式打开图像
-    FILE *fp = fopen("C:\\Users\\Simplxs\\OneDrive\\Desktop\\Screenshot", "rb");
+    FILE *fp = fopen("C:\\Users\\Simplxs\\Desktop\\Screenshot", "rb");
     //获取图像数据总长度
     fseek(fp, 0, SEEK_END);
     int length = ftell(fp);
@@ -272,6 +272,8 @@ int main()
     SaveToken(QQ, Sdk.QQ_Get_Token(), DataFilePath);
 
     Sdk.QQ_Online();
+
+    
 #if defined(DEBUG)
     Debug();
 #endif

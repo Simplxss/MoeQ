@@ -79,7 +79,7 @@ byte *Utils::Sha256(const byte *bin, const size_t length)
     return sha256;
 }
 
-bool Utils::Ecdh_Crypt(ECDHKEY &ECDHKEY, const byte *pubkey, const byte pubkeylen)
+bool Utils::Ecdh_Crypt(ECDHKEY &ECDHKEY, byte* SvrPubKey, int SvrPubKeyLen)
 {
     int len;
     int ret;
@@ -87,14 +87,17 @@ bool Utils::Ecdh_Crypt(ECDHKEY &ECDHKEY, const byte *pubkey, const byte pubkeyle
     const EC_GROUP *group;
     EC_POINT *p_ecdh2_public;
 
-    //generate key
-    ecdh = EC_KEY_new_by_curve_name(711);
+    // ecdh = EC_KEY_new_by_curve_name(NID_secp192k1); //old
+
+    ecdh = EC_KEY_new_by_curve_name(NID_X9_62_prime256v1); // new
+
     if (ecdh == NULL)
     {
         EC_KEY_free(ecdh);
         throw "Ecdh key by curve name error.";
         return false;
     }
+
     if (!EC_KEY_generate_key(ecdh))
     {
         EC_KEY_free(ecdh);
@@ -103,80 +106,77 @@ bool Utils::Ecdh_Crypt(ECDHKEY &ECDHKEY, const byte *pubkey, const byte pubkeyle
     }
 
     group = EC_KEY_get0_group(ecdh);
-    /* 1==> Set ecdh1's public and privat key. */
-    ECDHKEY.pubkeyLen = 25;
-    if (!EC_POINT_point2oct(group, EC_KEY_get0_public_key(ecdh), POINT_CONVERSION_COMPRESSED, ECDHKEY.pubkey, 25, NULL))
+
+    if (!(ECDHKEY.pubkeyLen = EC_POINT_point2oct(group, EC_KEY_get0_public_key(ecdh), POINT_CONVERSION_UNCOMPRESSED, ECDHKEY.pubkey, 100, NULL)))
     {
         EC_KEY_free(ecdh);
         throw "EC_POINT oct2point error.";
         return false;
     }
 
-    if (!BN_bn2mpi(EC_KEY_get0_private_key(ecdh), ECDHKEY.prikey))
+    if (!(ECDHKEY.prikey = EC_KEY_get0_private_key(ecdh)))
     {
         EC_KEY_free(ecdh);
         throw "EC_POINT oct2point error.";
         return false;
     }
-    /* 2==> Set ecdh2's public key */
+
     p_ecdh2_public = EC_POINT_new(group);
-    if (!EC_POINT_oct2point(group, p_ecdh2_public, pubkey, pubkeylen, NULL))
+    if (!EC_POINT_oct2point(group, p_ecdh2_public, SvrPubKey, SvrPubKeyLen, NULL))
     {
         EC_POINT_clear_free(p_ecdh2_public);
         EC_KEY_free(ecdh);
         throw "EC_POINT oct2point error.";
         return false;
     }
+
     EC_KEY_set_public_key(ecdh, p_ecdh2_public);
-    /* 3==> Calculate the shared key of ecdh1 and ecdh2 */
-    ECDH_compute_key(ECDHKEY.sharekey, 24, p_ecdh2_public, ecdh, NULL);
+    
+    if(!(ECDHKEY.sharekeyLen = ECDH_compute_key(ECDHKEY.sharekey, 100, p_ecdh2_public, ecdh, NULL)))
+    {
+        EC_KEY_free(ecdh);
+        throw "Ecdh compute key error.";
+        return false;
+    }
 
     EC_POINT_clear_free(p_ecdh2_public);
+
     EC_KEY_free(ecdh);
     CRYPTO_cleanup_all_ex_data();
     return true;
 }
 
-byte *Utils::Ecdh_CountSharekey(const int publickeyLen, const byte *prikey, const byte *publickey)
+bool Utils::Ecdh_CountSharekey(ECDHKEY &ECDHKEY)
 {
-    int len;
     EC_KEY *ecdh;
     const EC_GROUP *group;
-    BIGNUM *p_ecdh1_private;
     EC_POINT *p_ecdh2_public;
-    byte *sharekey = new byte[24];
 
-    ecdh = EC_KEY_new_by_curve_name(711);
-    p_ecdh1_private = BN_new();
-    BN_mpi2bn(prikey, XBin::Bin2Int(prikey) + 4, p_ecdh1_private);
-    EC_KEY_set_private_key(ecdh, p_ecdh1_private);
-    //BN_free(p_ecdh1_private);
-    BN_free(p_ecdh1_private);
+    // ecdh = EC_KEY_new_by_curve_name(NID_secp192k1); //old
 
-    /* 2==> Set ecdh2's public key */
+    ecdh = EC_KEY_new_by_curve_name(NID_X9_62_prime256v1); // new
+
+    EC_KEY_set_private_key(ecdh, ECDHKEY.prikey);
+
     group = EC_KEY_get0_group(ecdh);
     p_ecdh2_public = EC_POINT_new(group);
-    EC_POINT_oct2point(group, p_ecdh2_public, publickey, publickeyLen, NULL);
+    EC_POINT_oct2point(group, p_ecdh2_public, ECDHKEY.pubkey, ECDHKEY.pubkeyLen, NULL);
 
     if (!EC_KEY_set_public_key(ecdh, p_ecdh2_public))
     {
-        //CRYPTO_ERR("Ecdh set public key error.");
-        goto err;
+        EC_KEY_free(ecdh);
+        throw "Ecdh set public key error.";
+        return false;
     }
-    /*------------*/
 
-    /* 3==> Calculate the shared key of ecdh1 and ecdh2 */
-    len = ECDH_compute_key(sharekey, 24, p_ecdh2_public, ecdh, NULL);
-    if (len != 24)
+    if(!(ECDHKEY.sharekeyLen = ECDH_compute_key(ECDHKEY.sharekey, 100, p_ecdh2_public, ecdh, NULL)))
     {
-        //CRYPTO_ERR("Ecdh compute key error.");
-        goto err;
+        EC_KEY_free(ecdh);
+        throw "Ecdh compute key error.";
+        return false;
     }
     EC_POINT_clear_free(p_ecdh2_public);
-    goto err;
-err:
-    EC_KEY_free(ecdh);
-    return sharekey;
+    return true;
 }
 
 uint Utils::DES_ECB_Encrypt(byte *_key, byte *data, uint len, byte *&bin)

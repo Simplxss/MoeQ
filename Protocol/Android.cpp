@@ -1192,7 +1192,7 @@ void Android::Un_Tlv_Get(const unsigned short cmd, const byte *bin, const uint l
 
         break;
     default:
-        //throw "Unknown Tlv";
+        // throw "Unknown Tlv";
         break;
     }
 }
@@ -1217,20 +1217,21 @@ void Android::Unpack_wtlogin_login(const LPBYTE BodyBin, const uint sso_seq)
 
     const byte *Buffer = nullptr;
     Buffer = UnPack.GetBin(len);
-    byte *key = Utils::MD5(QQ.Login->ECDH.sharekey, 24);
+    byte *key = Utils::MD5(QQ.Login->ECDH.sharekey, 16);
     std::vector<byte> data;
     Tea::decrypt(key, Buffer, len, data);
     delete[] key;
     UnPack.Reset(&data);
-    const int pubkeyLen = UnPack.GetShort();
-    const byte *publickey = UnPack.GetBin(pubkeyLen);
-    const byte *sharekey = Utils::Ecdh_CountSharekey(pubkeyLen, QQ.Login->ECDH.prikey, publickey);
-    key = Utils::MD5(sharekey, 24);
-    delete[] sharekey;
+    /* 
+    QQ.Login->ECDH.pubkeyLen = UnPack.GetShort();
+    memcpy(QQ.Login->ECDH.pubkey, UnPack.GetBin(QQ.Login->ECDH.pubkeyLen), QQ.Login->ECDH.pubkeyLen);
+    Utils::Ecdh_CountSharekey(QQ.Login->ECDH);
+    key = Utils::MD5(QQ.Login->ECDH.sharekey, QQ.Login->ECDH.sharekeyLen);
     std::vector<byte> buffer;
     Tea::decrypt(key, UnPack.GetCurrentPoint(), UnPack.GetLeftLength(), buffer);
     delete[] key;
     UnPack.Reset(&buffer);
+    */
     UnPack.GetShort();
     UnPack.GetByte();
     unsigned short Count = UnPack.GetShort();
@@ -1687,15 +1688,17 @@ int Android::QQ_Login(const char *Password)
     QQ.Token.TGTkey = Utils::GetRandomBin(16);
     QQ.Login = new QQ::Login;
     QQ.Login->RandKey = Utils::GetRandomBin(16);
-    // 711
-    unsigned char PublicKey[] = {
+
+    /* secp192k1
+    byte PublicKey[] = {
         0x04, 0x92, 0x8D, 0x88, 0x50, 0x67, 0x30, 0x88, 0xB3, 0x43,
         0x26, 0x4E, 0x0C, 0x6B, 0xAC, 0xB8, 0x49, 0x6D, 0x69, 0x77,
         0x99, 0xF3, 0x72, 0x11, 0xDE, 0xB2, 0x5B, 0xB7, 0x39, 0x06,
         0xCB, 0x08, 0x9F, 0xEA, 0x96, 0x39, 0xB4, 0xE0, 0x26, 0x04,
         0x98, 0xB5, 0x1A, 0x99, 0x2D, 0x50, 0x81, 0x3D, 0xA8};
-    Utils::Ecdh_Crypt(QQ.Login->ECDH, PublicKey, 49);
-    /*415
+    Utils::Ecdh_Crypt(QQ.Login->ECDH, PublicKey, 0x31);
+    */
+    // prime256v1
     unsigned char PublicKey[] = {
         0x04, 0xEB, 0xCA, 0x94, 0xD7, 0x33, 0xE3, 0x99, 0xB2, 0xDB,
         0x96, 0xEA, 0xCD, 0xD3, 0xF6, 0x9A, 0x8B, 0xB0, 0xF7, 0x42,
@@ -1704,8 +1707,8 @@ int Android::QQ_Login(const char *Password)
         0xE3, 0x3A, 0x79, 0x9A, 0xDC, 0x7F, 0x76, 0xFE, 0xB2, 0x08,
         0xDA, 0x7C, 0x65, 0x22, 0xCD, 0xB0, 0x71, 0x9A, 0x30, 0x51,
         0x80, 0xCC, 0x54, 0xA8, 0x2E};
-    Utils::Ecdh_Crypt(QQ.Login->ECDH, PublicKey, 65);
-    */
+    Utils::Ecdh_Crypt(QQ.Login->ECDH, PublicKey, 0x41);
+    
     Fun_Connect();
     Fun_Send_Sync(10, 2, "wtlogin.login", wtlogin::login(),
                   [&](uint sso_seq, LPBYTE BodyBin)

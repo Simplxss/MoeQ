@@ -7,7 +7,7 @@
 /// <param name="TotalData"></param>
 /// <param name="TotalDataLength"></param>
 /// <param name="TotalDataMD5"></param>
-/// <param name="DataType">Image 2, Voice 29</param>
+/// <param name="DataType">group image=2, friend image=1, groupPtt=29</param>
 /// <param name="IP"></param>
 /// <param name="Port"></param>
 /// <param name="sig"></param>

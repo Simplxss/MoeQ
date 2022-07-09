@@ -23,9 +23,10 @@ LPBYTE wtlogin::Make_Body_PC(byte *Buffer, const uint BufferLen, const bool emp)
     else
     {
         Pack.SetBin((byte *)"\3\x87\0\0\0\0\2\0\0\0\0\0\0\0\0", 15);
-        Pack.SetBin((byte *)"\1\1", 2);
+        Pack.SetBin((byte *)"\2\1", 2);
         Pack.SetBin(QQ->Login->RandKey, 16);
-        Pack.SetBin((byte *)"\1\2", 2);
+        Pack.SetBin((byte *)"\1\x31", 2);
+        Pack.SetBin((byte *)"\0\1", 2);
 
         Pack.SetShort(QQ->Login->ECDH.pubkeyLen);
         Pack.SetBin(QQ->Login->ECDH.pubkey, QQ->Login->ECDH.pubkeyLen);
@@ -38,7 +39,7 @@ LPBYTE wtlogin::Make_Body_PC(byte *Buffer, const uint BufferLen, const bool emp)
         }
         else
         {
-            byte *key = Utils::MD5(QQ->Login->ECDH.sharekey, 24);
+            byte *key = Utils::MD5(QQ->Login->ECDH.sharekey, 16);
             Tea::encrypt(key, Buffer, BufferLen, data);
             delete[] key;
         }

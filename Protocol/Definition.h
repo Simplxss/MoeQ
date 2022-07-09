@@ -6,13 +6,22 @@
 
 #include "../Utils/Utils.h"
 
-#define AndroidQQ_APPID 537066978
-#define AndroidQQ_VERSION "8.5.5"
-#define AndroidQQ_VERSION_ "A8.5.5.de12fadd"
+#define AndroidQQ_APPID 537068981
+#define AndroidQQ_VERSION "8.8.0"
+#define AndroidQQ_VERSION_ "A8.8.0.80d44512"
 #define AndroidQQ_APKID "com.tencent.mobileqq"
 #define AndroidQQ_ASIG (const byte *)"\xA6\xB7\x45\xBF\x24\xA2\xC2\x77\x52\x77\x16\xF6\xF3\x6E\xB6\x8D" // A6B745BF24A2C277527716F6F36EB68D
-#define AndroidQQ_SDK_VERSION "6.0.0.2463"
-#define AndroidQQ_BUILDTIME 1612895972
+#define AndroidQQ_SDK_VERSION "6.0.0.2469"
+#define AndroidQQ_BUILDTIME 1657223893
+
+#define TimQQ_APPID 
+#define TimQQ_VERSION
+#define TimQQ_VERSION_ 
+#define TimQQ_APKID 
+#define TimQQ_ASIG (const byte *)"" // 
+#define TimQQ_SDK_VERSION ""
+#define TimQQ_BUILDTIME 1657223893
+
 
 typedef unsigned char byte;
 typedef unsigned int uint;
