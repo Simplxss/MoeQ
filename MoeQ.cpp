@@ -22,7 +22,7 @@ Android Sdk("861891778567",
 
 void Debug()
 {
-    
+
     //以二进制方式打开图像
     FILE *fp = fopen("C:\\Users\\Simplxs\\Desktop\\Screenshot", "rb");
     //获取图像数据总长度
@@ -39,11 +39,7 @@ void Debug()
     Message::picture Pic{imageInfo.getWidth(), imageInfo.getHeight(), Utils::MD5EX(ImgBuffer, length), Message::Data(length, ImgBuffer)};
     Message::Msg Msg{Message::MsgType::picture, nullptr, &Pic};
 
-    Sdk.QQ_SendMsg(635275515, 1, &Msg);
-
-    Sdk.QQ_SetGroupAdmin(635275515, 932902956, true);
-    Sdk.QQ_SetGroupMemberBan(635275515, 932902956, 0);
-    Sdk.QQ_SetGroupBan(635275515, false);
+    // Sdk.QQ_SendMsg(635275515, 1, &Msg);
 }
 
 QQ::Token LoadToken(char (&QQ)[],
@@ -273,7 +269,6 @@ int main()
 
     Sdk.QQ_Online();
 
-    
 #if defined(DEBUG)
     Debug();
 #endif
