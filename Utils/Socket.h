@@ -24,10 +24,13 @@ public:
     Socket();
 
 public:
+    bool Connected = false;
+
+public:
     bool Connect(const char *IP, const unsigned short Port);
     void Close();
-    void Send(const byte *data, const uint length);
-    void Send(const LPBYTE buffer);
+    int Send(const byte *data, const uint length);
+    int Send(const LPBYTE buffer);
     LPBYTE Receive();
     void DomainGetIP(const
 #if defined(_WIN_PLATFORM_)

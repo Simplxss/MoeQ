@@ -34,7 +34,6 @@ private:
     Socket TCP;
     ThreadPool HandleThreads;
     SenderInfo SendList[64]; // 0x3F
-    bool Connected;
 
 public:
     Android(const char *IMEI, const char IMSI[16], const byte GUID[16], const byte MAC[6], const char *_device, const char *Brand);

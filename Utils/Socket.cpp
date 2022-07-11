@@ -26,6 +26,10 @@ bool Socket::Connect(const char *IP, const unsigned short Port)
 	addrServer.sin_family = AF_INET;
 	addrServer.sin_port = htons(Port);
 	addrServer.sin_addr.s_addr = inet_addr(IP);
+
+	if (Connected)
+		Close();
+
 	if (connect(Client, (const sockaddr *)&addrServer, sizeof(addrServer)) == -1)
 	{
 #if defined(_WIN_PLATFORM_)
@@ -38,6 +42,7 @@ bool Socket::Connect(const char *IP, const unsigned short Port)
 		throw "connect error";
 		return false;
 	}
+	Connected = true;
 	return true;
 }
 
@@ -51,14 +56,14 @@ void Socket::Close()
 #endif
 }
 
-void Socket::Send(const byte *data, const uint length)
+int Socket::Send(const byte *data, const uint length)
 {
-	send(Client, (const char *)data, length, 0);
+	return send(Client, (const char *)data, length, 0);
 }
 
-void Socket::Send(const LPBYTE data)
+int Socket::Send(const LPBYTE data)
 {
-	send(Client, (const char *)data, XBin::Bin2Int(data), 0);
+	return send(Client, (const char *)data, XBin::Bin2Int(data), 0);
 }
 
 LPBYTE Socket::Receive()
@@ -66,17 +71,19 @@ LPBYTE Socket::Receive()
 	byte len[4];
 	LPBYTE buffer;
 	int state = recv(Client, (char *)len, 4, MSG_PEEK);
-	if (state != 4)
+	if (state < 0)
 	{
-		if (state < 0 && errno != EINTR)
-			return nullptr;
-	}
-	uint length = XBin::Bin2Int(len);
-	if (length <= 4)
-	{
-		throw "len error";
+		throw WSAGetLastError();
 		return nullptr;
 	}
+	else if (state == 0)
+	{
+		Connected = false;
+		throw "Connection broken";
+		return nullptr;
+	}
+
+	uint length = XBin::Bin2Int(len);
 	buffer = new byte[length];
 	uint reclen = 0;
 	while (reclen < length)
@@ -140,7 +147,8 @@ void Socket::DomainGetIP(const
 #endif
 #if defined(_LINUX_PLATFORM_)
 	hostent *hostent = gethostbyname(Domain);
-	if(hostent == nullptr) throw " error";
+	if (hostent == nullptr)
+		throw " error";
 	szHostaddress = new char[INET_ADDRSTRLEN];
 	inet_ntop(hostent->h_addrtype, hostent->h_addr, szHostaddress, INET_ADDRSTRLEN);
 #endif

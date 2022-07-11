@@ -122,8 +122,8 @@ namespace Target
     struct _private
     {
         const uint32_t FromQQ;
-        // 0 FromFriend 1 From Online State 2 From Group 3 From Discuss
-        // 0 来自好友 1 来自在线状态 2 来自群 3来自讨论组
+        // 0 FromFriend 1 From Online State 2 From Group
+        // 0 来自好友 1 来自在线状态 2 来自群
         const uint32_t FromType;
     };
     struct group

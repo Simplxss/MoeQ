@@ -49,10 +49,10 @@ FUNC(uint32_t, getUin)
 	return Sdk.QQ_Get_Account();
 };
 
-FUNC(char *, getCookies, const char *Host)
+FUNC(char8_t *, getCookies, const char8_t *Host)
 {
 	if (Plugin.VieryAuth(AuthCode, 1))
-		return Sdk.QQ_GetCookies(Host);
+		return (char8_t *)Sdk.QQ_GetCookies((char *)Host);
 	else
 	{
 		Log::AddLog(Log::LogType::WARNING, Log::MsgType::PLUGIN, Plugin.AuthCode2Name(AuthCode), u8"Plugin called getCookies which it don't have right.");
@@ -169,10 +169,10 @@ FUNC(bool, setGroupAdmin, const uint32_t Group, const uint32_t QQ, const bool Se
 	}
 };
 
-FUNC(bool, setGroupMemberTitle, const uint32_t Group, const uint32_t QQ, const char *Title)
+FUNC(bool, setGroupMemberTitle, const uint32_t Group, const uint32_t QQ, const char8_t *Title)
 {
 	if (Plugin.VieryAuth(AuthCode, 10))
-		return Sdk.QQ_SetGroupMemberTitle(Group, QQ, Title);
+		return Sdk.QQ_SetGroupMemberTitle(Group, QQ, (char*)Title);
 	else
 	{
 		Log::AddLog(Log::LogType::WARNING, Log::MsgType::PLUGIN, Plugin.AuthCode2Name(AuthCode), u8"Plugin called setGroupMemberTitle which it don't have right.");
@@ -180,10 +180,10 @@ FUNC(bool, setGroupMemberTitle, const uint32_t Group, const uint32_t QQ, const c
 	}
 };
 
-FUNC(bool, setGroupMemberCard, const uint32_t Group, const uint32_t QQ, const char *Card)
+FUNC(bool, setGroupMemberCard, const uint32_t Group, const uint32_t QQ, const char8_t *Card)
 {
 	if (Plugin.VieryAuth(AuthCode, 11))
-		return Sdk.QQ_SetGroupMemberCard(Group, QQ, Card);
+		return Sdk.QQ_SetGroupMemberCard(Group, QQ, (char*)Card);
 	else
 	{
 		Log::AddLog(Log::LogType::WARNING, Log::MsgType::PLUGIN, Plugin.AuthCode2Name(AuthCode), u8"Plugin called setGroupMemberCard which it don't have right.");

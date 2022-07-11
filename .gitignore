@@ -6,6 +6,6 @@ CMakeSettings.json
 .vscode/*
 
 # Build results
-out/*
 build/*
+out/*
 release/*

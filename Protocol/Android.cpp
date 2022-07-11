@@ -278,8 +278,6 @@ bool Android::Fun_Connect(const char *IP, const unsigned short Port)
 {
     if (IP == nullptr || Port == 0)
     {
-        if (Connected)
-            TCP.Close();
         try
         {
 #if defined(_WIN_PLATFORM_)
@@ -310,15 +308,11 @@ bool Android::Fun_Connect(const char *IP, const unsigned short Port)
                 return false;
             };
         }
-        Connected = true;
     }
     else
     {
-        if (Connected)
-            TCP.Close();
         if (!TCP.Connect(IP, Port))
             return false;
-        Connected = true;
     }
     std::thread MsgLoop(&Android::Fun_Msg_Loop, this);
     MsgLoop.detach();
@@ -427,19 +421,34 @@ void Android::Fun_Msg_Loop()
     while (true)
     {
         LPBYTE bin;
-        while ((bin = TCP.Receive()) != nullptr)
+        try
         {
-            HandleThreads.exec(std::bind(&Android::Fun_Receice, this, bin), bin);
+            bin = TCP.Receive();
         }
-        Connected = false;
-        Log::AddLog(Log::LogType::WARNING, Log::MsgType::OTHER, u8"Connection", u8"Connecting is broken");
-        if (Fun_Connect())
+        catch (const char *e)
         {
-            Log::AddLog(Log::LogType::WARNING, Log::MsgType::OTHER, u8"Connection", u8"Connected");
-            QQ_Online();
+            Log::AddLog(Log::LogType::WARNING, Log::MsgType::OTHER, u8"Connection", e);
+            if (!strcmp(e, "Connection broken"))
+            {
+                try
+                {
+                    Fun_Connect();
+                    Log::AddLog(Log::LogType::WARNING, Log::MsgType::OTHER, u8"Connection", u8"Connected");
+                    QQ_Online();
+                }
+                catch (const char *e)
+                {
+                    Log::AddLog(Log::LogType::WARNING, Log::MsgType::OTHER, u8"Connection", e);
+                }
+            }
+            else
+                return;
         }
-        else
-            return;
+        catch (const int e)
+        {
+            Log::AddLog(Log::LogType::WARNING, Log::MsgType::OTHER, u8"Connection", u8"Receive error, code: %d", e);
+        }
+        HandleThreads.exec(std::bind(&Android::Fun_Receice, this, bin), bin);
     }
 }
 
@@ -493,6 +502,7 @@ void Android::Fun_Receice(const LPBYTE bin)
         memcpy(ServiceCmd, UnPack.GetStr(len - 4), len - 4);
         UnPack.GetBin();
         CompressType = UnPack.GetInt();
+        UnPack.GetBin();
         break;
     case 11:
         sso_seq = UnPack.GetInt();
@@ -1222,7 +1232,7 @@ void Android::Unpack_wtlogin_login(const LPBYTE BodyBin, const uint sso_seq)
     Tea::decrypt(key, Buffer, len, data);
     delete[] key;
     UnPack.Reset(&data);
-    /* 
+    /*
     QQ.Login->ECDH.pubkeyLen = UnPack.GetShort();
     memcpy(QQ.Login->ECDH.pubkey, UnPack.GetBin(QQ.Login->ECDH.pubkeyLen), QQ.Login->ECDH.pubkeyLen);
     Utils::Ecdh_CountSharekey(QQ.Login->ECDH);
@@ -1327,6 +1337,9 @@ void Android::Unpack_OnlinePush_PbPushGroupMsg(const LPBYTE BodyBin, const uint 
             UnPack(45); //回复
             UnPack(51); // json
             UnPack(53); //吃瓜等新表情
+        default:
+            Log::AddLog(Log::LogType::NOTICE, Log::MsgType::_GROUP, u8"OnlinePush.PbPushGroupMsg", u8"unknown MsgType: %d", true, UnPB.GetField());
+            break;
         }
         UnPB.StepOut();
 
@@ -1340,7 +1353,7 @@ void Android::Unpack_OnlinePush_PbPushGroupMsg(const LPBYTE BodyBin, const uint 
     if (GroupMsg.FromGroup == 635275515)
     {
         if (GroupMsg.Msg->MsgType == Message::MsgType::text)
-            if (strcmp((char *)((Message::text *)GroupMsg.Msg->Message)->text, "pause"))
+            if (!strcmp((char *)((Message::text *)GroupMsg.Msg->Message)->text, "pause"))
             {
                 DebugBreak();
             }
@@ -1363,14 +1376,17 @@ void Android::Unpack_OnlinePush_PbPushTransMsg(const LPBYTE BodyBin, const uint 
     uint Type = UnPB.GetVarint(3);
     UnPack UnPack(UnPB.GetBin(10));
     Event::NoticeEvent::NoticeEvent NoticeEvent;
+    byte SubType;
     switch (Type)
     {
     case 34:
+    {
         NoticeEvent = Event::NoticeEvent::NoticeEvent{Event::NoticeEvent::NoticeEventType::group_memberchange, new Event::NoticeEvent::group_memberchange};
         ((Event::NoticeEvent::group_memberchange *)NoticeEvent.Information)->FromGroup = UnPack.GetInt();
         UnPack.Skip(1);
         ((Event::NoticeEvent::group_memberchange *)NoticeEvent.Information)->FromQQ = UnPack.GetInt();
-        switch (UnPack.GetByte())
+        SubType = UnPack.GetByte();
+        switch (SubType)
         {
         case 2:
             ((Event::NoticeEvent::group_memberchange *)NoticeEvent.Information)->Type = 2;
@@ -1386,16 +1402,22 @@ void Android::Unpack_OnlinePush_PbPushTransMsg(const LPBYTE BodyBin, const uint 
             ((Event::NoticeEvent::group_memberchange *)NoticeEvent.Information)->Type = 3;
             ((Event::NoticeEvent::group_memberchange *)NoticeEvent.Information)->OperateQQ = UnPack.GetInt();
             break;
+        case 142:
+            ((Event::NoticeEvent::group_memberchange *)NoticeEvent.Information)->Type = 4;
+            break;
         default:
-            throw "Unknown type";
+            Log::AddLog(Log::LogType::NOTICE, Log::MsgType::_GROUP, u8"OnlinePush.PbPushTransMsg", u8"unknown MsgType: %u", true, SubType);
             break;
         }
-        break;
+    }
+
+    break;
     case 44:
         NoticeEvent = Event::NoticeEvent::NoticeEvent{Event::NoticeEvent::NoticeEventType::group_adminchange, new Event::NoticeEvent::group_adminchange};
         ((Event::NoticeEvent::group_adminchange *)NoticeEvent.Information)->FromGroup = UnPack.GetInt();
         UnPack.Skip(1);
-        switch (UnPack.GetByte())
+        SubType = UnPack.GetByte();
+        switch (SubType)
         {
         case 0: // cancle
             ((Event::NoticeEvent::group_adminchange *)NoticeEvent.Information)->FromQQ = UnPack.GetInt();
@@ -1410,11 +1432,12 @@ void Android::Unpack_OnlinePush_PbPushTransMsg(const LPBYTE BodyBin, const uint 
             ((Event::NoticeEvent::group_adminchange *)NoticeEvent.Information)->Type = 2;
             break;
         default:
-            throw "Unknown type";
+            Log::AddLog(Log::LogType::NOTICE, Log::MsgType::_GROUP, u8"OnlinePush.PbPushTransMsg", u8"unknown SubType: %u", true, SubType);
             break;
         }
         break;
     default:
+        Log::AddLog(Log::LogType::NOTICE, Log::MsgType::_GROUP, u8"OnlinePush.PbPushTransMsg", u8"unknown SubType: %u", true, Type);
         break;
     }
     Event::OnNoticeMsg(&NoticeEvent);
@@ -1564,7 +1587,7 @@ void Android::Unpack_MessageSvc_PushNotify(const LPBYTE BodyBin, const uint sso_
                                   Message::DestoryMsg(PrivateMsg.Msg);
                                   break;
                               default:
-                                  throw "Unknow msgtype";
+                                  Log::AddLog(Log::LogType::NOTICE, Log::MsgType::OTHER, u8"MessageSvc.PbGetMsg", u8"unknown MsgType: %u", true, MsgType);
                                   break;
                               }
                               UnPB.StepOut();
@@ -1576,7 +1599,8 @@ void Android::Unpack_MessageSvc_PushNotify(const LPBYTE BodyBin, const uint sso_
 
 void Android::Unpack_MessageSvc_PushForceOffline(const LPBYTE BodyBin, const uint sso_seq)
 {
-    // QQ_Offline();
+    QQ_Offline();
+    QQ_Online();
 }
 
 void Android::Unpack_StatSvc_SvcReqMSFLoginNotify(const LPBYTE BodyBin, const uint sso_seq)
@@ -1708,7 +1732,7 @@ int Android::QQ_Login(const char *Password)
         0xDA, 0x7C, 0x65, 0x22, 0xCD, 0xB0, 0x71, 0x9A, 0x30, 0x51,
         0x80, 0xCC, 0x54, 0xA8, 0x2E};
     Utils::Ecdh_Crypt(QQ.Login->ECDH, PublicKey, 0x41);
-    
+
     Fun_Connect();
     Fun_Send_Sync(10, 2, "wtlogin.login", wtlogin::login(),
                   [&](uint sso_seq, LPBYTE BodyBin)
@@ -1731,7 +1755,7 @@ int Android::QQ_Login_Second()
     QQ.Login = new QQ::Login;
     Fun_Connect();
 
-    QQ_SyncCookie();
+    // QQ_SyncCookie();
     return QQ.Login->state;
 }
 
@@ -2063,7 +2087,7 @@ void Android::QQ_SyncGroupMemberList(uint Group)
 /// <returns>true:online false:offline</returns>
 bool Android::QQ_Status()
 {
-    return QQ.Status != 21 && Connected;
+    return QQ.Status != 21 && TCP.Connected;
 }
 
 const char8_t *Android::QQ_GetErrorMsg()
@@ -2119,14 +2143,15 @@ uint Android::QQ_UploadImage(const uint Group, const LPBYTE ImageName, const LPB
                                            // 从右向左入栈,因此这里需要分开写
                                            uint IP = UnPB.GetVarint(6);
                                            uint Port = UnPB.GetVarint(7);
-                                           PicUp::DataUp(Group, Image, ImageLength, ImageMD5, 2, IP, Port, UnPB.GetBin(8));
+                                           return PicUp::DataUp(Group, Image, ImageLength, ImageMD5, 2, IP, Port, UnPB.GetBin(8));
                                        }
                                        else
+                                       {
                                            Log::AddLog(Log::LogType::WARNING, Log::MsgType::OTHER, u8"Upload image", u8"Upload failed");
-                                       return UnPB.GetVarint(9);
+                                           return 0;
+                                       }
                                    }
                                    case 1:
-
                                        return UnPB.GetVarint(9);
                                    };
                                    return 0;

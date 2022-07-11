@@ -24,7 +24,7 @@ void Debug()
 {
 
     //以二进制方式打开图像
-    FILE *fp = fopen("C:\\Users\\Simplxs\\Desktop\\Screenshot", "rb");
+    FILE *fp = fopen("C:\\Users\\Simplxs\\Desktop\\Screenshot.png", "rb");
     //获取图像数据总长度
     fseek(fp, 0, SEEK_END);
     int length = ftell(fp);
@@ -36,10 +36,10 @@ void Debug()
     fclose(fp);
 
     auto imageInfo = getImageInfo<IIRawDataReader>(IIRawData(ImgBuffer, length));
-    Message::picture Pic{imageInfo.getWidth(), imageInfo.getHeight(), Utils::MD5EX(ImgBuffer, length), Message::Data(length, ImgBuffer)};
+    Message::picture Pic{imageInfo.getWidth(), imageInfo.getHeight(), Utils::MD5EX(ImgBuffer, length) + 4, Message::Data(length, ImgBuffer)};
     Message::Msg Msg{Message::MsgType::picture, nullptr, &Pic};
 
-    // Sdk.QQ_SendMsg(635275515, 1, &Msg);
+    Sdk.QQ_SendMsg(635275515, 1, &Msg);
 }
 
 QQ::Token LoadToken(char (&QQ)[],
@@ -188,10 +188,11 @@ int main()
     {
         QQ::Token Token = LoadToken(QQ, DataFilePath);
 
-        char c[2];
+//        char c[2]
+//        std::cout << "Second Login?(Y/N) ";
+//        std::cin >> c;
 
-        std::cout << "Second Login?(Y/N) ";
-        std::cin >> c;
+        char c[2] = "Y";
 
         if (c[0] == 'Y')
         {

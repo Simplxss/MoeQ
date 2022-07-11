@@ -12,7 +12,7 @@
 /// <param name="Port"></param>
 /// <param name="sig"></param>
 /// <returns></returns>
-bool PicUp::DataUp(const uint Group, const byte *TotalData, const uint TotalDataLength, const LPBYTE TotalDataMD5, const int DataType, const uint IP, const uint Port, const LPBYTE sig)
+uint PicUp::DataUp(const uint Group, const byte *TotalData, const uint TotalDataLength, const LPBYTE TotalDataMD5, const int DataType, const uint IP, const uint Port, const LPBYTE sig)
 {
     Socket TCP;
 
@@ -30,20 +30,22 @@ bool PicUp::DataUp(const uint Group, const byte *TotalData, const uint TotalData
     memcpy(T + 4, QQ->QQ_Str, len);
 
     //文件分片发送
-    uint Offset = 0, DataLength, Length;
+    uint Offset = 0, DataLength, Length, i = Utils::GetRandom(1000, 10000);
     Protobuf PB;
     LPBYTE Bin;
-    Pack Pack(8500, false);
+    Pack Pack(0x40100, false);
     while ((DataLength = TotalDataLength - Offset) > 0)
     {
-        if (DataLength > 0x2000)
-            DataLength = 0x2000;
+        if (DataLength > 0x40000)
+            DataLength = 0x40000;
 
-        ProtobufStruct::TreeNode Node2_9{nullptr, nullptr, 9, ProtobufStruct::ProtobufStructType::LENGTH, TotalDataMD5};
+        ProtobufStruct::TreeNode Node2_13{nullptr, nullptr, 13, ProtobufStruct::ProtobufStructType::VARINT, (void *)0};
+        ProtobufStruct::TreeNode Node2_10{nullptr, &Node2_13, 10, ProtobufStruct::ProtobufStructType::VARINT, (void *)0};
+        ProtobufStruct::TreeNode Node2_9{nullptr, &Node2_10, 9, ProtobufStruct::ProtobufStructType::LENGTH, TotalDataMD5};
         ProtobufStruct::TreeNode Node2_8{nullptr, &Node2_9, 8, ProtobufStruct::ProtobufStructType::LENGTH, Utils::MD5EX(TotalData + Offset, DataLength)};
         ProtobufStruct::TreeNode Node2_6{nullptr, &Node2_8, 6, ProtobufStruct::ProtobufStructType::LENGTH, sig};
         ProtobufStruct::TreeNode Node2_4{nullptr, &Node2_6, 4, ProtobufStruct::ProtobufStructType::VARINT, (void *)DataLength};
-        ProtobufStruct::TreeNode Node2_3{nullptr, &Node2_4, 3, ProtobufStruct::ProtobufStructType::VARINT, (void *)0};
+        ProtobufStruct::TreeNode Node2_3{nullptr, &Node2_4, 3, ProtobufStruct::ProtobufStructType::VARINT, (void *)Offset};
         ProtobufStruct::TreeNode Node2_2{nullptr, &Node2_3, 2, ProtobufStruct::ProtobufStructType::VARINT, (void *)TotalDataLength};
         ProtobufStruct::TreeNode Node2{
             &Node2_2,
@@ -56,7 +58,7 @@ bool PicUp::DataUp(const uint Group, const byte *TotalData, const uint TotalData
         ProtobufStruct::TreeNode Node1_7{nullptr, &Node1_8, 7, ProtobufStruct::ProtobufStructType::VARINT, (void *)4096};
         ProtobufStruct::TreeNode Node1_6{nullptr, &Node1_7, 6, ProtobufStruct::ProtobufStructType::VARINT, (void *)AndroidQQ_APPID};
         ProtobufStruct::TreeNode Node1_5{nullptr, &Node1_6, 5, ProtobufStruct::ProtobufStructType::VARINT, (void *)0};
-        ProtobufStruct::TreeNode Node1_4{nullptr, &Node1_5, 4, ProtobufStruct::ProtobufStructType::VARINT, (void *)83048};
+        ProtobufStruct::TreeNode Node1_4{nullptr, &Node1_5, 4, ProtobufStruct::ProtobufStructType::VARINT, (void *)i};
         ProtobufStruct::TreeNode Node1_3{nullptr, &Node1_4, 3, ProtobufStruct::ProtobufStructType::LENGTH, (void *)"\0\0\0\x10PicUp.DataUp"};
         ProtobufStruct::TreeNode Node1_2{nullptr, &Node1_3, 2, ProtobufStruct::ProtobufStructType::LENGTH, T};
         ProtobufStruct::TreeNode Node1_1{nullptr, &Node1_2, 1, ProtobufStruct::ProtobufStructType::VARINT, (void *)1};
@@ -66,6 +68,7 @@ bool PicUp::DataUp(const uint Group, const byte *TotalData, const uint TotalData
             1,
             ProtobufStruct::ProtobufStructType::LENGTH,
         };
+
         Bin = PB.Pack(&Node1);
         Length = XBin::Bin2Int(Bin) - 4;
 
@@ -76,16 +79,30 @@ bool PicUp::DataUp(const uint Group, const byte *TotalData, const uint TotalData
         Pack.SetBin(TotalData + Offset, DataLength);
         Pack.SetByte(0x29);
 
-        TCP.Send(Pack.GetAll(), Pack.Length());
+        if (TCP.Send(Pack.GetAll(), Pack.Length()) <= 0)
+        {
+            throw "upload fail";
+            return 0;
+        }
 
+        LPBYTE Receive;
+        try
+        {
+            Receive = TCP.Receive();
+        }
+        catch (int e)
+        {
+            std::cerr << e << '\n';
+        }
+
+        UnPack UnPack(Receive);
+        UnPack.GetByte();
+        Length = UnPack.GetInt();
+        UnPack.GetInt();
+        UnProtobuf UnPB(UnPack.GetBin(), Length);
         Offset += DataLength;
+        i++;
     }
-    delete[] Bin,Pack.GetAll(),T,sig;
-
-    UnPack UnPack(TCP.Receive());
-    UnPack.GetByte();
-    Length = UnPack.GetInt();
-    UnPack.GetInt();
-    UnProtobuf UnPB(UnPack.GetBin(), Length);
-    return true;
+    delete[] Bin, Pack.GetAll(), T, sig;
+    return 0;
 }
