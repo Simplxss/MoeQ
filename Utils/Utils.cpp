@@ -69,6 +69,15 @@ LPBYTE Utils::MD5EX(const byte *bin, const size_t length)
     return md5;
 }
 
+void Utils::Sha256(const byte *bin, const size_t length, byte *sha256)
+{
+    SHA256_CTX ctx;
+
+    SHA256_Init(&ctx);
+    SHA256_Update(&ctx, bin, length);
+    SHA256_Final(sha256, &ctx);
+}
+
 byte *Utils::Sha256(const byte *bin, const size_t length)
 {
     SHA256_CTX ctx;

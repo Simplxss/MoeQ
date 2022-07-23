@@ -1270,11 +1270,13 @@ void Android::Unpack_wtlogin(const LPBYTE BodyBin, const uint sso_seq)
     // 40 被冻结
     // 160 设备锁
     // 162 短信发送失败
+    // 163 短信验证码错误
     // 180 回滚 (ecdh错误)
     // 204 设备锁 验证
     // 235 版本过低
     // 237 上网环境异常
     // 239 设备锁
+    // 243 非法来源禁止登录
     switch (QQ.Login->state)
     {
     case 204:

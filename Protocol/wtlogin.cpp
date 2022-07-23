@@ -76,7 +76,7 @@ LPBYTE wtlogin::login()
     time_t Time = std::time(0);
     const char *domainList[] = {"openmobile.qq.com", "docs.qq.com", "connect.qq.com", "qzone.qq.com", "vip.qq.com", "qun.qq.com", "game.qq.com", "qqweb.qq.com", "ti.qq.com", "office.qq.com", "mail.qq.com", "qzone.com", "mma.qq.com", "tenpay.com"};
     Pack.SetShort(9);
-    Pack.SetShort(25);
+    Pack.SetShort(26);
 
 #define PACKTLV(TlvName, ...) Pack.Skip(Tlv::Tlv##TlvName(Pack.GetCurrentPoint(), Pack.GetLeftSpace(), ##__VA_ARGS__))
 
@@ -104,7 +104,7 @@ LPBYTE wtlogin::login()
     PACKTLV(525, 0, 0, 0, 0, false);
     PACKTLV(544, AndroidQQ_APKID, AndroidQQ_ASIG);
     PACKTLV(545);
-    // PACKTLV(548);
+    PACKTLV(548);
     PACKTLV(542);
 
 #undef PACKTLV
@@ -218,7 +218,7 @@ LPBYTE wtlogin::login_Viery_204()
     ::Pack Pack(300);
     Pack.SetBin((byte *)"\x00\x14", 2);
     Pack.SetShort(0x14);
-    Pack.SetShort(6);
+    //Pack.SetShort(6);
 
 #define PACKTLV(TlvName, ...) Pack.Skip(Tlv::Tlv##TlvName(Pack.GetCurrentPoint(), Pack.GetLeftSpace(), ##__VA_ARGS__))
 
@@ -226,7 +226,7 @@ LPBYTE wtlogin::login_Viery_204()
     PACKTLV(104, QQ->Login->VieryToken2);
     PACKTLV(116);
     PACKTLV(401, Device->GUID, QQ->Login->token_402);
-    // PACKTLV(402);
+    //PACKTLV(402);
     // PACKTLV(403);
 
 #undef PACKTLV

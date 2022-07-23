@@ -40,9 +40,10 @@ namespace Utils
 	void MD5(const byte *bin, const size_t length, byte *md5);
 	byte *MD5(const byte *bin, const size_t length);
 	LPBYTE MD5EX(const byte *bin, const size_t length);
+	void Sha256(const byte *bin, const size_t length, byte *sha256);
 	byte *Sha256(const byte *bin, const size_t length);
 
-	bool Ecdh_Crypt(ECDHKEY &ECDHKEY, byte* SvrPubKey, int SvrPubKeyLen);
+	bool Ecdh_Crypt(ECDHKEY &ECDHKEY, byte *SvrPubKey, int SvrPubKeyLen);
 	bool Ecdh_CountSharekey(ECDHKEY &ECDHKEY);
 
 	uint DES_ECB_Encrypt(byte *_key, byte *data, uint len, byte *&bin);
