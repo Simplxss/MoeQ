@@ -63,6 +63,7 @@ namespace XBin
 	byte *IP2Bin(const char *IP);
 	uint Bin2Short(const byte *bin);
 	uint Bin2Int(const byte *bin);
+	char *Bin2Hex(const byte *bin, const uint len);
 	char *Bin2HexEx(const byte *bin, const uint len);
 	uint Hex2Bin(const char *hex, byte *&bin);
 	uint Hex2BinEx(const char *hex, byte *&bin);

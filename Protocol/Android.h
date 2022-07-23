@@ -110,7 +110,7 @@ private:
 private:
     void Un_Tlv_Get(const unsigned short cmd, const byte *bin, const uint len);
     void Unpack_Body_Request_Packet(const LPBYTE BodyBin, LPBYTE &sBuffer);
-    void Unpack_wtlogin_login(const LPBYTE BodyBin, const uint sso_seq);
+    void Unpack_wtlogin(const LPBYTE BodyBin, const uint sso_seq);
     void Unpack_OnlinePush_PbPushGroupMsg(const LPBYTE BodyBin, const uint sso_seq);
     void Unpack_OnlinePush_PbC2CMsgSync(const LPBYTE BodyBin, const uint sso_seq);
     void Unpack_OnlinePush_ReqPush(const LPBYTE BodyBin, const uint sso_seq);

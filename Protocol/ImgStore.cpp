@@ -7,7 +7,8 @@ LPBYTE ImgStore::GroupPicUp(const uint Group, const LPBYTE ImageName, const LPBY
     memcpy(V + 4, AndroidQQ_VERSION, strlen(AndroidQQ_VERSION));
 
     ProtobufStruct::TreeNode Node3_19{nullptr, nullptr, 19, ProtobufStruct::ProtobufStructType::VARINT, (void *)0};
-    ProtobufStruct::TreeNode Node3_15{nullptr, &Node3_19, 15, ProtobufStruct::ProtobufStructType::VARINT, (void *)1006};
+    ProtobufStruct::TreeNode Node3_16{nullptr, &Node3_19, 15, ProtobufStruct::ProtobufStructType::VARINT, (void *)1};
+    ProtobufStruct::TreeNode Node3_15{nullptr, &Node3_16, 15, ProtobufStruct::ProtobufStructType::VARINT, (void *)1052};
     ProtobufStruct::TreeNode Node3_13{nullptr, &Node3_15, 13, ProtobufStruct::ProtobufStructType::LENGTH, V};
     ProtobufStruct::TreeNode Node3_12{nullptr, &Node3_13, 12, ProtobufStruct::ProtobufStructType::VARINT, (void *)1000};
     ProtobufStruct::TreeNode Node3_11{nullptr, &Node3_12, 11, ProtobufStruct::ProtobufStructType::VARINT, (void *)ImageHeight};

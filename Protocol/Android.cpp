@@ -251,13 +251,12 @@ Android::Android(const char *IMEI, const char IMSI[16], const byte GUID[16], con
     memcpy(Device.Brand, Brand, strlen(Brand) + 1);
     memcpy(QQ.Version + 1, IMSI, 15);
     Device.os_type = "android";
-    Device.os_version = "11.0.1";
+    Device.os_version = "12";
     Device._network_type = 2;
-    Device._apn = "CMCC";
-    Device.NetworkName = "IMT-2020";
-    Device.WiFiName = "Wifi";
-    Device.BSSID = "a"; //不知道什么东西
-    Device.QIMEI = "a"; //算法不明
+    Device._apn = "wifi";
+    Device.NetworkName = "China Mobile";
+    Device.WiFiName = "my wifi";
+    Device.BSSID = "a";
     QQ.SsoSeq = Utils::GetRandom(1123, 9999);
     QQ.MsgCookie = Utils::GetRandomBin(4);
 
@@ -1125,6 +1124,8 @@ void Android::Un_Tlv_Get(const unsigned short cmd, const byte *bin, const uint l
         QQ.Login->Viery_Ticket[len] = 0;
         memcpy(QQ.Login->Viery_Ticket, bin, len);
         break;
+    case 0x197:
+        break;
     case 0x204:
         //网址,过设备锁方式
         break;
@@ -1213,35 +1214,77 @@ void Android::Unpack_Body_Request_Packet(const LPBYTE BodyBin, LPBYTE &sBuffer)
     UnJce.Read(sBuffer, 7);
 }
 
-void Android::Unpack_wtlogin_login(const LPBYTE BodyBin, const uint sso_seq)
+void Android::Unpack_wtlogin(const LPBYTE BodyBin, const uint sso_seq)
 {
     ::UnPack UnPack(BodyBin);
     UnPack.GetByte();
     const uint len = UnPack.GetShort() - 1 - 2 - 2 - 2 - 2 - 4 - 2 - 1 - 1;
-    UnPack.GetShort();
-    UnPack.GetShort();
-    UnPack.GetShort();
-    UnPack.GetInt();
-    UnPack.GetShort();
-    const byte Result = UnPack.GetByte();
+    UnPack.GetShort(); // version
+    UnPack.GetShort(); // command
+    UnPack.GetShort(); // 1
+    UnPack.GetInt();   // uin
+    UnPack.GetByte();
+    byte encrypt_type = UnPack.GetByte();
+    QQ.Login->state = UnPack.GetByte();
 
     const byte *Buffer = nullptr;
     Buffer = UnPack.GetBin(len);
-    byte *key = Utils::MD5(QQ.Login->ECDH.sharekey, 16);
     std::vector<byte> data;
-    Tea::decrypt(key, Buffer, len, data);
-    delete[] key;
+
+    switch (encrypt_type)
+    {
+    case 0:
+        if (QQ.Login->state == 180)
+        {
+            Tea::decrypt(QQ.Login->RandKey, Buffer, len, data);
+        }
+        else
+        {
+            byte *key = Utils::MD5(QQ.Login->ECDH.sharekey, 16);
+            Tea::decrypt(key, Buffer, len, data);
+            delete[] key;
+            /*
+            QQ.Login->ECDH.pubkeyLen = UnPack.GetShort();
+            memcpy(QQ.Login->ECDH.pubkey, UnPack.GetBin(QQ.Login->ECDH.pubkeyLen), QQ.Login->ECDH.pubkeyLen);
+            Utils::Ecdh_CountSharekey(QQ.Login->ECDH);
+            key = Utils::MD5(QQ.Login->ECDH.sharekey, QQ.Login->ECDH.sharekeyLen);
+            std::vector<byte> buffer;
+            Tea::decrypt(key, UnPack.GetCurrentPoint(), UnPack.GetLeftLength(), buffer);
+            delete[] key;
+            UnPack.Reset(&buffer);
+            */
+        }
+        break;
+    case 3:
+        Tea::decrypt(QQ.Token.wtSessionTicketKey, Buffer, len, data);
+    default:
+        break;
+    }
+
     UnPack.Reset(&data);
-    /*
-    QQ.Login->ECDH.pubkeyLen = UnPack.GetShort();
-    memcpy(QQ.Login->ECDH.pubkey, UnPack.GetBin(QQ.Login->ECDH.pubkeyLen), QQ.Login->ECDH.pubkeyLen);
-    Utils::Ecdh_CountSharekey(QQ.Login->ECDH);
-    key = Utils::MD5(QQ.Login->ECDH.sharekey, QQ.Login->ECDH.sharekeyLen);
-    std::vector<byte> buffer;
-    Tea::decrypt(key, UnPack.GetCurrentPoint(), UnPack.GetLeftLength(), buffer);
-    delete[] key;
-    UnPack.Reset(&buffer);
-    */
+
+    // 0 登录成功
+    // 1 密码错误
+    // 2 验证码
+    // 32 被回收
+    // 40 被冻结
+    // 160 设备锁
+    // 162 短信发送失败
+    // 180 回滚 (ecdh错误)
+    // 204 设备锁 验证
+    // 235 版本过低
+    // 237 上网环境异常
+    // 239 设备锁
+    switch (QQ.Login->state)
+    {
+    case 204:
+        Fun_Send_Sync(10, 2, "wtlogin.login", wtlogin::login_Viery_204(),
+                      [&](uint sso_seq, LPBYTE BodyBin)
+                      {
+                          Unpack_wtlogin(BodyBin, sso_seq);
+                      });
+        break;
+    }
     UnPack.GetShort();
     UnPack.GetByte();
     unsigned short Count = UnPack.GetShort();
@@ -1250,32 +1293,6 @@ void Android::Unpack_wtlogin_login(const LPBYTE BodyBin, const uint sso_seq)
         unsigned short cmd = UnPack.GetShort();
         unsigned short binlen = UnPack.GetShort();
         Un_Tlv_Get(cmd, UnPack.GetBin(binlen), binlen);
-    }
-    QQ.Login->state = Result;
-    // 0 登录成功
-    // 1 密码错误
-    // 2 验证码
-    // 32 被回收
-    // 40 被冻结
-    // 160 设备锁
-    // 162 短信发送失败
-    // 180 回滚
-    // 204 设备锁 验证
-    // 235 版本过低
-    // 237 上网环境异常
-    // 239 设备锁
-    switch (Result)
-    {
-    case 180:
-        // To do
-        break;
-    case 204:
-        Fun_Send_Sync(10, 2, "wtlogin.login", wtlogin::login_Viery_204(),
-                      [&](uint sso_seq, LPBYTE BodyBin)
-                      {
-                          Unpack_wtlogin_login(BodyBin, sso_seq);
-                      });
-        break;
     }
 }
 
@@ -1737,7 +1754,7 @@ int Android::QQ_Login(const char *Password)
     Fun_Send_Sync(10, 2, "wtlogin.login", wtlogin::login(),
                   [&](uint sso_seq, LPBYTE BodyBin)
                   {
-                      Unpack_wtlogin_login(BodyBin, sso_seq);
+                      Unpack_wtlogin(BodyBin, sso_seq);
                   });
     return QQ.Login->state;
 }
@@ -1790,7 +1807,7 @@ byte Android::QQ_Send_Sms()
     Fun_Send_Sync(10, 2, "wtlogin.login", wtlogin::login_Send_Sms(),
                   [&](uint sso_seq, LPBYTE BodyBin)
                   {
-                      Unpack_wtlogin_login(BodyBin, sso_seq);
+                      Unpack_wtlogin(BodyBin, sso_seq);
                   });
     return QQ.Login->state;
 }
@@ -1800,7 +1817,7 @@ byte Android::QQ_Viery_Ticket(const char *Ticket)
     Fun_Send_Sync(10, 2, "wtlogin.login", wtlogin::login_Viery_Ticket(Ticket),
                   [&](uint sso_seq, LPBYTE BodyBin)
                   {
-                      Unpack_wtlogin_login(BodyBin, sso_seq);
+                      Unpack_wtlogin(BodyBin, sso_seq);
                   });
     return QQ.Login->state;
 }
@@ -1810,7 +1827,7 @@ byte Android::QQ_Viery_Sms(const char *SmsCode)
     Fun_Send_Sync(10, 2, "wtlogin.login", wtlogin::login_Viery_Sms(SmsCode),
                   [&](uint sso_seq, LPBYTE BodyBin)
                   {
-                      Unpack_wtlogin_login(BodyBin, sso_seq);
+                      Unpack_wtlogin(BodyBin, sso_seq);
                   });
     return QQ.Login->state;
 }
@@ -1920,46 +1937,7 @@ void Android::QQ_SyncCookie()
     Fun_Send_Sync(10, 2, "wtlogin.exchange_emp", wtlogin::exchange_emp(),
                   [&](uint sso_seq, LPBYTE BodyBin)
                   {
-                      ::UnPack UnPack(BodyBin);
-
-                      UnPack.GetByte();
-                      uint len = UnPack.GetShort() - 1 - 2 - 2 - 2 - 2 - 4 - 2 - 1 - 1;
-                      UnPack.GetShort();
-                      UnPack.GetShort();
-                      UnPack.GetShort();
-                      UnPack.GetInt();
-                      UnPack.GetShort();
-                      const byte Result = UnPack.GetByte();
-
-                      const byte *Buffer = nullptr;
-                      Buffer = UnPack.GetBin(len);
-
-                      std::vector<byte> data;
-
-                      Tea::decrypt(QQ.Token.wtSessionTicketKey, Buffer, len, data);
-                      UnPack.Reset(&data);
-
-                      UnPack.GetShort();
-                      UnPack.GetByte();
-                      if (Result == 0)
-                      {
-                          UnPack.GetInt();
-                          len = UnPack.GetShort();
-                          ;
-                          Buffer = UnPack.GetBin(len);
-                          Tea::decrypt(QQ.Token.TGTkey, Buffer, len, data);
-                          UnPack.Reset(&data);
-                      }
-
-                      unsigned short Count = UnPack.GetShort();
-                      for (size_t i = 0; i < Count; i++)
-                      {
-                          unsigned short cmd = UnPack.GetShort();
-                          unsigned short binlen = UnPack.GetShort();
-                          Un_Tlv_Get(cmd, UnPack.GetBin(binlen), binlen);
-                      }
-
-                      QQ.Login->state = Result;
+                      Unpack_wtlogin(BodyBin, sso_seq);
                   });
 }
 
@@ -2143,7 +2121,16 @@ uint Android::QQ_UploadImage(const uint Group, const LPBYTE ImageName, const LPB
                                            // 从右向左入栈,因此这里需要分开写
                                            uint IP = UnPB.GetVarint(6);
                                            uint Port = UnPB.GetVarint(7);
-                                           return PicUp::DataUp(Group, Image, ImageLength, ImageMD5, 2, IP, Port, UnPB.GetBin(8));
+                                           try
+                                           {
+                                               PicUp::DataUp(Group, Image, ImageLength, ImageMD5, 2, IP, Port, UnPB.GetBin(8));
+                                           }
+                                           catch (const char *e)
+                                           {
+                                               Log::AddLog(Log::LogType::NOTICE, Log::MsgType::OTHER, u8"Upload fail", e);
+                                               return 0;
+                                           }
+                                           return UnPB.GetVarint(9);
                                        }
                                        else
                                        {

@@ -345,6 +345,25 @@ uint XBin::Bin2Int(const byte *bin)
 }
 
 /// <summary>
+/// 无空格小写字母
+/// </summary>
+/// <param name="bin"></param>
+/// <param name="len"></param>
+/// <returns></returns>
+char *XBin::Bin2Hex(const byte *bin, const uint len)
+{
+    const char Table[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
+    char *Hex = new char[(len << 1) + 1];
+    Hex[len << 1] = 0;
+    for (size_t i = 0; i < len; i++)
+    {
+        Hex[i << 1] = Table[(bin[i] & 0xf0) >> 4];
+        Hex[(i << 1) + 1] = Table[bin[i] & 0x0f];
+    }
+    return Hex;
+}
+
+/// <summary>
 /// 无空格大写字母
 /// </summary>
 /// <param name="bin"></param>

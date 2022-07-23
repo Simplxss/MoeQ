@@ -1,5 +1,134 @@
 #include "Protobuf.h"
 
+void Protobuf::SetBin(LPBYTE bin)
+{
+	Pack::SetBin(bin + 4, XBin::Bin2Int(bin) - 4);
+}
+
+void Protobuf::SetBin_(LPBYTE bin)
+{
+	Pack::SetBin(bin + 4, XBin::Bin2Int(bin) - 4);
+	delete bin;
+}
+
+LPBYTE Protobuf::Int2Varint(long long int l)
+{
+	byte Varint[10], i = 0;
+	while (l > 0x7F)
+	{
+		Varint[i] = (l & 0x7F) | 0x80;
+		l >>= 7;
+		++i;
+	}
+	Varint[i++] = l;
+	LPBYTE Varint_ = new byte[i + 4];
+	memcpy(Varint_, XBin::Int2Bin(i + 4), 4);
+	memcpy(Varint_ + 4, Varint, i);
+	return Varint_;
+}
+
+int Protobuf::Int2Varint_len(long long int l)
+{
+	int i = 0;
+	while (l > 127)
+	{
+		l >>= 7;
+		++i;
+	}
+	return ++i;
+}
+
+LPBYTE Protobuf::Field2Key(int Field, ProtobufStruct::ProtobufStructType ProtobufStructType)
+{
+	return Int2Varint(Field << 3 | static_cast<int>(ProtobufStructType));
+}
+
+uint32_t Protobuf::FirstProcess(ProtobufStruct::TreeNode *First)
+{
+	uint32_t size = 0;
+	ProtobufStruct::TreeNode *This = First;
+	while (This != nullptr)
+	{
+		if (This->child != nullptr)
+		{
+			uint32_t s = FirstProcess(This->child);
+			This->Data = Int2Varint(s);
+			size += XBin::Bin2Int((byte *)This->Data) - 4;
+			size += s;
+		}
+		else
+		{
+			switch (This->ProtobufStructType)
+			{
+			case ProtobufStruct::ProtobufStructType::VARINT:
+				This->Data = Int2Varint((long long int)This->Data);
+				size += XBin::Bin2Int((byte *)This->Data) - 4;
+				break;
+			case ProtobufStruct::ProtobufStructType::FIX64:
+				size += 8;
+				break;
+			case ProtobufStruct::ProtobufStructType::LENGTH:
+			{
+				int len = XBin::Bin2Int((byte *)This->Data) - 4;
+				size += Int2Varint_len(len);
+				size += len;
+			}
+			break;
+			case ProtobufStruct::ProtobufStructType::FIX32:
+				size += 4;
+				break;
+			}
+		}
+		This->Field = (long long int)Field2Key(This->Field, This->ProtobufStructType);
+		size += XBin::Bin2Int((byte *)This->Field) - 4;
+		This = This->brother;
+	}
+	return size;
+}
+
+void Protobuf::SecondProcess(ProtobufStruct::TreeNode *First)
+{
+	ProtobufStruct::TreeNode *This = First;
+	while (This != nullptr)
+	{
+		SetBin_((LPBYTE)This->Field);
+		if (This->child != nullptr)
+		{
+			SetBin_((LPBYTE)This->Data);
+			SecondProcess(This->child);
+		}
+		else
+		{
+			switch (This->ProtobufStructType)
+			{
+			case ProtobufStruct::ProtobufStructType::VARINT:
+				SetBin_((LPBYTE)This->Data);
+				break;
+			case ProtobufStruct::ProtobufStructType::FIX64:
+				SetLong((uint64_t)This->Data);
+				break;
+			case ProtobufStruct::ProtobufStructType::LENGTH:
+				SetBin_(Int2Varint(XBin::Bin2Int((byte *)This->Data) - 4));
+				SetBin((LPBYTE)This->Data);
+				break;
+			case ProtobufStruct::ProtobufStructType::FIX32:
+				SetInt((uint64_t)This->Data);
+				break;
+			}
+		}
+		This = This->brother;
+	}
+}
+
+LPBYTE Protobuf::Pack(ProtobufStruct::TreeNode *First)
+{
+	Expansion(FirstProcess(First));
+	SecondProcess(First);
+	SetLength();
+	return GetAll();
+}
+
+
 long long int UnProtobuf::GetVarint()
 {
 	long long int l = 0;
@@ -128,132 +257,4 @@ LPBYTE UnProtobuf::GetBin(const byte Field)
 		return bin;
 	}
 	return (LPBYTE)"\0\0\0\4";
-}
-
-void Protobuf::SetBin(LPBYTE bin)
-{
-	Pack::SetBin(bin + 4, XBin::Bin2Int(bin) - 4);
-}
-
-void Protobuf::SetBin_(LPBYTE bin)
-{
-	Pack::SetBin(bin + 4, XBin::Bin2Int(bin) - 4);
-	delete bin;
-}
-
-LPBYTE Protobuf::Int2Varint(long long int l)
-{
-	byte Varint[10], i = 0;
-	while (l > 0x7F)
-	{
-		Varint[i] = (l & 0x7F) | 0x80;
-		l >>= 7;
-		++i;
-	}
-	Varint[i++] = l;
-	LPBYTE Varint_ = new byte[i + 4];
-	memcpy(Varint_, XBin::Int2Bin(i + 4), 4);
-	memcpy(Varint_ + 4, Varint, i);
-	return Varint_;
-}
-
-int Protobuf::Int2Varint_len(long long int l)
-{
-	int i = 0;
-	while (l > 127)
-	{
-		l >>= 7;
-		++i;
-	}
-	return ++i;
-}
-
-LPBYTE Protobuf::Field2Key(int Field, ProtobufStruct::ProtobufStructType ProtobufStructType)
-{
-	return Int2Varint(Field << 3 | static_cast<int>(ProtobufStructType));
-}
-
-uint32_t Protobuf::FirstProcess(ProtobufStruct::TreeNode *First)
-{
-	uint32_t size = 0;
-	ProtobufStruct::TreeNode *This = First;
-	while (This != nullptr)
-	{
-		if (This->child != nullptr)
-		{
-			uint32_t s = FirstProcess(This->child);
-			This->Data = Int2Varint(s);
-			size += XBin::Bin2Int((byte *)This->Data) - 4;
-			size += s;
-		}
-		else
-		{
-			switch (This->ProtobufStructType)
-			{
-			case ProtobufStruct::ProtobufStructType::VARINT:
-				This->Data = Int2Varint((long long int)This->Data);
-				size += XBin::Bin2Int((byte *)This->Data) - 4;
-				break;
-			case ProtobufStruct::ProtobufStructType::FIX64:
-				size += 8;
-				break;
-			case ProtobufStruct::ProtobufStructType::LENGTH:
-			{
-				int len = XBin::Bin2Int((byte *)This->Data) - 4;
-				size += Int2Varint_len(len);
-				size += len;
-			}
-			break;
-			case ProtobufStruct::ProtobufStructType::FIX32:
-				size += 4;
-				break;
-			}
-		}
-		This->Field = (long long int)Field2Key(This->Field, This->ProtobufStructType);
-		size += XBin::Bin2Int((byte *)This->Field) - 4;
-		This = This->brother;
-	}
-	return size;
-}
-
-void Protobuf::SecondProcess(ProtobufStruct::TreeNode *First)
-{
-	ProtobufStruct::TreeNode *This = First;
-	while (This != nullptr)
-	{
-		SetBin_((LPBYTE)This->Field);
-		if (This->child != nullptr)
-		{
-			SetBin_((LPBYTE)This->Data);
-			SecondProcess(This->child);
-		}
-		else
-		{
-			switch (This->ProtobufStructType)
-			{
-			case ProtobufStruct::ProtobufStructType::VARINT:
-				SetBin_((LPBYTE)This->Data);
-				break;
-			case ProtobufStruct::ProtobufStructType::FIX64:
-				SetLong((uint64_t)This->Data);
-				break;
-			case ProtobufStruct::ProtobufStructType::LENGTH:
-				SetBin_(Int2Varint(XBin::Bin2Int((byte *)This->Data) - 4));
-				SetBin((LPBYTE)This->Data);
-				break;
-			case ProtobufStruct::ProtobufStructType::FIX32:
-				SetInt((uint64_t)This->Data);
-				break;
-			}
-		}
-		This = This->brother;
-	}
-}
-
-LPBYTE Protobuf::Pack(ProtobufStruct::TreeNode *First)
-{
-	Expansion(FirstProcess(First));
-	SecondProcess(First);
-	SetLength();
-	return GetAll();
 }

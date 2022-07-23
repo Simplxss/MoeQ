@@ -19,8 +19,8 @@ uint PicUp::DataUp(const uint Group, const byte *TotalData, const uint TotalData
     char *ip = XBin::Int2IP(IP);
     if (!TCP.Connect(ip, Port))
     {
-        Log::AddLog(Log::LogType::NOTICE, Log::MsgType::OTHER, u8"Upload", u8"Connect upload server false");
-        return false;
+        delete[] ip;
+        throw "Connect upload server false";
     };
     delete[] ip;
 
@@ -33,11 +33,11 @@ uint PicUp::DataUp(const uint Group, const byte *TotalData, const uint TotalData
     uint Offset = 0, DataLength, Length, i = Utils::GetRandom(1000, 10000);
     Protobuf PB;
     LPBYTE Bin;
-    Pack Pack(0x40100, false);
+    Pack Pack(8500, false);
     while ((DataLength = TotalDataLength - Offset) > 0)
     {
-        if (DataLength > 0x40000)
-            DataLength = 0x40000;
+        if (DataLength > 8192)
+            DataLength = 8192;
 
         ProtobufStruct::TreeNode Node2_13{nullptr, nullptr, 13, ProtobufStruct::ProtobufStructType::VARINT, (void *)0};
         ProtobufStruct::TreeNode Node2_10{nullptr, &Node2_13, 10, ProtobufStruct::ProtobufStructType::VARINT, (void *)0};
@@ -104,5 +104,4 @@ uint PicUp::DataUp(const uint Group, const byte *TotalData, const uint TotalData
         i++;
     }
     delete[] Bin, Pack.GetAll(), T, sig;
-    return 0;
 }
