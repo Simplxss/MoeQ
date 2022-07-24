@@ -72,7 +72,7 @@ LPBYTE wtlogin::Make_Body_PC(byte *Buffer, const uint BufferLen, const bool emp)
 
 LPBYTE wtlogin::login()
 {
-    ::Pack Pack(1500);
+    ::Pack Pack(1600);
     time_t Time = std::time(0);
     const char *domainList[] = {"openmobile.qq.com", "docs.qq.com", "connect.qq.com", "qzone.qq.com", "vip.qq.com", "qun.qq.com", "game.qq.com", "qqweb.qq.com", "ti.qq.com", "office.qq.com", "mail.qq.com", "qzone.com", "mma.qq.com", "tenpay.com"};
     Pack.SetShort(9);
@@ -240,7 +240,7 @@ LPBYTE wtlogin::exchange_emp()
     time_t Time = std::time(0);
     const char *domainList[] = {"openmobile.qq.com", "docs.qq.com", "connect.qq.com", "qzone.qq.com", "vip.qq.com", "qun.qq.com", "game.qq.com", "qqweb.qq.com", "ti.qq.com", "office.qq.com", "mail.qq.com", "qzone.com", "mma.qq.com", "tenpay.com"};
     Pack.SetShort(0x0F);
-    Pack.SetShort(27);
+    Pack.SetShort(26);
 
 #define PACKTLV(TlvName, ...) Pack.Skip(Tlv::Tlv##TlvName(Pack.GetCurrentPoint(), Pack.GetLeftSpace(), ##__VA_ARGS__))
 
@@ -250,7 +250,7 @@ LPBYTE wtlogin::exchange_emp()
     PACKTLV(116);
     PACKTLV(100, AndroidQQ_APPID, true);
     PACKTLV(107);
-    PACKTLV(108, QQ->Token.ksid);
+    //PACKTLV(108, QQ->Token.ksid);
     PACKTLV(144, QQ->Token.TGTkey, Device->IMEI, Device->os_type, Device->os_version, Device->_network_type, Device->_apn, Device->NetworkName, Device->_device, Device->Brand, Device->GUID);
     PACKTLV(142, AndroidQQ_APKID);
     PACKTLV(145, Device->GUID);

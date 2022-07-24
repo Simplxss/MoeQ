@@ -75,6 +75,7 @@ namespace Message
     }
     FUNC(12)
     {
+        UnPB->StepIn(12);
         Msg = new Message::Msg{Message::MsgType::xml, nullptr, new Message::xml};
         {
             LPBYTE Bin = UnPB->GetBin(1);

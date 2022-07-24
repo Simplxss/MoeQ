@@ -70,7 +70,7 @@ QQ::Token LoadToken(char (&QQ)[],
     if (d.HasParseError())
         throw "First login";
 
-    if (!(d.HasMember("QQ") && d.HasMember("A2") && d.HasMember("TGT") && d.HasMember("TGTkey") && d.HasMember("D2Key") && d.HasMember("wtSessionTicket") && d.HasMember("wtSessionTicketKey") && d.HasMember("token_16A") && d.HasMember("md5") && d.HasMember("ksid")))
+    if (!(d.HasMember("QQ") && d.HasMember("A2") && d.HasMember("TGT") && d.HasMember("TGTkey") && d.HasMember("D2Key") && d.HasMember("wtSessionTicket") && d.HasMember("wtSessionTicketKey") && d.HasMember("token_16A") && d.HasMember("md5")))
         throw "First login";
 
     memcpy(QQ, d["QQ"].GetString(), d["QQ"].GetStringLength());
@@ -99,8 +99,6 @@ QQ::Token LoadToken(char (&QQ)[],
     if (XBin::Hex2BinEx(d["md5"].GetString(), Token.md5) != 16)
         throw "md5 len error";
 
-    if (XBin::Hex2BinEx(d["ksid"].GetString(), Token.ksid) != 16)
-        throw "ksid len error";
 
     return Token;
 }
@@ -129,7 +127,6 @@ void SaveToken(const char *QQ,
     d.AddMember("token_16A", rapidjson::StringRef(XBin::Bin2HexEx(Token->token_16A, 56), 112), Allocator);
     d.AddMember("md5", rapidjson::StringRef(XBin::Bin2HexEx(Token->md5, 16), 32), Allocator);
     d.AddMember("TGTkey", rapidjson::StringRef(XBin::Bin2HexEx(Token->TGTkey, 16), 32), Allocator);
-    d.AddMember("ksid", rapidjson::StringRef(XBin::Bin2HexEx(Token->ksid, 16), 32), Allocator);
 
 #if defined(_WIN_PLATFORM_)
     FILE *fp = _wfopen(DataFilePath, L"wb");
@@ -272,7 +269,7 @@ int main()
     Sdk.QQ_Online();
 
 #if defined(DEBUG)
-    //Debug();
+    Debug();
 #endif
 
     char a[99];
