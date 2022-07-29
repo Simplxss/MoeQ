@@ -88,7 +88,7 @@ byte *Utils::Sha256(const byte *bin, const size_t length)
     return sha256;
 }
 
-bool Utils::Ecdh_Crypt(ECDHKEY &ECDHKEY, byte* SvrPubKey, int SvrPubKeyLen)
+bool Utils::Ecdh_Crypt(ECDHKEY &ECDHKEY, byte *SvrPubKey, int SvrPubKeyLen)
 {
     int len;
     int ret;
@@ -140,8 +140,8 @@ bool Utils::Ecdh_Crypt(ECDHKEY &ECDHKEY, byte* SvrPubKey, int SvrPubKeyLen)
     }
 
     EC_KEY_set_public_key(ecdh, p_ecdh2_public);
-    
-    if(!(ECDHKEY.sharekeyLen = ECDH_compute_key(ECDHKEY.sharekey, 100, p_ecdh2_public, ecdh, NULL)))
+
+    if (!(ECDHKEY.sharekeyLen = ECDH_compute_key(ECDHKEY.sharekey, 100, p_ecdh2_public, ecdh, NULL)))
     {
         EC_KEY_free(ecdh);
         throw "Ecdh compute key error.";
@@ -178,7 +178,7 @@ bool Utils::Ecdh_CountSharekey(ECDHKEY &ECDHKEY)
         return false;
     }
 
-    if(!(ECDHKEY.sharekeyLen = ECDH_compute_key(ECDHKEY.sharekey, 100, p_ecdh2_public, ecdh, NULL)))
+    if (!(ECDHKEY.sharekeyLen = ECDH_compute_key(ECDHKEY.sharekey, 100, p_ecdh2_public, ecdh, NULL)))
     {
         EC_KEY_free(ecdh);
         throw "Ecdh compute key error.";
@@ -326,7 +326,7 @@ void XBin::Int2Bin(const uint i, byte *bin)
 char *XBin::Int2IP(const uint i)
 {
     char *IP = new char[16];
-    sprintf(IP, "%d.%d.%d.%d", ((i & 0xff000000) >> 24), ((i & 0xff0000) >> 16), ((i & 0xff00) >> 8), (i & 0xff));
+    sprintf(IP, "%d.%d.%d.%d", ((i >> 24) & 0xff), ((i >> 16) & 0xff), ((i >> 8) & 0xff), (i & 0xff));
     return IP;
 }
 

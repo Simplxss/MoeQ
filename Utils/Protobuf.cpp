@@ -1,260 +1,322 @@
 #include "Protobuf.h"
 
-void Protobuf::SetBin(LPBYTE bin)
+Protobuf::VarInt Protobuf::Int2Varint(uint64_t l)
 {
-	Pack::SetBin(bin + 4, XBin::Bin2Int(bin) - 4);
+    VarInt VarInt;
+    VarInt.VarInt = new byte[10];
+    while (l > 0)
+    {
+        VarInt.VarInt[VarInt.Length++] = (l & 0x7F) | 0x80;
+        l >>= 7;
+    }
 }
 
-void Protobuf::SetBin_(LPBYTE bin)
+void Protobuf::Int2Varint(uint64_t l, VarInt *VarInt)
 {
-	Pack::SetBin(bin + 4, XBin::Bin2Int(bin) - 4);
-	delete bin;
+    VarInt->VarInt = new byte[10];
+    while (l > 0)
+    {
+        VarInt->VarInt[VarInt->Length++] = (l & 0x7F) | 0x80;
+        l >>= 7;
+    }
 }
 
-LPBYTE Protobuf::Int2Varint(long long int l)
+uint32_t Protobuf::Calculate(Tree *Tree)
 {
-	byte Varint[10], i = 0;
-	while (l > 0x7F)
-	{
-		Varint[i] = (l & 0x7F) | 0x80;
-		l >>= 7;
-		++i;
-	}
-	Varint[i++] = l;
-	LPBYTE Varint_ = new byte[i + 4];
-	memcpy(Varint_, XBin::Int2Bin(i + 4), 4);
-	memcpy(Varint_ + 4, Varint, i);
-	return Varint_;
+    uint32_t Length;
+    for (auto i : Tree->Child)
+    {
+        Length += i.Field.Length;
+        switch (i.Type)
+        {
+        case Type::VARINT:
+            Length += ((VarInt *)i.Data)->Length;
+            break;
+        case Type::BIN:
+        case Type::BIN_EX:
+        case Type::LPBYTE_EX:
+            Length += ((BinData *)i.Data)->LengthEx.Length;
+            Length += ((BinData *)i.Data)->Length;
+            break;
+        case Type::TREE:
+            Length += Calculate(&i);
+            break;
+        case Type::FIX32:
+            Length += 4;
+            break;
+        case Type::FIX64:
+            Length += 8;
+            break;
+        }
+    }
+    return Length;
 }
 
-int Protobuf::Int2Varint_len(long long int l)
+void Protobuf::Recurse(::Pack *Pack, Tree *Tree)
 {
-	int i = 0;
-	while (l > 127)
-	{
-		l >>= 7;
-		++i;
-	}
-	return ++i;
+    for (auto i : Tree->Child)
+    {
+        Pack->SetBin_(i.Field.VarInt, i.Field.Length);
+        switch (i.Type)
+        {
+        case Type::VARINT:
+            SetVarint(Pack, (VarInt *)i.Data);
+            break;
+        case Type::BIN:
+            SetVarint(Pack, &((BinData *)i.Data)->LengthEx);
+            Pack->SetBin(((BinData *)i.Data)->Bin);
+            break;
+        case Type::BIN_EX:
+            SetVarint(Pack, &((BinData *)i.Data)->LengthEx);
+            Pack->SetBin(((BinData *)i.Data)->Bin);
+            delete[](((BinData *)i.Data)->Bin);
+            break;
+        case Type::LPBYTE_EX:
+            SetVarint(Pack, &((BinData *)i.Data)->LengthEx);
+            Pack->SetBin(((BinData *)i.Data)->Bin);
+            delete[](((BinData *)i.Data)->Bin - 4);
+            break;
+        case Type::TREE:
+            Pack->SetBin_(i.Length.VarInt, i.Length.Length);
+            Recurse(Pack, &i);
+            break;
+        case Type::FIX32:
+            Pack->SetInt((int32_t)i.Data);
+            break;
+        case Type::FIX64:
+            Pack->SetLong((int64_t)i.Data);
+            break;
+        }
+    }
+};
+
+void Protobuf::WriteVarint(const uint16_t Field, const uint64_t l)
+{
+    BaseTree->Child.emplace_back(Tree{GetField(Field, ProtobufStruct::ProtobufStructType::VARINT), Type::VARINT, [&] -> VarInt *
+                                      {VarInt * Data=new VarInt;Int2Varint(l,Data);return Data; }()});
 }
 
-LPBYTE Protobuf::Field2Key(int Field, ProtobufStruct::ProtobufStructType ProtobufStructType)
+void Protobuf::WriteFix32(const uint16_t Field, const int32_t i)
 {
-	return Int2Varint(Field << 3 | static_cast<int>(ProtobufStructType));
+    BaseTree->Child.emplace_back(Tree{GetField(Field, ProtobufStruct::ProtobufStructType::FIX32), Type::FIX32, (void *)i});
 }
 
-uint32_t Protobuf::FirstProcess(ProtobufStruct::TreeNode *First)
+void Protobuf::WriteFix64(const uint16_t Field, const int64_t l)
 {
-	uint32_t size = 0;
-	ProtobufStruct::TreeNode *This = First;
-	while (This != nullptr)
-	{
-		if (This->child != nullptr)
-		{
-			uint32_t s = FirstProcess(This->child);
-			This->Data = Int2Varint(s);
-			size += XBin::Bin2Int((byte *)This->Data) - 4;
-			size += s;
-		}
-		else
-		{
-			switch (This->ProtobufStructType)
-			{
-			case ProtobufStruct::ProtobufStructType::VARINT:
-				This->Data = Int2Varint((long long int)This->Data);
-				size += XBin::Bin2Int((byte *)This->Data) - 4;
-				break;
-			case ProtobufStruct::ProtobufStructType::FIX64:
-				size += 8;
-				break;
-			case ProtobufStruct::ProtobufStructType::LENGTH:
-			{
-				int len = XBin::Bin2Int((byte *)This->Data) - 4;
-				size += Int2Varint_len(len);
-				size += len;
-			}
-			break;
-			case ProtobufStruct::ProtobufStructType::FIX32:
-				size += 4;
-				break;
-			}
-		}
-		This->Field = (long long int)Field2Key(This->Field, This->ProtobufStructType);
-		size += XBin::Bin2Int((byte *)This->Field) - 4;
-		This = This->brother;
-	}
-	return size;
+    BaseTree->Child.emplace_back(Tree{GetField(Field, ProtobufStruct::ProtobufStructType::FIX64), Type::FIX64, (void *)l});
 }
 
-void Protobuf::SecondProcess(ProtobufStruct::TreeNode *First)
+void Protobuf::WriteStr(const uint16_t Field, const char *str)
 {
-	ProtobufStruct::TreeNode *This = First;
-	while (This != nullptr)
-	{
-		SetBin_((LPBYTE)This->Field);
-		if (This->child != nullptr)
-		{
-			SetBin_((LPBYTE)This->Data);
-			SecondProcess(This->child);
-		}
-		else
-		{
-			switch (This->ProtobufStructType)
-			{
-			case ProtobufStruct::ProtobufStructType::VARINT:
-				SetBin_((LPBYTE)This->Data);
-				break;
-			case ProtobufStruct::ProtobufStructType::FIX64:
-				SetLong((uint64_t)This->Data);
-				break;
-			case ProtobufStruct::ProtobufStructType::LENGTH:
-				SetBin_(Int2Varint(XBin::Bin2Int((byte *)This->Data) - 4));
-				SetBin((LPBYTE)This->Data);
-				break;
-			case ProtobufStruct::ProtobufStructType::FIX32:
-				SetInt((uint64_t)This->Data);
-				break;
-			}
-		}
-		This = This->brother;
-	}
+    BaseTree->Child.emplace_back(Tree{
+        GetField(Field, ProtobufStruct::ProtobufStructType::LENGTH),
+        Type::BIN,
+        [&] -> BinData *
+        {BinData * Data=new BinData;Data->Length=strlen(str);Int2Varint(Data->Length,&Data->LengthEx); Data->Bin=(byte*)str;return Data; }()});
 }
 
-LPBYTE Protobuf::Pack(ProtobufStruct::TreeNode *First)
+void Protobuf::WriteStr_(const uint16_t Field, char *str)
 {
-	Expansion(FirstProcess(First));
-	SecondProcess(First);
-	SetLength();
-	return GetAll();
+    BaseTree->Child.emplace_back(Tree{
+        GetField(Field, ProtobufStruct::ProtobufStructType::LENGTH),
+        Type::BIN_EX,
+        [&] -> BinData *
+        {BinData * Data=new BinData;Data->Length=strlen(str);Int2Varint(Data->Length,&Data->LengthEx); Data->Bin=(byte*)str;return Data; }()});
 }
 
+void Protobuf::WriteBin(const uint16_t Field, const byte *bin, uint32_t Length)
+{
+    BaseTree->Child.emplace_back(Tree{
+        GetField(Field, ProtobufStruct::ProtobufStructType::LENGTH),
+        Type::BIN,
+        [&] -> BinData *
+        {BinData * Data=new BinData;Data->Length=Length;Int2Varint(Data->Length,&Data->LengthEx); Data->Bin=(byte*)bin;return Data; }()});
+}
+
+void Protobuf::WriteBin_(const uint16_t Field, byte *bin, uint32_t Length)
+{
+    BaseTree->Child.emplace_back(Tree{
+        GetField(Field, ProtobufStruct::ProtobufStructType::LENGTH),
+        Type::BIN_EX,
+        [&] -> BinData *
+        {BinData * Data=new BinData;Data->Length=Length;Int2Varint(Data->Length,&Data->LengthEx); Data->Bin=bin;return Data; }()});
+}
+
+void Protobuf::WriteBin(const uint16_t Field, const LPBYTE bin)
+{
+    BaseTree->Child.emplace_back(Tree{
+        GetField(Field, ProtobufStruct::ProtobufStructType::LENGTH),
+        Type::BIN,
+        [&] -> BinData *
+        {BinData * Data=new BinData;Data->Length=XBin::Bin2Int(bin) - 4;Int2Varint(Data->Length,&Data->LengthEx); Data->Bin=bin + 4;return Data; }()});
+}
+
+void Protobuf::WriteBin_(const uint16_t Field, LPBYTE bin)
+{
+    BaseTree->Child.emplace_back(Tree{
+        GetField(Field, ProtobufStruct::ProtobufStructType::LENGTH),
+        Type::BIN_EX,
+        [&] -> BinData *
+        {BinData * Data=new BinData;Data->Length=XBin::Bin2Int(bin) - 4;Int2Varint(Data->Length,&Data->LengthEx); Data->Bin=bin + 4;return Data; }()});
+}
+
+void Protobuf::WriteTree(const uint16_t Field, Tree *Tree)
+{
+    Tree->Field = GetField(Field, ProtobufStruct::ProtobufStructType::LENGTH);
+    BaseTree->Child.emplace_back(Tree);
+}
+
+void Protobuf::StepIn(const byte Field)
+{
+    BaseTree = &BaseTree->Child.emplace_back(Tree{
+        GetField(Field, ProtobufStruct::ProtobufStructType::LENGTH),
+        Type::TREE, BaseTree});
+}
+
+void Protobuf::StepOut()
+{
+    BaseTree = BaseTree->Superior;
+}
+
+Protobuf::Tree *Protobuf::GetTree()
+{
+    return BaseTree;
+}
+
+LPBYTE Protobuf::Pack()
+{
+    ::Pack Pack(Calculate());
+    Recurse(&Pack, BaseTree);
+    Pack.SetLength();
+    return Pack.GetAll();
+}
 
 long long int UnProtobuf::GetVarint()
 {
-	long long int l = 0;
-	for (size_t i = 0; i < 9; i++)
-	{
-		byte b = List->UnPack.GetByte();
-		l |= (b & 0x7f) << (7 * i);
-		if ((b & 0x80) != 0x80)
-			goto end;
-	}
-	throw "len is too long";
+    long long int l = 0;
+    for (size_t i = 0; i < 9; i++)
+    {
+        byte b = List->UnPack.GetByte();
+        l |= (b & 0x7f) << (7 * i);
+        if ((b & 0x80) != 0x80)
+            goto end;
+    }
+    throw "len is too long";
 end:
-	return l;
+    return l;
 }
 
 void UnProtobuf::SkipField(ProtobufStruct::ProtobufStructType type)
 {
-	switch (type)
-	{
-	case ProtobufStruct::ProtobufStructType::VARINT:
-		GetVarint();
-		break;
-	case ProtobufStruct::ProtobufStructType::FIX64:
-		List->UnPack.Skip(8);
-		break;
-	case ProtobufStruct::ProtobufStructType::LENGTH:
-		List->UnPack.Skip(GetVarint());
-		break;
-	case ProtobufStruct::ProtobufStructType::FIX32:
-		List->UnPack.Skip(4);
-		break;
-	}
+    switch (type)
+    {
+    case ProtobufStruct::ProtobufStructType::VARINT:
+        GetVarint();
+        break;
+    case ProtobufStruct::ProtobufStructType::FIX64:
+        List->UnPack.Skip(8);
+        break;
+    case ProtobufStruct::ProtobufStructType::LENGTH:
+        List->UnPack.Skip(GetVarint());
+        break;
+    case ProtobufStruct::ProtobufStructType::FIX32:
+        List->UnPack.Skip(4);
+        break;
+    }
 }
 
 ProtobufStruct::ProtobufStructType UnProtobuf::SkipToField(const byte Field)
 {
-	while (true)
-	{
-		uint32_t key = GetVarint();
-		if ((key >> 3) < Field)
-		{
-			SkipField(static_cast<ProtobufStruct::ProtobufStructType>(key & 0x07));
-			continue;
-		}
-		else if ((key >> 3) == Field)
-			return static_cast<ProtobufStruct::ProtobufStructType>(key & 0x07);
-		else
-			throw "Field not find";
-	}
+    while (true)
+    {
+        uint32_t key = GetVarint();
+        if ((key >> 3) < Field)
+        {
+            SkipField(static_cast<ProtobufStruct::ProtobufStructType>(key & 0x07));
+            continue;
+        }
+        else if ((key >> 3) == Field)
+            return static_cast<ProtobufStruct::ProtobufStructType>(key & 0x07);
+        else
+            throw "Field not find";
+    }
 }
 
 byte UnProtobuf::GetField()
 {
-	UnPack UnPack(List->UnPack);
-	uint32_t key = GetVarint();
-	List->UnPack = UnPack;
-	return key >> 3;
+    UnPack UnPack(List->UnPack);
+    uint32_t key = GetVarint();
+    List->UnPack = UnPack;
+    return key >> 3;
 }
 
 void UnProtobuf::StepIn(const byte Field)
 {
-	if (SkipToField(Field) == ProtobufStruct::ProtobufStructType::LENGTH)
-	{
-		uint32_t len = GetVarint();
-		LinkList *tmp = new LinkList{{List->UnPack.GetCurrentPoint(), len}, List};
-		List->UnPack.Skip(len);
-		List = tmp;
-	}
+    if (SkipToField(Field) == ProtobufStruct::ProtobufStructType::LENGTH)
+    {
+        uint32_t len = GetVarint();
+        LinkList *tmp = new LinkList{{List->UnPack.GetCurrentPoint(), len}, List};
+        List->UnPack.Skip(len);
+        List = tmp;
+    }
 }
 
 void UnProtobuf::StepOut()
 {
-	if (List->Superior != nullptr)
-	{
-		LinkList *tmp = List->Superior;
-		delete List;
-		List = tmp;
-	}
+    if (List->Superior != nullptr)
+    {
+        LinkList *tmp = List->Superior;
+        delete List;
+        List = tmp;
+    }
 }
 
 bool UnProtobuf::IsEnd()
 {
-	return !List->UnPack.GetLeftLength();
+    return !List->UnPack.GetLeftLength();
 }
 
 long long int UnProtobuf::GetVarint(const byte Field)
 {
-	if (SkipToField(Field) == ProtobufStruct::ProtobufStructType::VARINT)
-		return GetVarint();
-	return 0;
+    if (SkipToField(Field) == ProtobufStruct::ProtobufStructType::VARINT)
+        return GetVarint();
+    return 0;
 }
 
 char8_t *UnProtobuf::GetStr(const byte Field)
 {
-	if (SkipToField(Field) == ProtobufStruct::ProtobufStructType::LENGTH)
-	{
-		uint32_t len = GetVarint();
-		char8_t *str = new char8_t[len + 1];
-		memcpy(str, List->UnPack.GetStr(len), len);
-		str[len] = 0;
-		return str;
-	}
-	return nullptr;
+    if (SkipToField(Field) == ProtobufStruct::ProtobufStructType::LENGTH)
+    {
+        uint32_t len = GetVarint();
+        char8_t *str = new char8_t[len + 1];
+        memcpy(str, List->UnPack.GetStr(len), len);
+        str[len] = 0;
+        return str;
+    }
+    return nullptr;
 }
 
 uint32_t UnProtobuf::GetBin(byte *&bin, const byte Field)
 {
-	if (SkipToField(Field) == ProtobufStruct::ProtobufStructType::LENGTH)
-	{
-		uint32_t len = GetVarint();
-		bin = new byte[len];
-		memcpy(bin, List->UnPack.GetBin(len), len);
-		return len;
-	}
-	return 0;
+    if (SkipToField(Field) == ProtobufStruct::ProtobufStructType::LENGTH)
+    {
+        uint32_t len = GetVarint();
+        bin = new byte[len];
+        memcpy(bin, List->UnPack.GetBin(len), len);
+        return len;
+    }
+    return 0;
 }
 
 LPBYTE UnProtobuf::GetBin(const byte Field)
 {
-	if (SkipToField(Field) == ProtobufStruct::ProtobufStructType::LENGTH)
-	{
-		uint32_t len = GetVarint();
-		LPBYTE bin = new byte[len + 4];
-		memcpy(bin, XBin::Int2Bin(len + 4), len);
-		memcpy(bin + 4, List->UnPack.GetBin(len), len);
-		return bin;
-	}
-	return (LPBYTE)"\0\0\0\4";
+    if (SkipToField(Field) == ProtobufStruct::ProtobufStructType::LENGTH)
+    {
+        uint32_t len = GetVarint();
+        LPBYTE bin = new byte[len + 4];
+        memcpy(bin, XBin::Int2Bin(len + 4), len);
+        memcpy(bin + 4, List->UnPack.GetBin(len), len);
+        return bin;
+    }
+    return (LPBYTE) "\0\0\0\4";
 }
