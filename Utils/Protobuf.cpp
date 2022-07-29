@@ -185,7 +185,7 @@ Protobuf::Tree *Protobuf::GetTree()
 
 LPBYTE Protobuf::Pack()
 {
-    ::Pack Pack(Calculate());
+    ::Pack Pack(Calculate(BaseTree) + 4);
     Recurse(&Pack, BaseTree);
     Pack.SetLength();
     return Pack.GetAll();
