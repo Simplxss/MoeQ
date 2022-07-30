@@ -326,7 +326,7 @@ void XBin::Int2Bin(const uint i, byte *bin)
 char *XBin::Int2IP(const uint i)
 {
     char *IP = new char[16];
-    sprintf(IP, "%d.%d.%d.%d", ((i >> 24) & 0xff), ((i >> 16) & 0xff), ((i >> 8) & 0xff), (i & 0xff));
+    sprintf(IP, "%d.%d.%d.%d", (i & 0xff), ((i >> 8) & 0xff), ((i >> 16) & 0xff), ((i >> 24) & 0xff));
     return IP;
 }
 

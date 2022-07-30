@@ -19,8 +19,7 @@ LPBYTE ImgStore::GroupPicUp(const uint Group, const char8_t *ImageName, const by
     PB.WriteVarint(11, ImageHeight);
     PB.WriteVarint(12, 1000);
     PB.WriteStr(13, (const char8_t *)AndroidQQ_VERSION);
-    PB.WriteVarint(15, 1052);
-    PB.WriteVarint(16, 1);
+    PB.WriteVarint(15, 1006);
     PB.WriteVarint(19, 0);
     PB.StepOut();
     return PB.Pack();

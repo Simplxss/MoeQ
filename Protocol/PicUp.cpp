@@ -3,7 +3,6 @@
 /// <summary>
 /// 上传文件
 /// </summary>
-/// <param name="Group">如不是群聊,此参数填NULL</param>
 /// <param name="TotalData"></param>
 /// <param name="TotalDataLength"></param>
 /// <param name="TotalDataMD5"></param>
@@ -12,12 +11,12 @@
 /// <param name="Port"></param>
 /// <param name="sig"></param>
 /// <returns></returns>
-bool PicUp::DataUp(const uint Group, const byte *TotalData, const uint TotalDataLength, const byte *TotalDataMD5, const int DataType, const uint IP, const uint Port, const LPBYTE sig)
+bool PicUp::DataUp(const byte *TotalData, const uint TotalDataLength, const byte *TotalDataMD5, const int DataType, const uint IP, const uint Port, const LPBYTE sig)
 {
     Socket TCP;
 
     char *ip = XBin::Int2IP(IP);
-    if (!TCP.Connect(ip, Port))
+    if (!TCP.Connect(ip, 80))
     {
         delete[] ip;
         throw "Connect upload server false";
@@ -38,7 +37,7 @@ bool PicUp::DataUp(const uint Group, const byte *TotalData, const uint TotalData
         PB.WriteVarint(1, 0);
         PB.WriteStr(2, (char8_t *)QQ->QQ_Str);
         PB.WriteStr(3, u8"PicUp.DataUp");
-        PB.WriteVarint(4, i);
+        PB.WriteVarint(4, ++i);
         PB.WriteVarint(5, 0);
         PB.WriteVarint(6, AndroidQQ_APPID);
         PB.WriteVarint(7, 4096);
@@ -70,24 +69,22 @@ bool PicUp::DataUp(const uint Group, const byte *TotalData, const uint TotalData
             return false;
         }
 
-        LPBYTE Receive;
+        byte Receive[200];
         try
         {
-            Receive = TCP.Receive();
+            TCP.Receive(Receive, 200);
         }
         catch (int e)
         {
             std::cerr << e << '\n';
         }
 
-        UnPack UnPack(Receive);
-        UnPack.GetByte();
-        Length = UnPack.GetInt();
-        UnPack.GetInt();
-        UnProtobuf UnPB(UnPack.GetBin(), Length);
+        // ...
+
         Offset += DataLength;
-        i++;
     }
-    delete[] Bin, Pack.GetAll(), sig;
+    delete[] Bin;
+    delete[] Pack.GetAll();
+    delete[] sig;
     return true;
 }

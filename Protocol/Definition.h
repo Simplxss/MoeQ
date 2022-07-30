@@ -7,7 +7,7 @@
 #include "../Utils/Utils.h"
 
 #define AndroidQQ_APPID 537127041
-#define AndroidQQ_VERSION "8.9.2"
+#define AndroidQQ_VERSION "8.9.2.3072"
 #define AndroidQQ_VERSION_ "A8.9.2.4e64659d"
 #define AndroidQQ_APKID "com.tencent.mobileqq"
 #define AndroidQQ_ASIG (const byte *)"\xA6\xB7\x45\xBF\x24\xA2\xC2\x77\x52\x77\x16\xF6\xF3\x6E\xB6\x8D" // A6B745BF24A2C277527716F6F36EB68D

@@ -37,8 +37,6 @@ private:
         VarInt LengthEx;
         byte *Bin;
     };
-
-public:
     struct Tree
     {
         VarInt Field;
@@ -48,8 +46,6 @@ public:
         std::vector<Tree> *Child;
         VarInt *Length;
     };
-
-private:
     struct LinkList
     {
         Tree *BaseTree;
@@ -64,6 +60,12 @@ public:
         List->BaseTree = new Tree;
         List->BaseTree->Child = new std::vector<Tree>;
     };
+    ~Protobuf()
+    {
+        delete List->BaseTree->Child;
+        delete List->BaseTree;
+        delete List;
+    }
 
 private:
     VarInt Int2Varint(uint64_t l);
@@ -71,11 +73,6 @@ private:
     inline VarInt GetField(uint16_t Field, ProtobufStruct::ProtobufStructType ProtobufStructType) { return Int2Varint(Field << 3 | static_cast<int>(ProtobufStructType)); }
     inline void GetField(uint16_t Field, ProtobufStruct::ProtobufStructType ProtobufStructType, VarInt &OutField) { Int2Varint(Field << 3 | static_cast<int>(ProtobufStructType), &OutField); }
     inline void SetVarint(::Pack *Pack, VarInt *VarInt) { Pack->SetBin_(VarInt->VarInt, VarInt->Length); }
-    inline void SetVarint_(::Pack *Pack, VarInt *VarInt)
-    {
-        Pack->SetBin_(VarInt->VarInt, VarInt->Length);
-        delete VarInt;
-    }
 
     uint32_t Calculate(Tree *Tree);
     void Recurse(::Pack *Pack, Tree *Tree);
@@ -90,10 +87,8 @@ public:
     void WriteBin_(const uint16_t Field, byte *bin, uint32_t Length);
     void WriteBin(const uint16_t Field, const LPBYTE bin);
     void WriteBin_(const uint16_t Field, const LPBYTE bin);
-    void WriteTree(const uint16_t Field, Tree &Tree);
     void StepIn(const byte Field);
     void StepOut();
-    Tree &GetTree();
     LPBYTE Pack();
     uint32_t Pack(byte *&Bin);
 };

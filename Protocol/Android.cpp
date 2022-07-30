@@ -118,7 +118,8 @@ namespace Message
             char8_t *listid = UnPB->GetStr(9);
             char8_t *authkey = UnPB->GetStr(10);
             uint channel = UnPB->GetVarint(19);
-            delete[] listid, authkey;
+            delete[] listid;
+            delete[] authkey;
         }
         UnPB->StepOut();
         UnPB->StepOut();
@@ -825,32 +826,32 @@ bool Android::PbMessageSvc_PbMsgWithDraw(const uint Target, const uint MsgId, co
 void Android::ProfileService_Pb_ReqSystemMsgNew_Group()
 {
     Protobuf PB;
-    PB.WriteVarint(1,20);
-    PB.WriteVarint(2,1590834830000000);
-    PB.WriteVarint(3,1597344360637873);
-    PB.WriteVarint(4,1000);
-    PB.WriteVarint(5,3);
+    PB.WriteVarint(1, 20);
+    PB.WriteVarint(2, 1590834830000000);
+    PB.WriteVarint(3, 1597344360637873);
+    PB.WriteVarint(4, 1000);
+    PB.WriteVarint(5, 3);
     PB.StepIn(6);
-    PB.WriteVarint(1,1);
-    PB.WriteVarint(2,1);
-    PB.WriteVarint(3,1);
-    PB.WriteVarint(5,1);
-    PB.WriteVarint(6,1);
-    PB.WriteVarint(7,1);
-    PB.WriteVarint(8,1);
-    PB.WriteVarint(9,1);
-    PB.WriteVarint(11,1);
-    PB.WriteVarint(12,1);
-    PB.WriteVarint(13,1);
-    PB.WriteVarint(14,1);
-    PB.WriteVarint(15,1);
-    PB.WriteVarint(16,1);
-    PB.WriteVarint(17,1);
+    PB.WriteVarint(1, 1);
+    PB.WriteVarint(2, 1);
+    PB.WriteVarint(3, 1);
+    PB.WriteVarint(5, 1);
+    PB.WriteVarint(6, 1);
+    PB.WriteVarint(7, 1);
+    PB.WriteVarint(8, 1);
+    PB.WriteVarint(9, 1);
+    PB.WriteVarint(11, 1);
+    PB.WriteVarint(12, 1);
+    PB.WriteVarint(13, 1);
+    PB.WriteVarint(14, 1);
+    PB.WriteVarint(15, 1);
+    PB.WriteVarint(16, 1);
+    PB.WriteVarint(17, 1);
     PB.StepOut();
-    PB.WriteVarint(8,0);
-    PB.WriteVarint(9,0);
-    PB.WriteVarint(10,1);
-    PB.WriteVarint(11,1);
+    PB.WriteVarint(8, 0);
+    PB.WriteVarint(9, 0);
+    PB.WriteVarint(10, 1);
+    PB.WriteVarint(11, 1);
 
     Fun_Send_Sync(11, 1, "ProfileService.Pb.ReqSystemMsgNew.Group", PB.Pack(),
                   [&](uint sso_seq, LPBYTE BodyBin)
@@ -2088,7 +2089,7 @@ const QQ::Token *Android::QQ_Get_Token()
     return &QQ.Token;
 }
 
-uint Android::QQ_UploadImage(const uint Group, const char8_t* ImageName, const byte* ImageMD5, const uint ImageLength, const uint ImageWidth, const uint ImageHeight, const byte *Image)
+uint Android::QQ_UploadImage(const uint Group, const char8_t *ImageName, const byte *ImageMD5, const uint ImageLength, const uint ImageWidth, const uint ImageHeight, const byte *Image)
 {
 
     return Fun_Send_Sync<uint>(11, 1, "ImgStore.GroupPicUp", ImgStore::GroupPicUp(Group, ImageName, ImageMD5, ImageLength, ImageWidth, ImageHeight),
@@ -2110,7 +2111,7 @@ uint Android::QQ_UploadImage(const uint Group, const char8_t* ImageName, const b
                                            uint Port = UnPB.GetVarint(7);
                                            try
                                            {
-                                               PicUp::DataUp(Group, Image, ImageLength, ImageMD5, 2, IP, Port, UnPB.GetBin(8));
+                                               PicUp::DataUp(Image, ImageLength, ImageMD5, 2, IP, Port, UnPB.GetBin(8));
                                            }
                                            catch (const char *e)
                                            {

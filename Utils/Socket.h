@@ -31,6 +31,7 @@ public:
     void Close();
     int Send(const byte *data, const uint length);
     int Send(const LPBYTE buffer);
+    bool Receive(byte *buffer, uint32_t Length);
     LPBYTE Receive();
     void DomainGetIP(const
 #if defined(_WIN_PLATFORM_)
