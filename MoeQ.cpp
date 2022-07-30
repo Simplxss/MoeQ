@@ -99,7 +99,6 @@ QQ::Token LoadToken(char (&QQ)[],
     if (XBin::Hex2BinEx(d["md5"].GetString(), Token.md5) != 16)
         throw "md5 len error";
 
-
     return Token;
 }
 
@@ -185,11 +184,11 @@ int main()
     {
         QQ::Token Token = LoadToken(QQ, DataFilePath);
 
-//
+        //
         char c[2];
         std::cout << "Second Login?(Y/N) ";
         std::cin >> c;
-//
+        //
         // char c[2] = "Y";
 
         if (c[0] == 'Y')

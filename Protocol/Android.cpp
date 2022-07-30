@@ -785,33 +785,21 @@ bool Android::VisitorSvc_ReqFavorite(const uint QQ, const int Times)
 
 bool Android::PbMessageSvc_PbMsgWithDraw(const uint Target, const uint MsgId, const uint MsgRand)
 {
-    ProtobufStruct::TreeNode Node2_5_1{nullptr, nullptr, 1, ProtobufStruct::ProtobufStructType::VARINT, (void *)0};
-    ProtobufStruct::TreeNode Node2_5{
-        &Node2_5_1,
-        nullptr,
-        5,
-        ProtobufStruct::ProtobufStructType::LENGTH,
-    };
-    ProtobufStruct::TreeNode Node2_4_2{nullptr, nullptr, 2, ProtobufStruct::ProtobufStructType::VARINT, (void *)MsgRand};
-    ProtobufStruct::TreeNode Node2_4_1{nullptr, &Node2_4_2, 1, ProtobufStruct::ProtobufStructType::VARINT, (void *)MsgId};
-    ProtobufStruct::TreeNode Node2_4{
-        &Node2_4_1,
-        &Node2_5,
-        4,
-        ProtobufStruct::ProtobufStructType::LENGTH,
-    };
-    ProtobufStruct::TreeNode Node2_3{nullptr, &Node2_4, 3, ProtobufStruct::ProtobufStructType::VARINT, (void *)Target};
-    ProtobufStruct::TreeNode Node2_2{nullptr, &Node2_3, 2, ProtobufStruct::ProtobufStructType::VARINT, (void *)0};
-    ProtobufStruct::TreeNode Node2_1{nullptr, &Node2_2, 1, ProtobufStruct::ProtobufStructType::VARINT, (void *)1};
-    ProtobufStruct::TreeNode Node2{
-        &Node2_1,
-        nullptr,
-        2,
-        ProtobufStruct::ProtobufStructType::LENGTH,
-    };
-
     Protobuf PB;
-    return Fun_Send_Sync<bool>(11, 1, "PbMessageSvc.PbMsgWithDraw", PB.Pack(&Node2),
+    PB.StepIn(2);
+    PB.WriteVarint(1, 1);
+    PB.WriteVarint(2, 0);
+    PB.WriteVarint(3, Target);
+    PB.StepIn(4);
+    PB.WriteVarint(1, MsgId);
+    PB.WriteVarint(2, MsgRand);
+    PB.StepOut();
+    PB.StepIn(5);
+    PB.WriteVarint(1, 0);
+    PB.StepOut();
+    PB.StepOut();
+
+    return Fun_Send_Sync<bool>(11, 1, "PbMessageSvc.PbMsgWithDraw", PB.Pack(),
                                [&](uint sso_seq, LPBYTE BodyBin)
                                    -> bool
                                {
@@ -836,39 +824,35 @@ bool Android::PbMessageSvc_PbMsgWithDraw(const uint Target, const uint MsgId, co
 
 void Android::ProfileService_Pb_ReqSystemMsgNew_Group()
 {
-    ProtobufStruct::TreeNode Node11{nullptr, nullptr, 11, ProtobufStruct::ProtobufStructType::VARINT, (void *)1};
-    ProtobufStruct::TreeNode Node10{nullptr, &Node11, 10, ProtobufStruct::ProtobufStructType::VARINT, (void *)1};
-    ProtobufStruct::TreeNode Node9{nullptr, &Node10, 9, ProtobufStruct::ProtobufStructType::VARINT, (void *)0};
-    ProtobufStruct::TreeNode Node8{nullptr, &Node9, 8, ProtobufStruct::ProtobufStructType::VARINT, (void *)0};
-    ProtobufStruct::TreeNode Node6_17{nullptr, nullptr, 17, ProtobufStruct::ProtobufStructType::VARINT, (void *)1};
-    ProtobufStruct::TreeNode Node6_16{nullptr, &Node6_17, 16, ProtobufStruct::ProtobufStructType::VARINT, (void *)1};
-    ProtobufStruct::TreeNode Node6_15{nullptr, &Node6_16, 15, ProtobufStruct::ProtobufStructType::VARINT, (void *)1};
-    ProtobufStruct::TreeNode Node6_14{nullptr, &Node6_15, 14, ProtobufStruct::ProtobufStructType::VARINT, (void *)1};
-    ProtobufStruct::TreeNode Node6_13{nullptr, &Node6_14, 13, ProtobufStruct::ProtobufStructType::VARINT, (void *)1};
-    ProtobufStruct::TreeNode Node6_12{nullptr, &Node6_13, 12, ProtobufStruct::ProtobufStructType::VARINT, (void *)1};
-    ProtobufStruct::TreeNode Node6_11{nullptr, &Node6_12, 11, ProtobufStruct::ProtobufStructType::VARINT, (void *)1};
-    ProtobufStruct::TreeNode Node6_9{nullptr, &Node6_11, 9, ProtobufStruct::ProtobufStructType::VARINT, (void *)1};
-    ProtobufStruct::TreeNode Node6_8{nullptr, &Node6_9, 8, ProtobufStruct::ProtobufStructType::VARINT, (void *)1};
-    ProtobufStruct::TreeNode Node6_7{nullptr, &Node6_8, 7, ProtobufStruct::ProtobufStructType::VARINT, (void *)1};
-    ProtobufStruct::TreeNode Node6_6{nullptr, &Node6_7, 6, ProtobufStruct::ProtobufStructType::VARINT, (void *)1};
-    ProtobufStruct::TreeNode Node6_5{nullptr, &Node6_6, 5, ProtobufStruct::ProtobufStructType::VARINT, (void *)1};
-    ProtobufStruct::TreeNode Node6_3{nullptr, &Node6_5, 3, ProtobufStruct::ProtobufStructType::VARINT, (void *)1};
-    ProtobufStruct::TreeNode Node6_2{nullptr, &Node6_3, 2, ProtobufStruct::ProtobufStructType::VARINT, (void *)1};
-    ProtobufStruct::TreeNode Node6_1{nullptr, &Node6_2, 1, ProtobufStruct::ProtobufStructType::VARINT, (void *)1};
-    ProtobufStruct::TreeNode Node6{
-        &Node6_1,
-        &Node8,
-        6,
-        ProtobufStruct::ProtobufStructType::LENGTH,
-    };
-    ProtobufStruct::TreeNode Node5{nullptr, &Node6, 5, ProtobufStruct::ProtobufStructType::VARINT, (void *)3};
-    ProtobufStruct::TreeNode Node4{nullptr, &Node5, 4, ProtobufStruct::ProtobufStructType::VARINT, (void *)1000};
-    ProtobufStruct::TreeNode Node3{nullptr, &Node4, 3, ProtobufStruct::ProtobufStructType::VARINT, (void *)1597344360637873};
-    ProtobufStruct::TreeNode Node2{nullptr, &Node3, 2, ProtobufStruct::ProtobufStructType::VARINT, (void *)1590834830000000};
-    ProtobufStruct::TreeNode Node1{nullptr, &Node2, 1, ProtobufStruct::ProtobufStructType::VARINT, (void *)20};
-
     Protobuf PB;
-    Fun_Send_Sync(11, 1, "ProfileService.Pb.ReqSystemMsgNew.Group", PB.Pack(&Node1),
+    PB.WriteVarint(1,20);
+    PB.WriteVarint(2,1590834830000000);
+    PB.WriteVarint(3,1597344360637873);
+    PB.WriteVarint(4,1000);
+    PB.WriteVarint(5,3);
+    PB.StepIn(6);
+    PB.WriteVarint(1,1);
+    PB.WriteVarint(2,1);
+    PB.WriteVarint(3,1);
+    PB.WriteVarint(5,1);
+    PB.WriteVarint(6,1);
+    PB.WriteVarint(7,1);
+    PB.WriteVarint(8,1);
+    PB.WriteVarint(9,1);
+    PB.WriteVarint(11,1);
+    PB.WriteVarint(12,1);
+    PB.WriteVarint(13,1);
+    PB.WriteVarint(14,1);
+    PB.WriteVarint(15,1);
+    PB.WriteVarint(16,1);
+    PB.WriteVarint(17,1);
+    PB.StepOut();
+    PB.WriteVarint(8,0);
+    PB.WriteVarint(9,0);
+    PB.WriteVarint(10,1);
+    PB.WriteVarint(11,1);
+
+    Fun_Send_Sync(11, 1, "ProfileService.Pb.ReqSystemMsgNew.Group", PB.Pack(),
                   [&](uint sso_seq, LPBYTE BodyBin)
                   {
                       UnProtobuf UnPB(BodyBin);
@@ -2104,7 +2088,7 @@ const QQ::Token *Android::QQ_Get_Token()
     return &QQ.Token;
 }
 
-uint Android::QQ_UploadImage(const uint Group, const LPBYTE ImageName, const LPBYTE ImageMD5, const uint ImageLength, const uint ImageWidth, const uint ImageHeight, const byte *Image)
+uint Android::QQ_UploadImage(const uint Group, const char8_t* ImageName, const byte* ImageMD5, const uint ImageLength, const uint ImageWidth, const uint ImageHeight, const byte *Image)
 {
 
     return Fun_Send_Sync<uint>(11, 1, "ImgStore.GroupPicUp", ImgStore::GroupPicUp(Group, ImageName, ImageMD5, ImageLength, ImageWidth, ImageHeight),
@@ -2225,7 +2209,7 @@ bool Android::QQ_SetGroupAdmin(const uint Group, const uint QQ, const bool Set)
                                });
 }
 
-bool Android::QQ_SetGroupMemberTitle(const uint Group, const uint QQ, const char *Title)
+bool Android::QQ_SetGroupMemberTitle(const uint Group, const uint QQ, const char8_t *Title)
 {
     return Fun_Send_Sync<bool>(11, 1, "OidbSvc.0x8fc_2", OidbSvc::_0x8fc_2(Group, QQ, Title),
                                [&](uint sso_seq, LPBYTE BodyBin)
@@ -2283,7 +2267,7 @@ const std::vector<uint> *Android::QQ_GetGroupAdminList(const uint Group)
                                                   while (UnPB.IsEnd())
                                                   {
                                                       UnPB.StepIn(4);
-                                                      ManagerList.insert(ManagerList.end(), UnPB.GetVarint(1));
+                                                      ManagerList.emplace_back(UnPB.GetVarint(1));
                                                       UnPB.StepOut();
                                                   }
                                                   UnPB.StepOut();

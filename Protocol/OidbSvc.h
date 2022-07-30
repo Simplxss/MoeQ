@@ -20,5 +20,5 @@ public:
     LPBYTE _0x899_0(const uint Group);
     LPBYTE _0x89a_0(const uint Group, const bool Ban);
     LPBYTE _0x8a0_0(const uint Group, const uint QQ, const bool Forever);
-    LPBYTE _0x8fc_2(const uint Group, const uint QQ, const char *Title);
+    LPBYTE _0x8fc_2(const uint Group, const uint QQ, const char8_t *Title);
 };

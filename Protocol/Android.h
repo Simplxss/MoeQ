@@ -142,7 +142,7 @@ public:
     const char8_t *QQ_GetErrorMsg();
     void QQ_Set_Token(QQ::Token *_Token);
     const QQ::Token *QQ_Get_Token();
-    uint QQ_UploadImage(const uint Group, const LPBYTE ImageName, const LPBYTE ImageMD5, const uint ImageLength, const uint ImageWidth, const uint ImageHeight, const byte *Image = nullptr);
+    uint QQ_UploadImage(const uint Group,const char8_t* ImageName, const byte* ImageMD5, const uint ImageLength, const uint ImageWidth, const uint ImageHeight, const byte *Image = nullptr);
     uint QQ_Get_Account();
     char *QQ_GetCookies(const char *Host);
     bool QQ_SendLike(const uint QQ, const int Times);
@@ -151,7 +151,7 @@ public:
     bool QQ_DrawPrivateMsg(const uint Group, const uint MsgId, const uint MsgRand);
     bool QQ_KickGroupMember(const uint Group, const uint QQ, const bool Forever);
     bool QQ_SetGroupAdmin(const uint Group, const uint QQ, const bool Set);
-    bool QQ_SetGroupMemberTitle(const uint Group, const uint QQ, const char *Title);
+    bool QQ_SetGroupMemberTitle(const uint Group, const uint QQ, const char8_t *Title);
     bool QQ_SetGroupMemberCard(const uint Group, const uint QQ, const char *Card);
     bool QQ_SetGroupMemberBan(const uint Group, const uint QQ, const uint Time);
     bool QQ_SetGroupBan(const uint Group, const bool Ban);

@@ -172,7 +172,7 @@ FUNC(bool, setGroupAdmin, const uint32_t Group, const uint32_t QQ, const bool Se
 FUNC(bool, setGroupMemberTitle, const uint32_t Group, const uint32_t QQ, const char8_t *Title)
 {
 	if (Plugin.VieryAuth(AuthCode, 10))
-		return Sdk.QQ_SetGroupMemberTitle(Group, QQ, (char*)Title);
+		return Sdk.QQ_SetGroupMemberTitle(Group, QQ, Title);
 	else
 	{
 		Log::AddLog(Log::LogType::WARNING, Log::MsgType::PLUGIN, Plugin.AuthCode2Name(AuthCode), u8"Plugin called setGroupMemberTitle which it don't have right.");

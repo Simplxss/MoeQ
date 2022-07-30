@@ -37,27 +37,45 @@ private:
         VarInt LengthEx;
         byte *Bin;
     };
+
+public:
     struct Tree
     {
         VarInt Field;
         Type Type;
         void *Data;
 
-        Tree *Superior = nullptr;
-        std::vector<Tree> Child;
-        VarInt Length;
+        std::vector<Tree> *Child;
+        VarInt *Length;
     };
-    Tree *BaseTree;
+
+private:
+    struct LinkList
+    {
+        Tree *BaseTree;
+        LinkList *Superior = nullptr;
+    };
+    LinkList *List;
 
 public:
-    Protobuf() { BaseTree = new Tree; };
+    Protobuf()
+    {
+        List = new LinkList;
+        List->BaseTree = new Tree;
+        List->BaseTree->Child = new std::vector<Tree>;
+    };
 
 private:
     VarInt Int2Varint(uint64_t l);
     void Int2Varint(uint64_t l, VarInt *VarInt);
-    inline VarInt GetField(uint16_t Field, ProtobufStruct::ProtobufStructType ProtobufStructType) { Int2Varint(Field << 3 | static_cast<int>(ProtobufStructType)); }
-    inline void GetField(uint16_t Field, ProtobufStruct::ProtobufStructType ProtobufStructType, VarInt *OutField) { Int2Varint(Field << 3 | static_cast<int>(ProtobufStructType), OutField); }
+    inline VarInt GetField(uint16_t Field, ProtobufStruct::ProtobufStructType ProtobufStructType) { return Int2Varint(Field << 3 | static_cast<int>(ProtobufStructType)); }
+    inline void GetField(uint16_t Field, ProtobufStruct::ProtobufStructType ProtobufStructType, VarInt &OutField) { Int2Varint(Field << 3 | static_cast<int>(ProtobufStructType), &OutField); }
     inline void SetVarint(::Pack *Pack, VarInt *VarInt) { Pack->SetBin_(VarInt->VarInt, VarInt->Length); }
+    inline void SetVarint_(::Pack *Pack, VarInt *VarInt)
+    {
+        Pack->SetBin_(VarInt->VarInt, VarInt->Length);
+        delete VarInt;
+    }
 
     uint32_t Calculate(Tree *Tree);
     void Recurse(::Pack *Pack, Tree *Tree);
@@ -66,17 +84,18 @@ public:
     void WriteVarint(const uint16_t Field, const uint64_t l);
     void WriteFix32(const uint16_t Field, const int32_t i);
     void WriteFix64(const uint16_t Field, const int64_t l);
-    void WriteStr(const uint16_t Field, const char *str);
-    void WriteStr_(const uint16_t Field, char *str);
+    void WriteStr(const uint16_t Field, const char8_t *str);
+    void WriteStr_(const uint16_t Field, char8_t *str);
     void WriteBin(const uint16_t Field, const byte *bin, uint32_t Length);
     void WriteBin_(const uint16_t Field, byte *bin, uint32_t Length);
     void WriteBin(const uint16_t Field, const LPBYTE bin);
     void WriteBin_(const uint16_t Field, const LPBYTE bin);
-    void WriteTree(const uint16_t Field, Tree *Tree);
+    void WriteTree(const uint16_t Field, Tree &Tree);
     void StepIn(const byte Field);
     void StepOut();
-    Tree *GetTree();
+    Tree &GetTree();
     LPBYTE Pack();
+    uint32_t Pack(byte *&Bin);
 };
 
 class UnProtobuf

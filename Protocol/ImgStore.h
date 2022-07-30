@@ -15,5 +15,5 @@ public:
     };
 
 public:
-    LPBYTE GroupPicUp(const uint Group, const LPBYTE ImageName, const LPBYTE ImageMD5, const uint ImageLength, const uint ImageWidth, const uint ImageHeight);
+    LPBYTE GroupPicUp(const uint Group, const char8_t* ImageName, const byte* ImageMD5, const uint ImageLength, const uint ImageWidth, const uint ImageHeight);
 };

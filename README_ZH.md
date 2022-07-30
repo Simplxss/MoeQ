@@ -14,9 +14,9 @@
 
 本项目使用了[*vcpkg*](https://github.com/Microsoft/vcpkg)作为包管理器.
 
-本项目在Windows上使用的编译器为[*MinGW64*](http://winlibs.com/), Linux上使用的编译器为*gcc-10*.
+本项目在Windows上使用的编译器为[*MinGW64*](http://winlibs.com/), Linux上使用的编译器为*gcc-12*.
 
-本程序使用了许多的c++11和c++20特性, 请注意编译器的支持性.
+本程序使用了许多的c++11和c++23特性, 请注意编译器的支持性.
 
 # 功能
 

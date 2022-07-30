@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.0.0)
 project(MoeQ)
 set(TARGET_NAME MoeQ)
 
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 23)
 
 if (MSVC)
     add_compile_options("$<$<C_COMPILER_ID:MSVC>:/utf-8>")

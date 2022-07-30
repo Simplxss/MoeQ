@@ -434,28 +434,17 @@ FUNC(525, const uint QQ, const char *IP, const uint Time, const uint APPID, cons
 FUNC(52D)
 {
     ::TlvPack Pack(bin, len);
-
-    ProtobufStruct::TreeNode Node9{nullptr, nullptr, 9, ProtobufStruct::ProtobufStructType::LENGTH, (void *)"\0\0\0\x15"
-                                                                                                            "V12.5.1.0.QEBCNXM"};
-    ProtobufStruct::TreeNode Node8{nullptr, &Node9, 8, ProtobufStruct::ProtobufStructType::LENGTH, (void *)"\0\0\0\x04"
-                                                                                                           ""};
-    ProtobufStruct::TreeNode Node7{nullptr, &Node8, 7, ProtobufStruct::ProtobufStructType::LENGTH, (void *)"\0\0\0\x14"
-                                                                                                           "81fc47b45c9ffc34"};
-    ProtobufStruct::TreeNode Node6{nullptr, &Node7, 6, ProtobufStruct::ProtobufStructType::LENGTH, (void *)"\0\0\0\x28"
-                                                                                                           "30417589-e527-49fc-bb09-bb8607684674"};
-    ProtobufStruct::TreeNode Node5{nullptr, &Node6, 5, ProtobufStruct::ProtobufStructType::LENGTH, (void *)"\0\0\0\x4F"
-                                                                                                           "Xiaomi/sirius/sirius:10/QKQ1.190828.002/V12.5.1.0.QEBCNXM:user/release-keys"};
-    ProtobufStruct::TreeNode Node4{nullptr, &Node5, 4, ProtobufStruct::ProtobufStructType::LENGTH, (void *)"\0\0\0\x15"
-                                                                                                           "V12.5.1.0.QEBCNXM"};
-    ProtobufStruct::TreeNode Node3{nullptr, &Node4, 3, ProtobufStruct::ProtobufStructType::LENGTH, (void *)"\0\0\0\x07"
-                                                                                                           "REL"};
-    ProtobufStruct::TreeNode Node2{nullptr, &Node3, 2, ProtobufStruct::ProtobufStructType::LENGTH, (void *)"\0\0\0\x04"
-                                                                                                           ""};
-    ProtobufStruct::TreeNode Node1{nullptr, &Node2, 1, ProtobufStruct::ProtobufStructType::LENGTH, (void *)"\0\0\0\x0B"
-                                                                                                           "unknown"};
-
     Protobuf PB;
-    Pack.SetBinEx_(PB.Pack(&Node1));
+    PB.WriteStr(1,u8"unknown");
+    PB.WriteStr(2,u8"");
+    PB.WriteStr(3,u8"REL");
+    PB.WriteStr(4,u8"V12.5.1.0.QEBCNXM");
+    PB.WriteStr(5,u8"Xiaomi/sirius/sirius:10/QKQ1.190828.002/V12.5.1.0.QEBCNXM:user/release-keys");
+    PB.WriteStr(6,u8"30417589-e527-49fc-bb09-bb8607684674");
+    PB.WriteStr(7,u8"81fc47b45c9ffc34");
+    PB.WriteStr(8,u8"");
+    PB.WriteStr(9,u8"V12.5.1.0.QEBCNXM");
+    Pack.SetBinEx_(PB.Pack());
     return Pack.Pack(0x052D);
 }
 

@@ -14,9 +14,9 @@ It is developed by VSCode with environment of Windows 11 & WSL.
 
 The package management is [*vcpkg*](https://github.com/Microsoft/vcpkg).
 
-The compilers that we use are [*MinGW64*](http://winlibs.com/) on Windows and *gcc-10* on Linux.
+The compilers that we use are [*MinGW64*](http://winlibs.com/) on Windows and *gcc-12* on Linux.
 
-There are a lot of features of c++11 and c++20 using by this project, please notice the support of your compilers.
+There are a lot of features of c++11 and c++23 using by this project, please notice the support of your compilers.
 
 # Achieved
 

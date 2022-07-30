@@ -2,45 +2,51 @@
 
 Protobuf::VarInt Protobuf::Int2Varint(uint64_t l)
 {
-    VarInt VarInt;
-    VarInt.VarInt = new byte[10];
-    while (l > 0)
+    VarInt VarInt{new byte[10], 0};
+    while (l > 0x7F)
     {
         VarInt.VarInt[VarInt.Length++] = (l & 0x7F) | 0x80;
         l >>= 7;
     }
+    VarInt.VarInt[VarInt.Length++] = (l & 0x7F);
+    return VarInt;
 }
 
 void Protobuf::Int2Varint(uint64_t l, VarInt *VarInt)
 {
     VarInt->VarInt = new byte[10];
-    while (l > 0)
+    while (l > 0x7F)
     {
         VarInt->VarInt[VarInt->Length++] = (l & 0x7F) | 0x80;
         l >>= 7;
     }
+    VarInt->VarInt[VarInt->Length++] = (l & 0x7F);
 }
 
 uint32_t Protobuf::Calculate(Tree *Tree)
 {
-    uint32_t Length;
-    for (auto i : Tree->Child)
+    uint32_t Length = 0;
+    for (int i = 0; i < Tree->Child->size(); ++i)
     {
-        Length += i.Field.Length;
-        switch (i.Type)
+        Length += (*Tree->Child)[i].Field.Length;
+        switch ((*Tree->Child)[i].Type)
         {
         case Type::VARINT:
-            Length += ((VarInt *)i.Data)->Length;
+            Length += ((VarInt *)(*Tree->Child)[i].Data)->Length;
             break;
         case Type::BIN:
         case Type::BIN_EX:
         case Type::LPBYTE_EX:
-            Length += ((BinData *)i.Data)->LengthEx.Length;
-            Length += ((BinData *)i.Data)->Length;
+            Length += ((BinData *)(*Tree->Child)[i].Data)->LengthEx.Length;
+            Length += ((BinData *)(*Tree->Child)[i].Data)->Length;
             break;
         case Type::TREE:
-            Length += Calculate(&i);
-            break;
+        {
+            uint32_t Length_ = Calculate(&(*Tree->Child)[i]);
+            Int2Varint(Length_, (*Tree->Child)[i].Length = new VarInt);
+            Length += Length_;
+        }
+        break;
         case Type::FIX32:
             Length += 4;
             break;
@@ -54,37 +60,41 @@ uint32_t Protobuf::Calculate(Tree *Tree)
 
 void Protobuf::Recurse(::Pack *Pack, Tree *Tree)
 {
-    for (auto i : Tree->Child)
+    for (int i = 0; i < Tree->Child->size(); ++i)
     {
-        Pack->SetBin_(i.Field.VarInt, i.Field.Length);
-        switch (i.Type)
+        SetVarint(Pack, &(*Tree->Child)[i].Field);
+        switch ((*Tree->Child)[i].Type)
         {
         case Type::VARINT:
-            SetVarint(Pack, (VarInt *)i.Data);
+            SetVarint_(Pack, (VarInt *)(*Tree->Child)[i].Data);
             break;
         case Type::BIN:
-            SetVarint(Pack, &((BinData *)i.Data)->LengthEx);
-            Pack->SetBin(((BinData *)i.Data)->Bin);
+            SetVarint(Pack, &((BinData *)(*Tree->Child)[i].Data)->LengthEx);
+            Pack->SetBin(((BinData *)(*Tree->Child)[i].Data)->Bin, ((BinData *)(*Tree->Child)[i].Data)->Length);
+            delete[](BinData *)(*Tree->Child)[i].Data;
             break;
         case Type::BIN_EX:
-            SetVarint(Pack, &((BinData *)i.Data)->LengthEx);
-            Pack->SetBin(((BinData *)i.Data)->Bin);
-            delete[](((BinData *)i.Data)->Bin);
+            SetVarint(Pack, &((BinData *)(*Tree->Child)[i].Data)->LengthEx);
+            Pack->SetBin(((BinData *)(*Tree->Child)[i].Data)->Bin, ((BinData *)(*Tree->Child)[i].Data)->Length);
+            delete[](BinData *)(*Tree->Child)[i].Data, (((BinData *)(*Tree->Child)[i].Data)->Bin);
             break;
         case Type::LPBYTE_EX:
-            SetVarint(Pack, &((BinData *)i.Data)->LengthEx);
-            Pack->SetBin(((BinData *)i.Data)->Bin);
-            delete[](((BinData *)i.Data)->Bin - 4);
+            SetVarint(Pack, &((BinData *)(*Tree->Child)[i].Data)->LengthEx);
+            Pack->SetBin(((BinData *)(*Tree->Child)[i].Data)->Bin, ((BinData *)(*Tree->Child)[i].Data)->Length);
+            delete[](BinData *)(*Tree->Child)[i].Data, (((BinData *)(*Tree->Child)[i].Data)->Bin - 4);
             break;
         case Type::TREE:
-            Pack->SetBin_(i.Length.VarInt, i.Length.Length);
-            Recurse(Pack, &i);
+            SetVarint(Pack, (*Tree->Child)[i].Length);
+            Recurse(Pack, &(*Tree->Child)[i]);
+            delete (*Tree->Child)[i].Length, (*Tree->Child)[i].Child;
             break;
         case Type::FIX32:
-            Pack->SetInt((int32_t)i.Data);
+            Pack->SetInt(*(int32_t *)(*Tree->Child)[i].Data);
+            delete (int32_t *)(*Tree->Child)[i].Data;
             break;
         case Type::FIX64:
-            Pack->SetLong((int64_t)i.Data);
+            Pack->SetLong(*(int64_t *)(*Tree->Child)[i].Data);
+            delete (int64_t *)(*Tree->Child)[i].Data;
             break;
         }
     }
@@ -92,41 +102,43 @@ void Protobuf::Recurse(::Pack *Pack, Tree *Tree)
 
 void Protobuf::WriteVarint(const uint16_t Field, const uint64_t l)
 {
-    BaseTree->Child.emplace_back(Tree{GetField(Field, ProtobufStruct::ProtobufStructType::VARINT), Type::VARINT, [&] -> VarInt *
-                                      {VarInt * Data=new VarInt;Int2Varint(l,Data);return Data; }()});
+    List->BaseTree->Child->emplace_back(Tree{GetField(Field, ProtobufStruct::ProtobufStructType::VARINT), Type::VARINT, [&] -> VarInt *
+                                             {VarInt * Data=new VarInt;Int2Varint(l,Data);return Data; }()});
 }
 
 void Protobuf::WriteFix32(const uint16_t Field, const int32_t i)
 {
-    BaseTree->Child.emplace_back(Tree{GetField(Field, ProtobufStruct::ProtobufStructType::FIX32), Type::FIX32, (void *)i});
+    List->BaseTree->Child->emplace_back(Tree{GetField(Field, ProtobufStruct::ProtobufStructType::FIX32), Type::FIX32, [&] -> void *
+                                             {int32_t *i_ = new int32_t;*i_=i; return i_; }()});
 }
 
 void Protobuf::WriteFix64(const uint16_t Field, const int64_t l)
 {
-    BaseTree->Child.emplace_back(Tree{GetField(Field, ProtobufStruct::ProtobufStructType::FIX64), Type::FIX64, (void *)l});
+    List->BaseTree->Child->emplace_back(Tree{GetField(Field, ProtobufStruct::ProtobufStructType::FIX64), Type::FIX64, [&] -> void *
+                                             {int64_t *l_ = new int64_t;*l_=l; return l_; }()});
 }
 
-void Protobuf::WriteStr(const uint16_t Field, const char *str)
+void Protobuf::WriteStr(const uint16_t Field, const char8_t *str)
 {
-    BaseTree->Child.emplace_back(Tree{
+    List->BaseTree->Child->emplace_back(Tree{
         GetField(Field, ProtobufStruct::ProtobufStructType::LENGTH),
         Type::BIN,
         [&] -> BinData *
-        {BinData * Data=new BinData;Data->Length=strlen(str);Int2Varint(Data->Length,&Data->LengthEx); Data->Bin=(byte*)str;return Data; }()});
+        {BinData * Data=new BinData;Data->Length=strlen((char*)str);Int2Varint(Data->Length,&Data->LengthEx); Data->Bin=(byte*)str;return Data; }()});
 }
 
-void Protobuf::WriteStr_(const uint16_t Field, char *str)
+void Protobuf::WriteStr_(const uint16_t Field, char8_t *str)
 {
-    BaseTree->Child.emplace_back(Tree{
+    List->BaseTree->Child->emplace_back(Tree{
         GetField(Field, ProtobufStruct::ProtobufStructType::LENGTH),
         Type::BIN_EX,
         [&] -> BinData *
-        {BinData * Data=new BinData;Data->Length=strlen(str);Int2Varint(Data->Length,&Data->LengthEx); Data->Bin=(byte*)str;return Data; }()});
+        {BinData * Data=new BinData;Data->Length=strlen((char*)str);Int2Varint(Data->Length,&Data->LengthEx); Data->Bin=(byte*)str;return Data; }()});
 }
 
 void Protobuf::WriteBin(const uint16_t Field, const byte *bin, uint32_t Length)
 {
-    BaseTree->Child.emplace_back(Tree{
+    List->BaseTree->Child->emplace_back(Tree{
         GetField(Field, ProtobufStruct::ProtobufStructType::LENGTH),
         Type::BIN,
         [&] -> BinData *
@@ -135,7 +147,7 @@ void Protobuf::WriteBin(const uint16_t Field, const byte *bin, uint32_t Length)
 
 void Protobuf::WriteBin_(const uint16_t Field, byte *bin, uint32_t Length)
 {
-    BaseTree->Child.emplace_back(Tree{
+    List->BaseTree->Child->emplace_back(Tree{
         GetField(Field, ProtobufStruct::ProtobufStructType::LENGTH),
         Type::BIN_EX,
         [&] -> BinData *
@@ -144,7 +156,7 @@ void Protobuf::WriteBin_(const uint16_t Field, byte *bin, uint32_t Length)
 
 void Protobuf::WriteBin(const uint16_t Field, const LPBYTE bin)
 {
-    BaseTree->Child.emplace_back(Tree{
+    List->BaseTree->Child->emplace_back(Tree{
         GetField(Field, ProtobufStruct::ProtobufStructType::LENGTH),
         Type::BIN,
         [&] -> BinData *
@@ -153,42 +165,51 @@ void Protobuf::WriteBin(const uint16_t Field, const LPBYTE bin)
 
 void Protobuf::WriteBin_(const uint16_t Field, LPBYTE bin)
 {
-    BaseTree->Child.emplace_back(Tree{
+    List->BaseTree->Child->emplace_back(Tree{
         GetField(Field, ProtobufStruct::ProtobufStructType::LENGTH),
         Type::BIN_EX,
         [&] -> BinData *
         {BinData * Data=new BinData;Data->Length=XBin::Bin2Int(bin) - 4;Int2Varint(Data->Length,&Data->LengthEx); Data->Bin=bin + 4;return Data; }()});
 }
 
-void Protobuf::WriteTree(const uint16_t Field, Tree *Tree)
+void Protobuf::WriteTree(const uint16_t Field, Tree &Tree)
 {
-    Tree->Field = GetField(Field, ProtobufStruct::ProtobufStructType::LENGTH);
-    BaseTree->Child.emplace_back(Tree);
+    Tree.Field = GetField(Field, ProtobufStruct::ProtobufStructType::LENGTH);
+    List->BaseTree->Child->emplace_back(Tree);
 }
 
 void Protobuf::StepIn(const byte Field)
 {
-    BaseTree = &BaseTree->Child.emplace_back(Tree{
-        GetField(Field, ProtobufStruct::ProtobufStructType::LENGTH),
-        Type::TREE, BaseTree});
+    List->BaseTree->Child->emplace_back(Tree{GetField(Field, ProtobufStruct::ProtobufStructType::LENGTH), Type::TREE});
+    List = new LinkList{&List->BaseTree->Child->back(), List};
+    List->BaseTree->Child = new std::vector<Tree>;
 }
 
 void Protobuf::StepOut()
 {
-    BaseTree = BaseTree->Superior;
+    LinkList *tmp = List->Superior;
+    delete List;
+    List = tmp;
 }
 
-Protobuf::Tree *Protobuf::GetTree()
+Protobuf::Tree &Protobuf::GetTree()
 {
-    return BaseTree;
+    return *List->BaseTree;
 }
 
 LPBYTE Protobuf::Pack()
 {
-    ::Pack Pack(Calculate(BaseTree) + 4);
-    Recurse(&Pack, BaseTree);
+    ::Pack Pack(Calculate(List->BaseTree) + 4, true);
+    Recurse(&Pack, List->BaseTree);
     Pack.SetLength();
     return Pack.GetAll();
+}
+
+uint32_t Protobuf::Pack(byte *&Bin)
+{
+    ::Pack Pack(Calculate(List->BaseTree));
+    Recurse(&Pack, List->BaseTree);
+    return Pack.GetAll(Bin);
 }
 
 long long int UnProtobuf::GetVarint()
