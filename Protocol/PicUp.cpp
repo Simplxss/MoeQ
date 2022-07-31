@@ -6,7 +6,7 @@
 /// <param name="TotalData"></param>
 /// <param name="TotalDataLength"></param>
 /// <param name="TotalDataMD5"></param>
-/// <param name="DataType">group image=2, friend image=1, groupPtt=29</param>
+/// <param name="DataType">friend image=1, group image=2, friendPtt=26, groupPtt=29</param>
 /// <param name="IP"></param>
 /// <param name="Port"></param>
 /// <param name="sig"></param>
@@ -23,18 +23,24 @@ bool PicUp::DataUp(const byte *TotalData, const uint TotalDataLength, const byte
     };
     delete[] ip;
 
+    uint32_t size;
+    if (TotalDataLength > 0x100000)
+        size = 0x40000;
+    else
+        size = 0x2000;
+
     //文件分片发送
     uint Offset = 0, DataLength, Length, i = Utils::GetRandom(1000, 10000);
     Protobuf PB;
     byte *Bin;
-    Pack Pack(8500, false);
+    Pack Pack(size + 0x100, false);
     while ((DataLength = TotalDataLength - Offset) > 0)
     {
-        if (DataLength > 8192)
-            DataLength = 8192;
+        if (DataLength > size)
+            DataLength = size;
 
         PB.StepIn(1);
-        PB.WriteVarint(1, 0);
+        PB.WriteVarint(1, 1);
         PB.WriteStr(2, (char8_t *)QQ->QQ_Str);
         PB.WriteStr(3, u8"PicUp.DataUp");
         PB.WriteVarint(4, ++i);

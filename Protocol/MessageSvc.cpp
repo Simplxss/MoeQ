@@ -38,6 +38,32 @@ namespace Message
         PB.WriteVarint(1, id);
         PB.StepOut();
     }
+    void Pack4(Protobuf &PB, char8_t *ImageName, const byte *ImageMD5, char8_t *ImageID1, char8_t *ImageID2, const uint ImageLength, const uint ImageWidth, const uint ImageHeight)
+    {
+        PB.StepIn(4);
+        PB.WriteStr_(1, ImageName);
+        PB.WriteVarint(2, ImageLength);
+        PB.WriteStr_(3, ImageID1);
+        PB.WriteVarint(5, 2000);
+        PB.WriteBin(7, ImageMD5, 16);
+        PB.WriteVarint(8, ImageWidth);
+        PB.WriteVarint(9, ImageHeight);
+        PB.WriteStr_(10, ImageID2);
+        PB.WriteVarint(13, 0);
+        PB.WriteVarint(16, 5);
+        PB.WriteVarint(24, 0);
+        PB.WriteVarint(25, 0);
+        PB.StepIn(29);
+        PB.WriteVarint(1, 1);
+        PB.WriteVarint(2, 0);
+        PB.WriteVarint(3, 0);
+        PB.WriteBin(6, {}, 0);
+        PB.WriteStr(8, u8"[动画表情]");
+        PB.WriteVarint(10, 0);
+        PB.WriteVarint(15, 6);
+        PB.StepOut();
+        PB.StepOut();
+    }
     void Pack6(Protobuf &PB, const byte id)
     {
         PB.StepIn(6);
@@ -126,7 +152,7 @@ LPBYTE MessageSvc::PbGetMsg()
 /// 发送消息(群聊,私聊)
 /// </summary>
 /// <param name="ToNumber"></param>
-/// <param name="ToType">接收者类型 2 Friend 1 Group</param>
+/// <param name="ToType">接收者类型 1 Group 2 Friend</param>
 /// <param name="Msg"></param>
 /// <returns></returns>
 LPBYTE MessageSvc::PbSendMsg(const uint ToNumber, const byte ToType, const Message::Msg *Msg)
@@ -178,9 +204,23 @@ LPBYTE MessageSvc::PbSendMsg(const uint ToNumber, const byte ToType, const Messa
             memcpy(T, XBin::Bin2HexEx(((Message::picture *)Msg->Message)->MD5, 16), 32);
             memcpy(T + 32, ".jpg", 5);
 
-            uint ImageID = QQ_UploadImage(ToType == 1 ? ToNumber : 0, T, ((Message::picture *)Msg->Message)->MD5, ((Message::picture *)Msg->Message)->Data.Length, ((Message::picture *)Msg->Message)->Width, ((Message::picture *)Msg->Message)->Height, ((Message::picture *)Msg->Message)->Data.Contain);
-            if (ImageID != 0)
-                Message::Pack8(PB, T, ((Message::picture *)Msg->Message)->MD5, ImageID, ((Message::picture *)Msg->Message)->Data.Length, ((Message::picture *)Msg->Message)->Width, ((Message::picture *)Msg->Message)->Height);
+            if (ToType == 1)
+            {
+                uint ImageID = QQ_UploadImage_Group(ToNumber, T, ((Message::picture *)Msg->Message)->MD5, ((Message::picture *)Msg->Message)->Data.Length, ((Message::picture *)Msg->Message)->Width, ((Message::picture *)Msg->Message)->Height, ((Message::picture *)Msg->Message)->Data.Contain);
+                if (ImageID != 0)
+                    Message::Pack8(PB, T, ((Message::picture *)Msg->Message)->MD5, ImageID, ((Message::picture *)Msg->Message)->Data.Length, ((Message::picture *)Msg->Message)->Width, ((Message::picture *)Msg->Message)->Height);
+            }
+            else
+            {
+                auto [Result, ImageID1, ImageID2] = QQ_UploadImage_Private(ToNumber, T, ((Message::picture *)Msg->Message)->MD5, ((Message::picture *)Msg->Message)->Data.Length, ((Message::picture *)Msg->Message)->Width, ((Message::picture *)Msg->Message)->Height, ((Message::picture *)Msg->Message)->Data.Contain);
+                if (Result)
+                    Message::Pack4(PB, T, ((Message::picture *)Msg->Message)->MD5, ImageID1, ImageID2, ((Message::picture *)Msg->Message)->Data.Length, ((Message::picture *)Msg->Message)->Width, ((Message::picture *)Msg->Message)->Height);
+                else
+                {
+                    delete ImageID1;
+                    delete ImageID2;
+                }
+            }
         }
         break;
         case Message::MsgType::xml:

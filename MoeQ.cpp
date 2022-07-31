@@ -39,7 +39,7 @@ void Debug()
     Message::picture Pic{imageInfo.getWidth(), imageInfo.getHeight(), Utils::MD5EX(ImgBuffer, length) + 4, Message::Data(length, ImgBuffer)};
     Message::Msg Msg{Message::MsgType::picture, nullptr, &Pic};
 
-    Sdk.QQ_SendMsg(635275515, 1, &Msg);
+    Sdk.QQ_SendMsg(932902956, 0, &Msg);
 }
 
 QQ::Token LoadToken(char (&QQ)[],

@@ -237,7 +237,7 @@ namespace Message
 #undef FUNC
 }
 
-Android::Android(const char *IMEI, const char IMSI[16], const byte GUID[16], const byte MAC[6], const char *_device, const char *Brand) : wtlogin(&QQ, &Device), StatSvc(&QQ, &Device), friendlist(&QQ), OidbSvc(&QQ), MessageSvc(&QQ), ImgStore(&QQ), PicUp(&QQ)
+Android::Android(const char *IMEI, const char IMSI[16], const byte GUID[16], const byte MAC[6], const char *_device, const char *Brand) : wtlogin(&QQ, &Device), StatSvc(&QQ, &Device), friendlist(&QQ), OidbSvc(&QQ), MessageSvc(&QQ), ImgStore(&QQ), LongConn(&QQ), pttTrans(&QQ), PicUp(&QQ)
 {
     Device.IMEI = new char[strlen(IMEI)];
     Device.IMSI = new char[16];
@@ -2089,9 +2089,53 @@ const QQ::Token *Android::QQ_Get_Token()
     return &QQ.Token;
 }
 
-uint Android::QQ_UploadImage(const uint Group, const char8_t *ImageName, const byte *ImageMD5, const uint ImageLength, const uint ImageWidth, const uint ImageHeight, const byte *Image)
+std::tuple<bool, char8_t *, char8_t *> Android::QQ_UploadImage_Private(const uint QQ, const char8_t *ImageName, const byte *ImageMD5, const uint ImageLength, const uint ImageWidth, const uint ImageHeight, const byte *Image)
 {
+    return Fun_Send_Sync<std::tuple<bool, char8_t *, char8_t *>>(11, 1, "LongConn.OffPicUp", LongConn::OffPicUp(QQ, ImageName, ImageMD5, ImageLength, ImageWidth, ImageHeight),
+                                                                 [&](uint sso_seq, LPBYTE BodyBin)
+                                                                     -> std::tuple<bool, char8_t *, char8_t *>
+                                                                 {
+                                                                     UnProtobuf UnPB(BodyBin);
 
+                                                                     UnPB.StepIn(2);
+                                                                     switch (UnPB.GetVarint(5))
+                                                                     {
+                                                                     case 0: //需要上传
+                                                                     {
+                                                                         if (Image != nullptr)
+                                                                         {
+                                                                             // IP PORT为数组,这里就取第一组
+                                                                             // 从右向左入栈,因此这里需要分开写
+                                                                             uint IP = UnPB.GetVarint(7);
+                                                                             uint Port = UnPB.GetVarint(8);
+                                                                             try
+                                                                             {
+                                                                                 PicUp::DataUp(Image, ImageLength, ImageMD5, 1, IP, Port, UnPB.GetBin(9));
+                                                                             }
+                                                                             catch (const char *e)
+                                                                             {
+                                                                                 Log::AddLog(Log::LogType::NOTICE, Log::MsgType::OTHER, u8"Upload fail", e);
+                                                                             }
+                                                                         }
+                                                                         else
+                                                                         {
+                                                                             Log::AddLog(Log::LogType::WARNING, Log::MsgType::OTHER, u8"Upload image", u8"Upload failed");
+                                                                             return std::make_tuple(false, new char8_t, new char8_t);
+                                                                         }
+                                                                     }
+                                                                     case 1:
+                                                                     {
+                                                                         char8_t *ImageID1 = UnPB.GetStr(10);
+                                                                         char8_t *ImageID2 = UnPB.GetStr(11);
+                                                                         return std::make_tuple(true, ImageID1, ImageID2);
+                                                                     }
+                                                                     };
+                                                                     return std::make_tuple(false, new char8_t, new char8_t);
+                                                                 });
+}
+
+uint Android::QQ_UploadImage_Group(const uint Group, const char8_t *ImageName, const byte *ImageMD5, const uint ImageLength, const uint ImageWidth, const uint ImageHeight, const byte *Image)
+{
     return Fun_Send_Sync<uint>(11, 1, "ImgStore.GroupPicUp", ImgStore::GroupPicUp(Group, ImageName, ImageMD5, ImageLength, ImageWidth, ImageHeight),
                                [&](uint sso_seq, LPBYTE BodyBin)
                                    -> uint
@@ -2118,7 +2162,6 @@ uint Android::QQ_UploadImage(const uint Group, const char8_t *ImageName, const b
                                                Log::AddLog(Log::LogType::NOTICE, Log::MsgType::OTHER, u8"Upload fail", e);
                                                return 0;
                                            }
-                                           return UnPB.GetVarint(9);
                                        }
                                        else
                                        {
@@ -2131,6 +2174,52 @@ uint Android::QQ_UploadImage(const uint Group, const char8_t *ImageName, const b
                                    };
                                    return 0;
                                });
+}
+
+void Android::QQ_UploadPtt_Private(const uint QQ_, const char8_t *PttName, const byte *PttMD5, const uint PttLength, const uint PttTime, const byte *Ptt)
+{
+    Fun_Send_Sync(11, 1, "pttTrans.TransC2CPttReq", pttTrans::TransC2CPttReq(QQ_, PttName, PttMD5, PttLength, PttTime),
+                  [&](uint sso_seq, LPBYTE BodyBin)
+                  {
+                      UnProtobuf UnPB(BodyBin);
+
+                      UnPB.StepIn(2);
+                      // IP PORT为数组,这里就取第一组
+                      // 从右向左入栈,因此这里需要分开写
+                      uint IP = UnPB.GetVarint(7);
+                      uint Port = UnPB.GetVarint(8);
+                      try
+                      {
+                          PicUp::DataUp(Ptt, PttLength, PttMD5, 26, IP, Port, UnPB.GetBin(9));
+                      }
+                      catch (const char *e)
+                      {
+                          Log::AddLog(Log::LogType::NOTICE, Log::MsgType::OTHER, u8"Upload fail", e);
+                      }
+                  });
+}
+
+void Android::QQ_UploadPtt_Group(const uint Group, const char8_t *PttName, const byte *PttMD5, const uint PttLength, const uint PttTime, const byte *Ptt)
+{
+    Fun_Send_Sync(11, 1, "pttTrans.TransGroupPttReq", pttTrans::TransGroupPttReq(Group, PttName, PttMD5, PttLength, PttTime),
+                  [&](uint sso_seq, LPBYTE BodyBin)
+                  {
+                      UnProtobuf UnPB(BodyBin);
+
+                      UnPB.StepIn(2);
+                      // IP PORT为数组,这里就取第一组
+                      // 从右向左入栈,因此这里需要分开写
+                      uint IP = UnPB.GetVarint(7);
+                      uint Port = UnPB.GetVarint(8);
+                      try
+                      {
+                          PicUp::DataUp(Ptt, PttLength, PttMD5, 29, IP, Port, UnPB.GetBin(9));
+                      }
+                      catch (const char *e)
+                      {
+                          Log::AddLog(Log::LogType::NOTICE, Log::MsgType::OTHER, u8"Upload fail", e);
+                      }
+                  });
 }
 
 uint Android::QQ_Get_Account()

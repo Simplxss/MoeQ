@@ -26,7 +26,7 @@ There are a lot of features of c++11 and c++23 using by this project, please not
 
 2. Get friends and groups list.
 
-3. Receive group messages and private messages.
+3. Receive group messages and private messages(text,classcal_face,picture,json).
 
 4. Send part of group messages and private messages.
 
@@ -48,17 +48,15 @@ There are a lot of features of c++11 and c++23 using by this project, please not
 
 # Features Under Way
 
-1. Support upload image and voice.
+1. Support voice message.
 
-2. Support voice message.
+2. Update protocol version.
 
-3. Update protocol version.
+3. Optimize user Interface.
 
-4. Optimize user Interface.
+4. Plugin store.
 
-5. Plugin store.
-
-6. ...
+5. ...
 
 # Files Usage
 

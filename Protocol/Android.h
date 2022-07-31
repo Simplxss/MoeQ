@@ -10,6 +10,8 @@
 #include "OidbSvc.h"
 #include "MessageSvc.h"
 #include "ImgStore.h"
+#include "LongConn.h"
+#include "pttTrans.h"
 #include "PicUp.h"
 
 #include <ctime>
@@ -18,7 +20,7 @@
 #define LOGIN_VERIY 2
 #define LOGIN_VERIY_SMS 160
 
-class Android : private wtlogin, private StatSvc, private friendlist, private OidbSvc, private MessageSvc, private ImgStore, private PicUp
+class Android : private wtlogin, private StatSvc, private friendlist, private OidbSvc, private MessageSvc, private ImgStore, private LongConn, private pttTrans, private PicUp
 {
 private:
     struct SenderInfo
@@ -142,7 +144,10 @@ public:
     const char8_t *QQ_GetErrorMsg();
     void QQ_Set_Token(QQ::Token *_Token);
     const QQ::Token *QQ_Get_Token();
-    uint QQ_UploadImage(const uint Group,const char8_t* ImageName, const byte* ImageMD5, const uint ImageLength, const uint ImageWidth, const uint ImageHeight, const byte *Image = nullptr);
+    std::tuple<bool, char8_t *, char8_t *> QQ_UploadImage_Private(const uint QQ, const char8_t *ImageName, const byte *ImageMD5, const uint ImageLength, const uint ImageWidth, const uint ImageHeight, const byte *Image = nullptr);
+    uint QQ_UploadImage_Group(const uint Group, const char8_t *ImageName, const byte *ImageMD5, const uint ImageLength, const uint ImageWidth, const uint ImageHeight, const byte *Image = nullptr);
+    void QQ_UploadPtt_Private(const uint QQ_, const char8_t *PttName, const byte *PttMD5, const uint PttLength, const uint PttTime, const byte *Image);
+    void QQ_UploadPtt_Group(const uint Group, const char8_t *PttName, const byte *PttMD5, const uint PttLength, const uint PttTime, const byte *Image);
     uint QQ_Get_Account();
     char *QQ_GetCookies(const char *Host);
     bool QQ_SendLike(const uint QQ, const int Times);
