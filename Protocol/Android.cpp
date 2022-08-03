@@ -64,14 +64,14 @@ namespace Message
     FUNC(9)
     {
         /*
-        4a 04 08 00 40 03
-        [
-        9 {
-          1: 0
-          8: 3
-        }
-        ]
-        */
+         * 4a 04 08 00 40 03
+         * [
+         * 9 {
+         * 1: 0
+         * 8: 3
+         * }
+         * ]
+         */
     }
     FUNC(12)
     {
@@ -98,17 +98,17 @@ namespace Message
     FUNC(16)
     {
         /*
-        82 01 0b 0a 05 65 6d 6d 6d 63 18 01 28 01
-        [
-        16 {
-          1 {
-            12: emmmc //发送人群名片
-          }
-          3: 1
-          5: 1
-        }
-        ]
-        */
+         * 82 01 0b 0a 05 65 6d 6d 6d 63 18 01 28 01
+         * [
+         * 16 {
+         * 1 {
+         *  12: emmmc //发送人群名片
+         * }
+         * 3: 1
+         * 5: 1
+         * }
+         * ]
+         */
     }
     FUNC(24)
     {
@@ -130,40 +130,40 @@ namespace Message
     FUNC(37)
     {
         /*
-        aa 02 3e 50 00 60 00 68 00 9a 01 35 08 07 20 cb
-        50 c8 01 00 f0 01 00 f8 01 00 90 02 00 98 03 00
-        a0 03 00 b0 03 00 c0 03 00 d0 03 00 e8 03 00 8a
-        04 02 10 02 90 04 80 40 b8 04 00 c0 04 00 ca 04
-        00
-        [
-        37 {
-          10: 0
-          12: 0
-          13: 0
-          19 {
-            1: 7
-            4: 10315
-            25: 0
-            30: 0
-            31: 0
-            34: 0
-            51: 0
-            52: 0
-            54: 0
-            56: 0
-            58: 0
-            61: 0
-            65 {
-              2: 2
-            }
-            66: 8192
-            71: 0
-            72: 0
-            73: ""
-          }
-        }
-        ]
-        */
+         * aa 02 3e 50 00 60 00 68 00 9a 01 35 08 07 20 cb
+         * 50 c8 01 00 f0 01 00 f8 01 00 90 02 00 98 03 00
+         * a0 03 00 b0 03 00 c0 03 00 d0 03 00 e8 03 00 8a
+         * 04 02 10 02 90 04 80 40 b8 04 00 c0 04 00 ca 04
+         * 00
+         * [
+         * 37 {
+         * 10: 0
+         * 12: 0
+         * 13: 0
+         * 19 {
+         *  1: 7
+         *  4: 10315
+         *  25: 0
+         *  30: 0
+         *  31: 0
+         *  34: 0
+         *  51: 0
+         *  52: 0
+         *  54: 0
+         *  56: 0
+         *  58: 0
+         *  61: 0
+         *  65 {
+         *    2: 2
+         *  }
+         *  66: 8192
+         *  71: 0
+         *  72: 0
+         *  73: ""
+         * }
+         * }
+         * ]
+         */
     }
     FUNC(45)
     {
@@ -230,7 +230,7 @@ namespace Message
     {
         UnPB->StepIn(53);
         UnPB->GetVarint(1);
-        // Todo
+        /* Todo */
         UnPB->StepOut();
     }
 
@@ -301,7 +301,7 @@ bool Android::Fun_Connect(const char *IP, const unsigned short Port)
             if (!TCP.Connect(IP, 8080))
             {
                 delete[] IP;
-                return false;
+                return (false);
             };
             delete[] IP;
 #endif
@@ -310,18 +310,18 @@ bool Android::Fun_Connect(const char *IP, const unsigned short Port)
         {
             if (!TCP.Connect("113.96.13.79", 8080))
             {
-                return false;
+                return (false);
             };
         }
     }
     else
     {
         if (!TCP.Connect(IP, Port))
-            return false;
+            return (false);
     }
     std::thread MsgLoop(&Android::Fun_Msg_Loop, this);
     MsgLoop.detach();
-    return true;
+    return (true);
 }
 
 int Android::Fun_Send(const uint PacketType, const byte EncodeType, const char *ServiceCmd, LPBYTE Buffer)
@@ -347,12 +347,12 @@ int Android::Fun_Send(const uint PacketType, const byte EncodeType, const char *
         }
         Pack.SetInt(strlen(ServiceCmd) + 4);
         Pack.SetStr(ServiceCmd);
-        Pack.SetInt(8); // MsgCookie len + 4
+        Pack.SetInt(8); /* MsgCookie len + 4 */
         Pack.SetBin(QQ.MsgCookie, 4);
-        Pack.SetInt(strlen(Device.IMEI) + 4); // IMEI len + 4
+        Pack.SetInt(strlen(Device.IMEI) + 4); /* IMEI len + 4 */
         Pack.SetStr(Device.IMEI);
         Pack.SetInt(4);
-        Pack.SetShort(34); // Version len + 2
+        Pack.SetShort(34); /* Version len + 2 */
         Pack.SetStr(QQ.Version);
         Pack.SetInt(4);
         break;
@@ -364,7 +364,7 @@ int Android::Fun_Send(const uint PacketType, const byte EncodeType, const char *
         Pack.SetInt(4);
         break;
     }
-    Pack.SetLength(); //这里利用了个bug, 就不用 Pack.SetBin_(Pack.GetAll_(false)) 了
+    Pack.SetLength(); /* 这里利用了个bug, 就不用 Pack.SetBin_(Pack.GetAll_(false)) 了 */
     Pack.SetBin_(Buffer);
     byte *bin;
     uint bin_len = Pack.GetAll_(bin, true);
@@ -418,7 +418,7 @@ int Android::Fun_Send(const uint PacketType, const byte EncodeType, const char *
     TCP.Send(Pack.GetAll());
     delete[] Pack.GetAll();
 
-    return SsoSeq;
+    return (SsoSeq);
 }
 
 void Android::Fun_Msg_Loop()
@@ -631,20 +631,22 @@ void Android::Fun_Life_Event()
 #endif
         QQ_Heart_Beat();
         if (!(time % 1919))
-            QQ_SyncCookie(); //提前45s防止plugin正好取了失效的cookie
+            QQ_SyncCookie(); /* 提前45s防止plugin正好取了失效的cookie */
         ++time;
     } while (QQ_Status());
 }
 
-/// <summary>
-///
-/// </summary>
-/// <param name="iVersion"></param>
-/// <param name="sServantName"></param>
-/// <param name="sFuncName"></param>
-/// <param name="sBuffer">会自动销毁</param>
-/// <param name="Bufferlen"></param>
-/// <returns></returns>
+/*
+ * / <summary>
+ * /
+ * / </summary>
+ * / <param name="iVersion"></param>
+ * / <param name="sServantName"></param>
+ * / <param name="sFuncName"></param>
+ * / <param name="sBuffer">会自动销毁</param>
+ * / <param name="Bufferlen"></param>
+ * / <returns></returns>
+ */
 LPBYTE Android::Make_Body_Request_Packet(const byte iVersion, const int iRequestId, const char *sServantName, const char *sFuncName, byte *sBuffer, uint Bufferlen)
 {
     Jce Jce(true);
@@ -660,7 +662,7 @@ LPBYTE Android::Make_Body_Request_Packet(const byte iVersion, const int iRequest
     Jce.Write(&a, 9);
     Jce.Write(&a, 10);
     delete[] sBuffer;
-    return Jce.GetAll();
+    return (Jce.GetAll());
 }
 
 void Android::Un_Tlv_Get(const unsigned short cmd, const byte *bin, const uint len)
@@ -800,8 +802,8 @@ void Android::Un_Tlv_Get(const unsigned short cmd, const byte *bin, const uint l
         break;
     case 0x130:
         UnPack.GetShort();
-        UnPack.GetInt();  // time
-        UnPack.GetBin(4); // ip
+        UnPack.GetInt();  /* time */
+        UnPack.GetBin(4); /* ip */
         break;
     case 0x133:
         if (QQ.Token.wtSessionTicket != nullptr)
@@ -852,7 +854,7 @@ void Android::Un_Tlv_Get(const unsigned short cmd, const byte *bin, const uint l
         UnPack.GetShort();
         break;
     case 0x163:
-        //未知
+        /* 未知 */
         break;
     case 0x164:
         if (QQ.Cookie.sid != nullptr)
@@ -861,7 +863,7 @@ void Android::Un_Tlv_Get(const unsigned short cmd, const byte *bin, const uint l
         memcpy(QQ.Cookie.sid, bin, len);
         break;
     case 0x165:
-        //请输入图中字符，帮助我们完成安全测试
+        /* 请输入图中字符，帮助我们完成安全测试 */
         break;
     case 0x16A:
         if (QQ.Token.token_16A != nullptr)
@@ -898,13 +900,13 @@ void Android::Un_Tlv_Get(const unsigned short cmd, const byte *bin, const uint l
         UnPack.GetShort();
         break;
     case 0x17B:
-        //未知
+        /* 未知 */
         break;
     case 0x17D:
-        //网址
+        /* 网址 */
         break;
     case 0x17E:
-        //为保障你的QQ帐号安全，当前设备需进行身份验证，通过后下次无需验证。
+        /* 为保障你的QQ帐号安全，当前设备需进行身份验证，通过后下次无需验证。 */
         break;
     case 0x192:
         if (QQ.Login->Viery_Ticket != nullptr)
@@ -916,7 +918,7 @@ void Android::Un_Tlv_Get(const unsigned short cmd, const byte *bin, const uint l
     case 0x197:
         break;
     case 0x204:
-        //网址,过设备锁方式
+        /* 网址,过设备锁方式 */
         break;
     case 0x305:
         if (QQ.Token.D2Key != nullptr)
@@ -939,7 +941,7 @@ void Android::Un_Tlv_Get(const unsigned short cmd, const byte *bin, const uint l
         memcpy(QQ.Login->token_403, bin, len);
         break;
     case 0x508:
-        //懒得整
+        /* 懒得整 */
         break;
     case 0x512:
     {
@@ -963,22 +965,22 @@ void Android::Un_Tlv_Get(const unsigned short cmd, const byte *bin, const uint l
         break;
     case 0x522:
         UnPack.GetInt();
-        UnPack.GetInt();  // QQ
-        UnPack.GetBin(4); // IP
-        UnPack.GetInt();  // Time
-        UnPack.GetInt();  // APPID
+        UnPack.GetInt();  /* QQ */
+        UnPack.GetBin(4); /* IP */
+        UnPack.GetInt();  /* Time */
+        UnPack.GetInt();  /* APPID */
         break;
     case 0x528:
-        //{"QIM_invitation_bit":"1"}
+        /* {"QIM_invitation_bit":"1"} */
         break;
     case 0x537:
         UnPack.GetShort();
         UnPack.GetInt();
-        UnPack.GetInt(); // QQ
+        UnPack.GetInt(); /* QQ */
         UnPack.GetByte();
-        UnPack.GetBin(4); // IP
-        UnPack.GetInt();  // Time
-        UnPack.GetInt();  // appid
+        UnPack.GetBin(4); /* IP */
+        UnPack.GetInt();  /* Time */
+        UnPack.GetInt();  /* appid */
         break;
     case 0x543:
         break;
@@ -992,7 +994,7 @@ void Android::Un_Tlv_Get(const unsigned short cmd, const byte *bin, const uint l
 
         break;
     default:
-        // throw "Unknown Tlv";
+        /* throw "Unknown Tlv"; */
         break;
     }
 }
@@ -1008,10 +1010,10 @@ void Android::Unpack_wtlogin(const LPBYTE BodyBin, const uint sso_seq)
     ::UnPack UnPack(BodyBin);
     UnPack.GetByte();
     const uint len = UnPack.GetShort() - 1 - 2 - 2 - 2 - 2 - 4 - 2 - 1 - 1;
-    UnPack.GetShort(); // version
-    UnPack.GetShort(); // command
-    UnPack.GetShort(); // 1
-    UnPack.GetInt();   // uin
+    UnPack.GetShort(); /* version */
+    UnPack.GetShort(); /* command */
+    UnPack.GetShort(); /* 1 */
+    UnPack.GetInt();   /* uin */
     UnPack.GetByte();
     byte encrypt_type = UnPack.GetByte();
     QQ.Login->state = UnPack.GetByte();
@@ -1032,16 +1034,17 @@ void Android::Unpack_wtlogin(const LPBYTE BodyBin, const uint sso_seq)
             byte *key = Utils::MD5(QQ.Login->ECDH.sharekey, 16);
             Tea::decrypt(key, Buffer, len, data);
             delete[] key;
+
             /*
-            QQ.Login->ECDH.pubkeyLen = UnPack.GetShort();
-            memcpy(QQ.Login->ECDH.pubkey, UnPack.GetBin(QQ.Login->ECDH.pubkeyLen), QQ.Login->ECDH.pubkeyLen);
-            Utils::Ecdh_CountSharekey(QQ.Login->ECDH);
-            key = Utils::MD5(QQ.Login->ECDH.sharekey, QQ.Login->ECDH.sharekeyLen);
-            std::vector<byte> buffer;
-            Tea::decrypt(key, UnPack.GetCurrentPoint(), UnPack.GetLeftLength(), buffer);
-            delete[] key;
-            UnPack.Reset(&buffer);
-            */
+             * QQ.Login->ECDH.pubkeyLen = UnPack.GetShort();
+             * memcpy(QQ.Login->ECDH.pubkey, UnPack.GetBin(QQ.Login->ECDH.pubkeyLen), QQ.Login->ECDH.pubkeyLen);
+             * Utils::Ecdh_CountSharekey(QQ.Login->ECDH);
+             * key = Utils::MD5(QQ.Login->ECDH.sharekey, QQ.Login->ECDH.sharekeyLen);
+             * std::vector<byte> buffer;
+             * Tea::decrypt(key, UnPack.GetCurrentPoint(), UnPack.GetLeftLength(), buffer);
+             * delete[] key;
+             * UnPack.Reset(&buffer);
+             */
         }
         break;
     case 3:
@@ -1052,20 +1055,22 @@ void Android::Unpack_wtlogin(const LPBYTE BodyBin, const uint sso_seq)
 
     UnPack.Reset(&data);
 
-    // 0 登录成功
-    // 1 密码错误
-    // 2 验证码
-    // 32 被回收
-    // 40 被冻结
-    // 160 设备锁
-    // 162 短信发送失败
-    // 163 短信验证码错误
-    // 180 回滚 (ecdh错误)
-    // 204 设备锁 验证
-    // 235 版本过低
-    // 237 上网环境异常
-    // 239 设备锁
-    // 243 非法来源禁止登录
+    /*
+     * 0 登录成功
+     * 1 密码错误
+     * 2 验证码
+     * 32 被回收
+     * 40 被冻结
+     * 160 设备锁
+     * 162 短信发送失败
+     * 163 短信验证码错误
+     * 180 回滚 (ecdh错误)
+     * 204 设备锁 验证
+     * 235 版本过低
+     * 237 上网环境异常
+     * 239 设备锁
+     * 243 非法来源禁止登录
+     */
     switch (QQ.Login->state)
     {
     case 204:
@@ -1115,7 +1120,6 @@ void Android::Unpack_OnlinePush_PbPushGroupMsg(const LPBYTE BodyBin, const uint 
         UnPB.StepIn(2);
         switch (UnPB.GetField())
         {
-
 #define UnPack(id)                                 \
     case id:                                       \
         if (GroupMsg.Msg == nullptr)               \
@@ -1131,20 +1135,20 @@ void Android::Unpack_OnlinePush_PbPushGroupMsg(const LPBYTE BodyBin, const uint 
         }                                          \
         break;
 
-            UnPack(1);  //文字和At
-            UnPack(2);  //小黄豆
-            UnPack(5);  //文件
-            UnPack(6);  //原创表情
-            UnPack(8);  //图片
-            UnPack(9);  //气泡消息
-            UnPack(12); // xml
+            UnPack(1);  /* 文字和At */
+            UnPack(2);  /* 小黄豆 */
+            UnPack(5);  /* 文件 */
+            UnPack(6);  /* 原创表情 */
+            UnPack(8);  /* 图片 */
+            UnPack(9);  /* 气泡消息 */
+            UnPack(12); /* xml */
             UnPack(16);
-            UnPack(24); //红包
-            UnPack(33); //小视频
+            UnPack(24); /* 红包 */
+            UnPack(33); /* 小视频 */
             UnPack(37);
-            UnPack(45); //回复
-            UnPack(51); // json
-            UnPack(53); //吃瓜等新表情
+            UnPack(45); /* 回复 */
+            UnPack(51); /* json */
+            UnPack(53); /* 吃瓜等新表情 */
         default:
             Log::AddLog(Log::LogType::NOTICE, Log::MsgType::_GROUP, u8"OnlinePush.PbPushGroupMsg", u8"unknown MsgType: %d", true, UnPB.GetField());
             break;
@@ -1167,7 +1171,7 @@ void Android::Unpack_OnlinePush_PbPushGroupMsg(const LPBYTE BodyBin, const uint 
             }
             else
             {
-                // QQ_SetGroupAdmin(GroupMsgY.FromGroup, GroupMsg.FromQQ, true);
+                /* QQ_SetGroupAdmin(GroupMsgY.FromGroup, GroupMsg.FromQQ, true); */
                 QQ_SendMsg(GroupMsg.FromGroup, 1, GroupMsg.Msg);
             }
     }
@@ -1227,15 +1231,15 @@ void Android::Unpack_OnlinePush_PbPushTransMsg(const LPBYTE BodyBin, const uint 
         SubType = UnPack.GetByte();
         switch (SubType)
         {
-        case 0: // cancle
+        case 0: /* cancle */
             ((Event::NoticeEvent::group_adminchange *)NoticeEvent.Information)->FromQQ = UnPack.GetInt();
             ((Event::NoticeEvent::group_adminchange *)NoticeEvent.Information)->Type = UnPack.GetByte();
             break;
-        case 1: // set
+        case 1: /* set */
             ((Event::NoticeEvent::group_adminchange *)NoticeEvent.Information)->FromQQ = UnPack.GetInt();
             ((Event::NoticeEvent::group_adminchange *)NoticeEvent.Information)->Type = UnPack.GetByte();
             break;
-        case 0xFF: // transfer
+        case 0xFF: /* transfer */
             ((Event::NoticeEvent::group_adminchange *)NoticeEvent.Information)->FromQQ = UnPack.GetInt();
             ((Event::NoticeEvent::group_adminchange *)NoticeEvent.Information)->Type = 2;
             break;
@@ -1259,14 +1263,14 @@ void Android::Unpack_OnlinePush_PbC2CMsgSync(const LPBYTE BodyBin, const uint ss
 void Android::Unpack_OnlinePush_ReqPush(const LPBYTE BodyBin, const uint sso_seq)
 {
     /*
-    LPBYTE sBuffer;
-    Unpack_Body_Request_Packet(BodyBin, sBuffer);
-
-    UnJce UnJce(sBuffer);
-    std::vector<JceStruct::Map<char *, std::vector<JceStruct::Map<char *, LPBYTE>>>> Map;
-    UnJce.Read(Map, 0);
-    Fun_Send_Sync(11, 1, "OnlinePush.RespPush", OnlinePush::RespPush(), [&](uint sso_seq, LPBYTE BodyBin) {});
-    */
+     * LPBYTE sBuffer;
+     * Unpack_Body_Request_Packet(BodyBin, sBuffer);
+     *
+     * UnJce UnJce(sBuffer);
+     * std::vector<JceStruct::Map<char *, std::vector<JceStruct::Map<char *, LPBYTE>>>> Map;
+     * UnJce.Read(Map, 0);
+     * Fun_Send_Sync(11, 1, "OnlinePush.RespPush", OnlinePush::RespPush(), [&](uint sso_seq, LPBYTE BodyBin) {});
+     */
 }
 
 void Android::Unpack_MessageSvc_PushNotify(const LPBYTE BodyBin, const uint sso_seq)
@@ -1292,7 +1296,7 @@ void Android::Unpack_MessageSvc_PushNotify(const LPBYTE BodyBin, const uint sso_
                           {
                               UnProtobuf UnPB(BodyBin);
 
-                              UnPB.GetBin(3); // SyncCookies
+                              UnPB.GetBin(3); /* SyncCookies */
                               UnPB.GetVarint(4);
                               while (UnPB.GetField() == 5)
                               {
@@ -1335,24 +1339,83 @@ void Android::Unpack_MessageSvc_PushNotify(const LPBYTE BodyBin, const uint sso_
                                       }
                                       break;
                                       case 34:
-                                      {
-                                          UnPB.StepIn(3);
-                                          UnPack UnPack(UnPB.GetBin(2));
-                                          Event::RequestEvent::RequestEvent RequestEvent{Event::RequestEvent::RequestEventType::add_group, new Event::RequestEvent::add_group};
-                                          ((Event::RequestEvent::add_group *)RequestEvent.Information)->FromGroup = UnPack.GetInt();
-                                          UnPack.Skip(1);
-                                          ((Event::RequestEvent::add_group *)RequestEvent.Information)->FromQQ = UnPack.GetInt();
-                                          switch (UnPack.GetByte())
-                                          {
-                                          case 130:
-                                              ((Event::RequestEvent::add_group *)RequestEvent.Information)->Type = 0;
-                                              break;
-                                          }
-                                          UnPB.StepOut();
-                                          Event::OnRequestMsg(&RequestEvent);
-                                          Log::AddLog(Log::LogType::INFORMATION, Log::MsgType::OTHER, &RequestEvent);
-                                      }
-                                      break;
+                                          Fun_Send_Sync(11, 1, "ProfileService.Pb.ReqSystemMsgNew.Group", ProfileService::Pb_ReqSystemMsgNew_Group(),
+                                                        [&](uint sso_seq, LPBYTE BodyBin)
+                                                        {
+                                                            UnProtobuf UnPB(BodyBin);
+                                                            UnPB.GetVarint(7);
+                                                            while (UnPB.GetField() == 10)
+                                                            {
+                                                                UnPB.StepIn(10);
+                                                                uint msgSeq = UnPB.GetVarint(3);
+                                                                uint reqUin = UnPB.GetVarint(5);
+                                                                UnPB.StepIn(50);
+                                                                uint subType = UnPB.GetVarint(1);
+                                                                uint groupCode = UnPB.GetVarint(10);
+                                                                uint actionUin = UnPB.GetVarint(11);
+                                                                uint groupMsgType = UnPB.GetVarint(12);
+                                                                char8_t *reqUinNick = UnPB.GetStr(51);
+                                                                char8_t *groupName = UnPB.GetStr(52);
+                                                                char8_t *actionUinQqNick = UnPB.GetStr(65);
+
+                                                                switch (subType)
+                                                                {
+                                                                case 1: /* 进群申请 */
+                                                                    switch (groupMsgType)
+                                                                    {
+                                                                    case 1:
+                                                                    {
+                                                                        Event::RequestEvent::RequestEvent RequestEvent{Event::RequestEvent::RequestEventType::other_join_group, new Event::RequestEvent::other_join_group};
+
+                                                                        ((Event::RequestEvent::other_join_group *)RequestEvent.Information)->FromGroup = groupCode;
+                                                                        ((Event::RequestEvent::other_join_group *)RequestEvent.Information)->FromQQ = reqUin;
+                                                                        ((Event::RequestEvent::other_join_group *)RequestEvent.Information)->FromGroupName = groupName;
+                                                                        ((Event::RequestEvent::other_join_group *)RequestEvent.Information)->FromQQName = reqUinNick;
+
+                                                                        Event::OnRequestMsg(&RequestEvent);
+                                                                        Log::AddLog(Log::LogType::INFORMATION, Log::MsgType::OTHER, &RequestEvent);
+                                                                    }
+                                                                    break;
+                                                                    case 2:
+                                                                    {
+                                                                        Event::RequestEvent::RequestEvent RequestEvent{Event::RequestEvent::RequestEventType::self_invited, new Event::RequestEvent::self_invited};
+
+                                                                        ((Event::RequestEvent::self_invited *)RequestEvent.Information)->FromGroup = groupCode;
+                                                                        ((Event::RequestEvent::self_invited *)RequestEvent.Information)->InvitorQQ = actionUin;
+                                                                        ((Event::RequestEvent::self_invited *)RequestEvent.Information)->FromGroupName = groupName;
+                                                                        ((Event::RequestEvent::self_invited *)RequestEvent.Information)->InvitorQQName = actionUinQqNick;
+
+                                                                        Event::OnRequestMsg(&RequestEvent);
+                                                                        Log::AddLog(Log::LogType::INFORMATION, Log::MsgType::OTHER, &RequestEvent);
+                                                                    }
+                                                                    case 22:
+                                                                    {
+                                                                        Event::RequestEvent::RequestEvent RequestEvent{Event::RequestEvent::RequestEventType::other_join_group, new Event::RequestEvent::other_join_group};
+
+                                                                        ((Event::RequestEvent::other_join_group *)RequestEvent.Information)->FromGroup = groupCode;
+                                                                        ((Event::RequestEvent::other_join_group *)RequestEvent.Information)->FromQQ = reqUin;
+                                                                        ((Event::RequestEvent::other_join_group *)RequestEvent.Information)->FromGroupName = groupName;
+                                                                        ((Event::RequestEvent::other_join_group *)RequestEvent.Information)->FromQQName = reqUinNick;
+                                                                        ((Event::RequestEvent::self_invited *)RequestEvent.Information)->InvitorQQ = actionUin;
+
+                                                                        Event::OnRequestMsg(&RequestEvent);
+                                                                        Log::AddLog(Log::LogType::INFORMATION, Log::MsgType::OTHER, &RequestEvent);
+                                                                    }
+
+                                                                    default:
+                                                                        break;
+                                                                    }
+                                                                    break;
+                                                                case 2: /* 被邀请(<50人自动加入,不需要处理) */
+                                                                    break;
+                                                                case 5: /* 自身状态变更(管理员/加群退群) */
+                                                                    break;
+                                                                }
+                                                                UnPB.StepOut();
+                                                                UnPB.StepOut();
+                                                            }
+                                                        });
+                                          break;
                                       case 84:
                                           break;
                                       case 166:
@@ -1368,7 +1431,6 @@ void Android::Unpack_MessageSvc_PushNotify(const LPBYTE BodyBin, const uint sso_
                                               Message::Msg *ThisMsg = nullptr;
                                               switch (UnPB.GetField())
                                               {
-
 #define UnPack(id)                                 \
     case id:                                       \
         if (PrivateMsg.Msg == nullptr)             \
@@ -1383,21 +1445,21 @@ void Android::Unpack_MessageSvc_PushNotify(const LPBYTE BodyBin, const uint sso_
         }                                          \
         break;
 
-                                                  UnPack(1);  //文字和At
-                                                  UnPack(2);  //小黄豆
-                                                  UnPack(4);  //图片5
-                                                  UnPack(5);  //文件
-                                                  UnPack(6);  //原创表情
-                                                  UnPack(8);  //图片
-                                                  UnPack(9);  //气泡消息
-                                                  UnPack(12); // xml
+                                                  UnPack(1);  /* 文字和At */
+                                                  UnPack(2);  /* 小黄豆 */
+                                                  UnPack(4);  /* 图片5 */
+                                                  UnPack(5);  /* 文件 */
+                                                  UnPack(6);  /* 原创表情 */
+                                                  UnPack(8);  /* 图片 */
+                                                  UnPack(9);  /* 气泡消息 */
+                                                  UnPack(12); /* xml */
                                                   UnPack(16);
-                                                  UnPack(24); //红包
-                                                  UnPack(33); //小视频
+                                                  UnPack(24); /* 红包 */
+                                                  UnPack(33); /* 小视频 */
                                                   UnPack(37);
-                                                  UnPack(45); //回复
-                                                  UnPack(51); // json
-                                                  UnPack(53); //吃瓜等新表情
+                                                  UnPack(45); /* 回复 */
+                                                  UnPack(51); /* json */
+                                                  UnPack(53); /* 吃瓜等新表情 */
 
 #undef UnPack
                                               }
@@ -1429,8 +1491,6 @@ void Android::Unpack_MessageSvc_PushNotify(const LPBYTE BodyBin, const uint sso_
         delete[] Map[i].Key;
     }
     delete[] sBuffer;
-
-    // OnlinePush_RespPush(sso_seq, protobuf, a);
 }
 
 void Android::Unpack_MessageSvc_PushForceOffline(const LPBYTE BodyBin, const uint sso_seq)
@@ -1487,7 +1547,7 @@ void Android::Unpack_ConfigPushSvc_PushReq(const LPBYTE BodyBin, const uint sso_
             UnJce.Read(data, 2);
             UnJce.Reset(data);
 
-            if (type == 1) // need redirect
+            if (type == 1) /* need redirect */
             {
                 Log::AddLog(Log::LogType::NOTICE, Log::MsgType::OTHER, u8"Online", u8"Need Redirect");
                 std::vector<::UnJce> ipl;
@@ -1539,11 +1599,13 @@ void Android::QQ_Init(const char *Account)
     memcpy(QQ.QQ_Str, Account, strlen(Account) + 1);
 }
 
-/// <summary>
-/// 登录
-/// </summary>
-/// <param name="Password">密码</param>
-/// <returns>LOGIN_</returns>
+/*
+ * / <summary>
+ * / 登录
+ * / </summary>
+ * / <param name="Password">密码</param>
+ * / <returns>LOGIN_</returns>
+ */
 int Android::QQ_Login(const char *Password)
 {
     if (QQ.Token.md5 != nullptr)
@@ -1562,15 +1624,15 @@ int Android::QQ_Login(const char *Password)
     QQ.Login->RandKey = Utils::GetRandomBin(16);
 
     /* secp192k1
-    byte PublicKey[] = {
-        0x04, 0x92, 0x8D, 0x88, 0x50, 0x67, 0x30, 0x88, 0xB3, 0x43,
-        0x26, 0x4E, 0x0C, 0x6B, 0xAC, 0xB8, 0x49, 0x6D, 0x69, 0x77,
-        0x99, 0xF3, 0x72, 0x11, 0xDE, 0xB2, 0x5B, 0xB7, 0x39, 0x06,
-        0xCB, 0x08, 0x9F, 0xEA, 0x96, 0x39, 0xB4, 0xE0, 0x26, 0x04,
-        0x98, 0xB5, 0x1A, 0x99, 0x2D, 0x50, 0x81, 0x3D, 0xA8};
-    Utils::Ecdh_Crypt(QQ.Login->ECDH, PublicKey, 0x31);
-    */
-    // prime256v1
+     * byte PublicKey[] = {
+     *  0x04, 0x92, 0x8D, 0x88, 0x50, 0x67, 0x30, 0x88, 0xB3, 0x43,
+     *  0x26, 0x4E, 0x0C, 0x6B, 0xAC, 0xB8, 0x49, 0x6D, 0x69, 0x77,
+     *  0x99, 0xF3, 0x72, 0x11, 0xDE, 0xB2, 0x5B, 0xB7, 0x39, 0x06,
+     *  0xCB, 0x08, 0x9F, 0xEA, 0x96, 0x39, 0xB4, 0xE0, 0x26, 0x04,
+     *  0x98, 0xB5, 0x1A, 0x99, 0x2D, 0x50, 0x81, 0x3D, 0xA8};
+     * Utils::Ecdh_Crypt(QQ.Login->ECDH, PublicKey, 0x31);
+     */
+    /* prime256v1 */
     unsigned char PublicKey[] = {
         0x04, 0xEB, 0xCA, 0x94, 0xD7, 0x33, 0xE3, 0x99, 0xB2, 0xDB,
         0x96, 0xEA, 0xCD, 0xD3, 0xF6, 0x9A, 0x8B, 0xB0, 0xF7, 0x42,
@@ -1587,7 +1649,7 @@ int Android::QQ_Login(const char *Password)
                   {
                       Unpack_wtlogin(BodyBin, sso_seq);
                   });
-    return QQ.Login->state;
+    return (QQ.Login->state);
 }
 
 int Android::QQ_Login_Second()
@@ -1603,8 +1665,8 @@ int Android::QQ_Login_Second()
     QQ.Login = new QQ::Login;
     Fun_Connect();
 
-    // QQ_SyncCookie();
-    return QQ.Login->state;
+    /* QQ_SyncCookie(); */
+    return (QQ.Login->state);
 }
 
 void Android::QQ_Login_Finish()
@@ -1640,7 +1702,7 @@ byte Android::QQ_Send_Sms()
                   {
                       Unpack_wtlogin(BodyBin, sso_seq);
                   });
-    return QQ.Login->state;
+    return (QQ.Login->state);
 }
 
 byte Android::QQ_Viery_Ticket(const char *Ticket)
@@ -1650,7 +1712,7 @@ byte Android::QQ_Viery_Ticket(const char *Ticket)
                   {
                       Unpack_wtlogin(BodyBin, sso_seq);
                   });
-    return QQ.Login->state;
+    return (QQ.Login->state);
 }
 
 byte Android::QQ_Viery_Sms(const char *SmsCode)
@@ -1660,17 +1722,17 @@ byte Android::QQ_Viery_Sms(const char *SmsCode)
                   {
                       Unpack_wtlogin(BodyBin, sso_seq);
                   });
-    return QQ.Login->state;
+    return (QQ.Login->state);
 }
 
 char *Android::QQ_Get_Viery_Ticket()
 {
-    return QQ.Login->Viery_Ticket;
+    return (QQ.Login->Viery_Ticket);
 }
 
 char *Android::QQ_Get_Viery_PhoneNumber()
 {
-    return QQ.Login->PhoneNumber;
+    return (QQ.Login->PhoneNumber);
 }
 
 void Android::QQ_Online()
@@ -1678,8 +1740,10 @@ void Android::QQ_Online()
     QQ_SetOnlineType(QQ.Status = 11);
     std::thread Thread(std::bind(&Android::Fun_Life_Event, this));
     Thread.detach();
-    // friendlist_getFriendGroupList(0);
-    // friendlist_GetTroopListReqV2();
+    /*
+     * friendlist_getFriendGroupList(0);
+     * friendlist_GetTroopListReqV2();
+     */
 }
 
 void Android::QQ_Offline()
@@ -1688,13 +1752,14 @@ void Android::QQ_Offline()
     QQ.Status = 21;
 }
 
-/// <summary>
-/// 设置在线状态
-/// </summary>
-/// <param name="Type">11:在线 21:离线 31:离开 41:隐身 50:忙碌 60:Q我吧 70:免打扰 95:接收离线消息(离线)</param>
+/*
+ * / <summary>
+ * / 设置在线状态
+ * / </summary>
+ * / <param name="Type">11:在线 21:离线 31:离开 41:隐身 50:忙碌 60:Q我吧 70:免打扰 95:接收离线消息(离线)</param>
+ */
 void Android::QQ_SetOnlineType(const byte Type)
 {
-
     Fun_Send_Sync(10, 1, "StatSvc.register", StatSvc::Register(Type),
                   [&](uint sso_seq, LPBYTE BodyBin)
                   {
@@ -1720,40 +1785,40 @@ void Android::QQ_SetOnlineType(const byte Type)
                       }
                       delete[] sBuffer;
                   });
+
     /*
-    Fun_Send_Sync(10, 1, "StatSvc.SetStatusFromClient", StatSvc::SetStatusFromClient(Type),
-                  [&](uint sso_seq, LPBYTE BodyBin)
-                  {
-                      LPBYTE sBuffer;
-                      Unpack_Body_Request_Packet(BodyBin, sBuffer);
-
-                      ::UnJce UnJce(sBuffer);
-                      std::vector<JceStruct::Map<char *, std::vector<JceStruct::Map<char *, LPBYTE>>>> Map;
-                      UnJce.Read(Map, 0);
-
-                      for (size_t i = 0; i < Map.size(); i++)
-                      {
-                          for (size_t j = 0; j < Map[i].Value.size(); j++)
-                          {
-                              UnJce.Reset(Map[i].Value[j].Value);
-                              UnJce.Read(UnJce, 0);
-
-                              delete[] Map[i].Value[j].Key;
-                              delete[] Map[i].Value[j].Value;
-                          }
-
-                          delete[] Map[i].Key;
-                      }
-                      delete[] sBuffer;
-                  });
-    */
+     * Fun_Send_Sync(10, 1, "StatSvc.SetStatusFromClient", StatSvc::SetStatusFromClient(Type),
+     *            [&](uint sso_seq, LPBYTE BodyBin)
+     *            {
+     *                LPBYTE sBuffer;
+     *                Unpack_Body_Request_Packet(BodyBin, sBuffer);
+     *
+     *                ::UnJce UnJce(sBuffer);
+     *                std::vector<JceStruct::Map<char *, std::vector<JceStruct::Map<char *, LPBYTE>>>> Map;
+     *                UnJce.Read(Map, 0);
+     *
+     *                for (size_t i = 0; i < Map.size(); i++)
+     *                {
+     *                    for (size_t j = 0; j < Map[i].Value.size(); j++)
+     *                    {
+     *                        UnJce.Reset(Map[i].Value[j].Value);
+     *                        UnJce.Read(UnJce, 0);
+     *
+     *                        delete[] Map[i].Value[j].Key;
+     *                        delete[] Map[i].Value[j].Value;
+     *                    }
+     *
+     *                    delete[] Map[i].Key;
+     *                }
+     *                delete[] sBuffer;
+     *            });
+     */
 }
 
 void Android::QQ_Heart_Beat()
 {
     Fun_Send_Sync(10, 1, "StatSvc.register", StatSvc::SimpleGet(),
-                  [&](uint sso_seq, LPBYTE BodyBin)
-                  {
+                  [&](uint sso_seq, LPBYTE BodyBin) {
                   });
 }
 
@@ -1834,7 +1899,7 @@ void Android::QQ_SyncGroupList()
                       {
                           UnJce.Reset(Map[i].Value);
                           UnJce.Read(UnJce, 0);
-                          // UnJce.Read(totoal_group_count, 1);
+                          /* UnJce.Read(totoal_group_count, 1); */
 
                           std::vector<::UnJce> Groups;
                           UnJce.Read(Groups, 5);
@@ -1879,11 +1944,11 @@ void Android::QQ_SyncGroupMemberList(uint Group)
                           for (size_t j = 0; j < Groups.size(); j++)
                           {
                               /*
-                    Groups[j].Read((int&)QQ->GroupList[j].GroupCode, 1);
-                    Groups[j].Read(QQ->GroupList[j].GroupName, 4);
-                    Groups[j].Read(QQ->GroupList[j].MemberCount, 19);
-                    Groups[j].Read((int&)QQ->GroupList[j].MasterQQ, 23);
-                    */
+                               * Groups[j].Read((int&)QQ->GroupList[j].GroupCode, 1);
+                               * Groups[j].Read(QQ->GroupList[j].GroupName, 4);
+                               * Groups[j].Read(QQ->GroupList[j].MemberCount, 19);
+                               * Groups[j].Read((int&)QQ->GroupList[j].MasterQQ, 23);
+                               */
                           }
 
                           delete[] Map[i].Key;
@@ -1895,36 +1960,38 @@ void Android::QQ_SyncGroupMemberList(uint Group)
 
 void Android::QQ_SyncGroupAdminList(uint Group)
 {
-    return Fun_Send_Sync(11, 1, "OidbSvc.0x899_0", OidbSvc::_0x899_0(Group),
-                         [&](uint sso_seq, LPBYTE BodyBin)
-                         {
-                             UnProtobuf UnPB(BodyBin);
+    return (Fun_Send_Sync(11, 1, "OidbSvc.0x899_0", OidbSvc::_0x899_0(Group),
+                          [&](uint sso_seq, LPBYTE BodyBin)
+                          {
+                              UnProtobuf UnPB(BodyBin);
 
-                             std::vector<uint> ManagerList;
+                              std::vector<uint> ManagerList;
 
-                             UnPB.StepIn(4);
-                             while (UnPB.IsEnd())
-                             {
-                                 UnPB.StepIn(4);
-                                 ManagerList.emplace_back(UnPB.GetVarint(1));
-                                 UnPB.StepOut();
-                             }
-                             UnPB.StepOut();
-                         });
+                              UnPB.StepIn(4);
+                              while (UnPB.IsEnd())
+                              {
+                                  UnPB.StepIn(4);
+                                  ManagerList.emplace_back(UnPB.GetVarint(1));
+                                  UnPB.StepOut();
+                              }
+                              UnPB.StepOut();
+                          }));
 }
 
-/// <summary>
-/// Get QQ Online state
-/// </summary>
-/// <returns>true:online false:offline</returns>
+/*
+ * / <summary>
+ * / Get QQ Online state
+ * / </summary>
+ * / <returns>true:online false:offline</returns>
+ */
 bool Android::QQ_Status()
 {
-    return QQ.Status != 21 && TCP.Connected;
+    return (QQ.Status != 21 && TCP.Connected);
 }
 
 const char8_t *Android::QQ_GetErrorMsg()
 {
-    return QQ.ErrorMsg;
+    return (QQ.ErrorMsg);
 }
 
 void Android::QQ_Set_Token(QQ::Token *_Token)
@@ -1952,101 +2019,105 @@ void Android::QQ_Set_Token(QQ::Token *_Token)
 
 const QQ::Token *Android::QQ_Get_Token()
 {
-    return &QQ.Token;
+    return (&QQ.Token);
 }
 
 std::tuple<bool, char8_t *, char8_t *> Android::QQ_UploadImage_Private(const uint QQ, const char8_t *ImageName, const byte *ImageMD5, const uint ImageLength, const uint ImageWidth, const uint ImageHeight, const byte *Image)
 {
-    return Fun_Send_Sync<std::tuple<bool, char8_t *, char8_t *>>(11, 1, "LongConn.OffPicUp", LongConn::OffPicUp(QQ, ImageName, ImageMD5, ImageLength, ImageWidth, ImageHeight),
-                                                                 [&](uint sso_seq, LPBYTE BodyBin)
-                                                                     -> std::tuple<bool, char8_t *, char8_t *>
-                                                                 {
-                                                                     UnProtobuf UnPB(BodyBin);
+    return (Fun_Send_Sync<std::tuple<bool, char8_t *, char8_t *>>(11, 1, "LongConn.OffPicUp", LongConn::OffPicUp(QQ, ImageName, ImageMD5, ImageLength, ImageWidth, ImageHeight),
+                                                                  [&](uint sso_seq, LPBYTE BodyBin)
+                                                                      -> std::tuple<bool, char8_t *, char8_t *>
+                                                                  {
+                                                                      UnProtobuf UnPB(BodyBin);
 
-                                                                     UnPB.StepIn(2);
-                                                                     switch (UnPB.GetVarint(5))
-                                                                     {
-                                                                     case 0: //需要上传
-                                                                     {
-                                                                         if (Image != nullptr)
-                                                                         {
-                                                                             // IP PORT为数组,这里就取第一组
-                                                                             // 从右向左入栈,因此这里需要分开写
-                                                                             char *IP = XBin::Int2IP(UnPB.GetVarint(6));
-                                                                             uint Port = UnPB.GetVarint(7);
-                                                                             LPBYTE ukey = UnPB.GetBin(8);
-                                                                             try
-                                                                             {
-                                                                                 PicUp::DataUp(Image, ImageLength, ImageMD5, 2, IP, Port, ukey);
-                                                                             }
-                                                                             catch (const char *e)
-                                                                             {
-                                                                                 Log::AddLog(Log::LogType::NOTICE, Log::MsgType::OTHER, u8"Upload fail", e);
-                                                                                 return std::make_tuple(false, new char8_t, new char8_t);
-                                                                             }
-                                                                             delete IP;
-                                                                             delete ukey;
-                                                                         }
-                                                                         else
-                                                                         {
-                                                                             Log::AddLog(Log::LogType::WARNING, Log::MsgType::OTHER, u8"Upload image", u8"Upload failed");
-                                                                             return std::make_tuple(false, new char8_t, new char8_t);
-                                                                         }
-                                                                     }
-                                                                     case 1:
-                                                                     {
-                                                                         char8_t *ImageID1 = UnPB.GetStr(10);
-                                                                         char8_t *ImageID2 = UnPB.GetStr(11);
-                                                                         return std::make_tuple(true, ImageID1, ImageID2);
-                                                                     }
-                                                                     };
-                                                                     return std::make_tuple(false, new char8_t, new char8_t);
-                                                                 });
+                                                                      UnPB.StepIn(2);
+                                                                      switch (UnPB.GetVarint(5))
+                                                                      {
+                                                                      case 0: /* 需要上传 */
+                                                                      {
+                                                                          if (Image != nullptr)
+                                                                          {
+                                                                              /*
+                                                                               * IP PORT为数组,这里就取第一组
+                                                                               * 从右向左入栈,因此这里需要分开写
+                                                                               */
+                                                                              char *IP = XBin::Int2IP(UnPB.GetVarint(6));
+                                                                              uint Port = UnPB.GetVarint(7);
+                                                                              LPBYTE ukey = UnPB.GetBin(8);
+                                                                              try
+                                                                              {
+                                                                                  PicUp::DataUp(Image, ImageLength, ImageMD5, 2, IP, Port, ukey);
+                                                                              }
+                                                                              catch (const char *e)
+                                                                              {
+                                                                                  Log::AddLog(Log::LogType::NOTICE, Log::MsgType::OTHER, u8"Upload fail", e);
+                                                                                  return std::make_tuple(false, new char8_t, new char8_t);
+                                                                              }
+                                                                              delete IP;
+                                                                              delete ukey;
+                                                                          }
+                                                                          else
+                                                                          {
+                                                                              Log::AddLog(Log::LogType::WARNING, Log::MsgType::OTHER, u8"Upload image", u8"Upload failed");
+                                                                              return std::make_tuple(false, new char8_t, new char8_t);
+                                                                          }
+                                                                      }
+                                                                      case 1:
+                                                                      {
+                                                                          char8_t *ImageID1 = UnPB.GetStr(10);
+                                                                          char8_t *ImageID2 = UnPB.GetStr(11);
+                                                                          return std::make_tuple(true, ImageID1, ImageID2);
+                                                                      }
+                                                                      };
+                                                                      return std::make_tuple(false, new char8_t, new char8_t);
+                                                                  }));
 }
 
 uint Android::QQ_UploadImage_Group(const uint Group, const char8_t *ImageName, const byte *ImageMD5, const uint ImageLength, const uint ImageWidth, const uint ImageHeight, const byte *Image)
 {
-    return Fun_Send_Sync<uint>(11, 1, "ImgStore.GroupPicUp", ImgStore::GroupPicUp(Group, ImageName, ImageMD5, ImageLength, ImageWidth, ImageHeight),
-                               [&](uint sso_seq, LPBYTE BodyBin)
-                                   -> uint
-                               {
-                                   UnProtobuf UnPB(BodyBin);
+    return (Fun_Send_Sync<uint>(11, 1, "ImgStore.GroupPicUp", ImgStore::GroupPicUp(Group, ImageName, ImageMD5, ImageLength, ImageWidth, ImageHeight),
+                                [&](uint sso_seq, LPBYTE BodyBin)
+                                    -> uint
+                                {
+                                    UnProtobuf UnPB(BodyBin);
 
-                                   UnPB.StepIn(3);
-                                   switch (UnPB.GetVarint(4))
-                                   {
-                                   case 0: //需要上传
-                                   {
-                                       if (Image != nullptr)
-                                       {
-                                           // IP PORT为数组,这里就取第一组
-                                           // 从右向左入栈,因此这里需要分开写
-                                           char *IP = XBin::Int2IP(UnPB.GetVarint(6));
-                                           uint Port = UnPB.GetVarint(7);
-                                           LPBYTE ukey = UnPB.GetBin(8);
-                                           try
-                                           {
-                                               PicUp::DataUp(Image, ImageLength, ImageMD5, 2, IP, Port, ukey);
-                                           }
-                                           catch (const char *e)
-                                           {
-                                               Log::AddLog(Log::LogType::NOTICE, Log::MsgType::OTHER, u8"Upload fail", e);
-                                               return 0;
-                                           }
-                                           delete IP;
-                                           delete ukey;
-                                       }
-                                       else
-                                       {
-                                           Log::AddLog(Log::LogType::WARNING, Log::MsgType::OTHER, u8"Upload image", u8"Upload failed");
-                                           return 0;
-                                       }
-                                   }
-                                   case 1:
-                                       return UnPB.GetVarint(9);
-                                   };
-                                   return 0;
-                               });
+                                    UnPB.StepIn(3);
+                                    switch (UnPB.GetVarint(4))
+                                    {
+                                    case 0: /* 需要上传 */
+                                    {
+                                        if (Image != nullptr)
+                                        {
+                                            /*
+                                             * IP PORT为数组,这里就取第一组
+                                             * 从右向左入栈,因此这里需要分开写
+                                             */
+                                            char *IP = XBin::Int2IP(UnPB.GetVarint(6));
+                                            uint Port = UnPB.GetVarint(7);
+                                            LPBYTE ukey = UnPB.GetBin(8);
+                                            try
+                                            {
+                                                PicUp::DataUp(Image, ImageLength, ImageMD5, 2, IP, Port, ukey);
+                                            }
+                                            catch (const char *e)
+                                            {
+                                                Log::AddLog(Log::LogType::NOTICE, Log::MsgType::OTHER, u8"Upload fail", e);
+                                                return 0;
+                                            }
+                                            delete IP;
+                                            delete ukey;
+                                        }
+                                        else
+                                        {
+                                            Log::AddLog(Log::LogType::WARNING, Log::MsgType::OTHER, u8"Upload image", u8"Upload failed");
+                                            return 0;
+                                        }
+                                    }
+                                    case 1:
+                                        return UnPB.GetVarint(9);
+                                    };
+                                    return 0;
+                                }));
 }
 
 void Android::QQ_UploadPtt_Private(const uint QQ_, const char8_t *PttName, const byte *PttMD5, const uint PttLength, const uint PttTime, const byte *Ptt)
@@ -2122,14 +2193,16 @@ void Android::QQ_TranslatePtt_Group(const uint Group, const char8_t *PttName, co
 
 uint Android::QQ_Get_Account()
 {
-    return QQ.QQ;
+    return (QQ.QQ);
 }
 
-/// <summary>
-/// 取Cookie(skey,p_skey)
-/// </summary>
-/// <param name="Host">p_skey的目标域名</param>
-/// <returns>使用new,记得delete</returns>
+/*
+ * / <summary>
+ * / 取Cookie(skey,p_skey)
+ * / </summary>
+ * / <param name="Host">p_skey的目标域名</param>
+ * / <returns>使用new,记得delete</returns>
+ */
 char *Android::QQ_GetCookies(const char *Host)
 {
     char *Cookies = new char[100];
@@ -2143,166 +2216,165 @@ char *Android::QQ_GetCookies(const char *Host)
             strcat(Cookies, QQ.Cookie.p_skey[i].p_skey);
         }
     }
-    return Cookies;
+    return (Cookies);
 }
 
 bool Android::QQ_SendLike(const uint QQ, const int Times)
 {
-    return Fun_Send_Sync<bool>(11, 1, "VisitorSvc.ReqFavorite", VisitorSvc::ReqFavorite(QQ, Times),
-                               [&](uint sso_seq, LPBYTE BodyBin)
-                                   -> bool
-                               {
-                                   LPBYTE sBuffer;
-                                   Unpack_Body_Request_Packet(BodyBin, sBuffer);
+    return (Fun_Send_Sync<bool>(11, 1, "VisitorSvc.ReqFavorite", VisitorSvc::ReqFavorite(QQ, Times),
+                                [&](uint sso_seq, LPBYTE BodyBin)
+                                    -> bool
+                                {
+                                    LPBYTE sBuffer;
+                                    Unpack_Body_Request_Packet(BodyBin, sBuffer);
 
-                                   UnJce UnJce(sBuffer);
-                                   std::vector<JceStruct::Map<char *, std::vector<JceStruct::Map<char *, LPBYTE>>>> Map;
-                                   UnJce.Read(Map, 0);
+                                    UnJce UnJce(sBuffer);
+                                    std::vector<JceStruct::Map<char *, std::vector<JceStruct::Map<char *, LPBYTE>>>> Map;
+                                    UnJce.Read(Map, 0);
 
-                                   for (size_t i = 0; i < Map.size(); i++)
-                                   {
-                                       for (size_t j = 0; j < Map[i].Value.size(); j++)
-                                       {
-                                           UnJce.Reset(Map[i].Value[j].Value);
-                                           UnJce.Read(UnJce, 0);
-                                           // Todo
-                                           delete[] Map[i].Value[j].Key;
-                                           delete[] Map[i].Value[j].Value;
-                                       }
+                                    for (size_t i = 0; i < Map.size(); i++)
+                                    {
+                                        for (size_t j = 0; j < Map[i].Value.size(); j++)
+                                        {
+                                            UnJce.Reset(Map[i].Value[j].Value);
+                                            UnJce.Read(UnJce, 0);
+                                            /* Todo */
+                                            delete[] Map[i].Value[j].Key;
+                                            delete[] Map[i].Value[j].Value;
+                                        }
 
-                                       delete[] Map[i].Key;
-                                   }
-                                   delete[] sBuffer;
-                                   return true;
-                               });
+                                        delete[] Map[i].Key;
+                                    }
+                                    delete[] sBuffer;
+                                    return true;
+                                }));
 }
 
-/// <param name="ToType">接收者类型 2 Friend 1 Group</param>
+/* / <param name="ToType">接收者类型 2 Friend 1 Group</param> */
 bool Android::QQ_SendMsg(const int ToNumber, const uint ToType, const Message::Msg *Msg)
 {
-    return Fun_Send_Sync<bool>(11, 1, "MessageSvc.PbSendMsg", MessageSvc::PbSendMsg(ToNumber, ToType, Msg),
-                               [&](uint sso_seq, LPBYTE BodyBin)
-                                   -> bool
-                               {
-                                   UnProtobuf UnPB(BodyBin);
-                                   return !UnPB.GetVarint(1);
-                               });
+    return (Fun_Send_Sync<bool>(11, 1, "MessageSvc.PbSendMsg", MessageSvc::PbSendMsg(ToNumber, ToType, Msg),
+                                [&](uint sso_seq, LPBYTE BodyBin)
+                                    -> bool
+                                {
+                                    UnProtobuf UnPB(BodyBin);
+                                    return !UnPB.GetVarint(1);
+                                }));
 }
 
 bool Android::QQ_DrawGroupMsg(const uint Group, const uint MsgId, const uint MsgRand)
 {
-    return Fun_Send_Sync<bool>(11, 1, "PbMessageSvc.PbMsgWithDraw", PbMessageSvc::PbMsgWithDraw(Group, MsgId, MsgRand),
-                               [&](uint sso_seq, LPBYTE BodyBin)
-                                   -> bool
-                               {
-                                   UnProtobuf UnPB(BodyBin);
-                                   UnPB.StepIn(2);
-                                   uint retcode = UnPB.GetVarint(1);
-                                   if (retcode != 0)
-                                   {
-                                       if (QQ.ErrorMsg != nullptr)
-                                           delete[] QQ.ErrorMsg;
-                                       QQ.ErrorMsg = UnPB.GetStr(2);
-                                       UnPB.StepOut();
-                                       return false;
-                                   }
-                                   else
-                                   {
-                                       UnPB.StepOut();
-                                       return true;
-                                   }
-                               });
+    return (Fun_Send_Sync<bool>(11, 1, "PbMessageSvc.PbMsgWithDraw", PbMessageSvc::PbMsgWithDraw(Group, MsgId, MsgRand),
+                                [&](uint sso_seq, LPBYTE BodyBin)
+                                    -> bool
+                                {
+                                    UnProtobuf UnPB(BodyBin);
+                                    UnPB.StepIn(2);
+                                    uint retcode = UnPB.GetVarint(1);
+                                    if (retcode != 0)
+                                    {
+                                        if (QQ.ErrorMsg != nullptr)
+                                            delete[] QQ.ErrorMsg;
+                                        QQ.ErrorMsg = UnPB.GetStr(2);
+                                        UnPB.StepOut();
+                                        return false;
+                                    }
+                                    else
+                                    {
+                                        UnPB.StepOut();
+                                        return true;
+                                    }
+                                }));
 }
 
 bool Android::QQ_DrawPrivateMsg(const uint Group, const uint MsgId, const uint MsgRand)
 {
-    // return PbMessageSvc_PbMsgWithDraw(Group, MsgId, MsgRand);
-    return true;
+    /* return PbMessageSvc_PbMsgWithDraw(Group, MsgId, MsgRand); */
+    return (true);
 }
 
 bool Android::QQ_KickGroupMember(const uint Group, const uint QQ, const bool Forever)
 {
-
-    return Fun_Send_Sync<bool>(11, 1, "OidbSvc.0x8a0_0", OidbSvc::_0x8a0_0(Group, QQ, Forever),
-                               [&](uint sso_seq, LPBYTE BodyBin)
-                                   -> bool
-                               {
-                                   UnProtobuf UnPB(BodyBin);
-                                   return true;
-                               });
+    return (Fun_Send_Sync<bool>(11, 1, "OidbSvc.0x8a0_0", OidbSvc::_0x8a0_0(Group, QQ, Forever),
+                                [&](uint sso_seq, LPBYTE BodyBin)
+                                    -> bool
+                                {
+                                    UnProtobuf UnPB(BodyBin);
+                                    return true;
+                                }));
 }
 
 bool Android::QQ_SetGroupAdmin(const uint Group, const uint QQ, const bool Set)
 {
-    return Fun_Send_Sync<bool>(11, 1, "OidbSvc.0x55c_1", OidbSvc::_0x55c_1(Group, QQ, Set),
-                               [&](uint sso_seq, LPBYTE BodyBin)
-                                   -> bool
-                               {
-                                   UnProtobuf UnPB(BodyBin);
-                                   return true;
-                               });
+    return (Fun_Send_Sync<bool>(11, 1, "OidbSvc.0x55c_1", OidbSvc::_0x55c_1(Group, QQ, Set),
+                                [&](uint sso_seq, LPBYTE BodyBin)
+                                    -> bool
+                                {
+                                    UnProtobuf UnPB(BodyBin);
+                                    return true;
+                                }));
 }
 
 bool Android::QQ_SetGroupMemberTitle(const uint Group, const uint QQ, const char8_t *Title)
 {
-    return Fun_Send_Sync<bool>(11, 1, "OidbSvc.0x8fc_2", OidbSvc::_0x8fc_2(Group, QQ, Title),
-                               [&](uint sso_seq, LPBYTE BodyBin)
-                                   -> bool
-                               {
-                                   UnProtobuf UnPB(BodyBin);
-                                   return true;
-                               });
+    return (Fun_Send_Sync<bool>(11, 1, "OidbSvc.0x8fc_2", OidbSvc::_0x8fc_2(Group, QQ, Title),
+                                [&](uint sso_seq, LPBYTE BodyBin)
+                                    -> bool
+                                {
+                                    UnProtobuf UnPB(BodyBin);
+                                    return true;
+                                }));
 }
 
 bool Android::QQ_SetGroupMemberCard(const uint Group, const uint QQ, const char *Card)
 {
-    return Fun_Send_Sync<bool>(11, 1, "friendlist.ModifyGroupCardReq", friendlist::ModifyGroupCardReq(Group, QQ, Card),
-                               [&](uint sso_seq, LPBYTE BodyBin)
-                                   -> bool
-                               {
-                                   // Todo
-                                   return true;
-                               });
+    return (Fun_Send_Sync<bool>(11, 1, "friendlist.ModifyGroupCardReq", friendlist::ModifyGroupCardReq(Group, QQ, Card),
+                                [&](uint sso_seq, LPBYTE BodyBin)
+                                    -> bool
+                                {
+                                    /* Todo */
+                                    return true;
+                                }));
 }
 
 bool Android::QQ_SetGroupMemberBan(const uint Group, const uint QQ, const uint Time)
 {
-    return Fun_Send_Sync<bool>(11, 1, "OidbSvc.0x570_8", OidbSvc::_0x570_8(Group, QQ, Time),
-                               [&](uint sso_seq, LPBYTE BodyBin)
-                                   -> bool
-                               {
-                                   UnProtobuf UnPB(BodyBin);
-                                   return true;
-                               });
+    return (Fun_Send_Sync<bool>(11, 1, "OidbSvc.0x570_8", OidbSvc::_0x570_8(Group, QQ, Time),
+                                [&](uint sso_seq, LPBYTE BodyBin)
+                                    -> bool
+                                {
+                                    UnProtobuf UnPB(BodyBin);
+                                    return true;
+                                }));
 }
 
 bool Android::QQ_SetGroupBan(const uint Group, const bool Ban)
 {
-    return Fun_Send_Sync<bool>(11, 1, "OidbSvc.0x89a_0", OidbSvc::_0x89a_0(Group, Ban),
-                               [&](uint sso_seq, LPBYTE BodyBin)
-                                   -> bool
-                               {
-                                   UnProtobuf UnPB(BodyBin);
-                                   return true;
-                               });
+    return (Fun_Send_Sync<bool>(11, 1, "OidbSvc.0x89a_0", OidbSvc::_0x89a_0(Group, Ban),
+                                [&](uint sso_seq, LPBYTE BodyBin)
+                                    -> bool
+                                {
+                                    UnProtobuf UnPB(BodyBin);
+                                    return true;
+                                }));
 }
 
 const std::vector<QQ::FriendInfo> *Android::QQ_GetFriendList()
 {
-    return &QQ.FriendList;
+    return (&QQ.FriendList);
 }
 
 const std::vector<QQ::GroupInfo> *Android::QQ_GetGroupList()
 {
-    return &QQ.GroupList;
+    return (&QQ.GroupList);
 }
 
 const std::vector<QQ::GroupMemberInfo> *Android::QQ_GetGroupMemberList(uint Group)
 {
-    return nullptr;
+    return (nullptr);
 }
 
 const std::vector<uint> *Android::QQ_GetGroupAdminList(const uint Group)
 {
-    return nullptr;
+    return (nullptr);
 }

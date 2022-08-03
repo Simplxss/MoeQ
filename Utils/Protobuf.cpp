@@ -208,9 +208,9 @@ uint32_t Protobuf::Pack(byte *&Bin)
     return Pack.GetAll(Bin);
 }
 
-long long int UnProtobuf::GetVarint()
+uint64_t UnProtobuf::GetVarint()
 {
-    long long int l = 0;
+    uint64_t l = 0;
     for (size_t i = 0; i < 9; i++)
     {
         byte b = List->UnPack.GetByte();
@@ -242,7 +242,7 @@ void UnProtobuf::SkipField(ProtobufStruct::ProtobufStructType type)
     }
 }
 
-ProtobufStruct::ProtobufStructType UnProtobuf::SkipToField(const byte Field)
+ProtobufStruct::ProtobufStructType UnProtobuf::SkipToField(const uint32_t Field)
 {
     while (true)
     {
@@ -267,7 +267,7 @@ byte UnProtobuf::GetField()
     return key >> 3;
 }
 
-void UnProtobuf::StepIn(const byte Field)
+void UnProtobuf::StepIn(const uint32_t Field)
 {
     if (SkipToField(Field) == ProtobufStruct::ProtobufStructType::LENGTH)
     {
@@ -293,47 +293,97 @@ bool UnProtobuf::IsEnd()
     return !List->UnPack.GetLeftLength();
 }
 
-long long int UnProtobuf::GetVarint(const byte Field)
+uint64_t UnProtobuf::GetVarint(const uint32_t Field)
 {
-    if (SkipToField(Field) == ProtobufStruct::ProtobufStructType::VARINT)
-        return GetVarint();
-    return 0;
+    try
+    {
+        if (SkipToField(Field) == ProtobufStruct::ProtobufStructType::VARINT)
+            return GetVarint();
+    }
+    catch (...)
+    {
+        return 0;
+    }
 }
 
-char8_t *UnProtobuf::GetStr(const byte Field)
+char8_t *UnProtobuf::GetStr(const uint32_t Field)
 {
-    if (SkipToField(Field) == ProtobufStruct::ProtobufStructType::LENGTH)
+    try
     {
-        uint32_t len = GetVarint();
-        char8_t *str = new char8_t[len + 1];
-        memcpy(str, List->UnPack.GetStr(len), len);
-        str[len] = 0;
-        return str;
+        if (SkipToField(Field) == ProtobufStruct::ProtobufStructType::LENGTH)
+        {
+            uint32_t len = GetVarint();
+            char8_t *str = new char8_t[len + 1];
+            memcpy(str, List->UnPack.GetStr(len), len);
+            str[len] = 0;
+            return str;
+        }
     }
-    return nullptr;
+    catch (...)
+    {
+        return nullptr;
+    }
 }
 
-uint32_t UnProtobuf::GetBin(byte *&bin, const byte Field)
+uint32_t UnProtobuf::GetBin(byte *&bin, const uint32_t Field)
 {
-    if (SkipToField(Field) == ProtobufStruct::ProtobufStructType::LENGTH)
+    try
     {
-        uint32_t len = GetVarint();
-        bin = new byte[len];
-        memcpy(bin, List->UnPack.GetBin(len), len);
-        return len;
+        if (SkipToField(Field) == ProtobufStruct::ProtobufStructType::LENGTH)
+        {
+            uint32_t len = GetVarint();
+            bin = new byte[len];
+            memcpy(bin, List->UnPack.GetBin(len), len);
+            return len;
+        }
     }
-    return 0;
+    catch (...)
+    {
+        return 0;
+    }
 }
 
-LPBYTE UnProtobuf::GetBin(const byte Field)
+LPBYTE UnProtobuf::GetBin(const uint32_t Field)
 {
-    if (SkipToField(Field) == ProtobufStruct::ProtobufStructType::LENGTH)
+    try
     {
-        uint32_t len = GetVarint();
-        LPBYTE bin = new byte[len + 4];
-        memcpy(bin, XBin::Int2Bin(len + 4), len);
-        memcpy(bin + 4, List->UnPack.GetBin(len), len);
-        return bin;
+        if (SkipToField(Field) == ProtobufStruct::ProtobufStructType::LENGTH)
+        {
+            uint32_t len = GetVarint();
+            LPBYTE bin = new byte[len + 4];
+            memcpy(bin, XBin::Int2Bin(len + 4), len);
+            memcpy(bin + 4, List->UnPack.GetBin(len), len);
+            return bin;
+        }
     }
-    return (LPBYTE) "\0\0\0\4";
+    catch (...)
+    {
+        return nullptr;
+    }
+}
+
+int32_t UnProtobuf::GetFix32(const uint32_t Field)
+{
+    try
+    {
+        if (SkipToField(Field) == ProtobufStruct::ProtobufStructType::FIX32)
+            return (int32_t)List->UnPack.GetInt();
+    }
+    catch (...)
+    {
+        return 0;
+    }
+}
+
+int64_t UnProtobuf::GetFix64(const uint32_t Field)
+{
+    try
+    {
+        if (SkipToField(Field) == ProtobufStruct::ProtobufStructType::FIX64)
+            return (int32_t)List->UnPack.GetLong();
+    }
+    catch (...)
+    {
+        return 0;
+    }
 }

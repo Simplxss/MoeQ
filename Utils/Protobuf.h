@@ -118,31 +118,19 @@ public:
     }
 
 private:
-    long long int GetVarint();
+    uint64_t GetVarint();
     void SkipField(ProtobufStruct::ProtobufStructType type);
-    ProtobufStruct::ProtobufStructType SkipToField(const byte Field);
+    ProtobufStruct::ProtobufStructType SkipToField(const uint32_t Field);
 
 public:
     byte GetField();
-    void StepIn(const byte Field);
+    void StepIn(const uint32_t Field);
     void StepOut();
     bool IsEnd();
-    long long int GetVarint(const byte Field);
-    char8_t *GetStr(const byte Field);
-    uint32_t GetBin(byte *&bin, const byte Field);
-    LPBYTE GetBin(const byte Field);
-    template <typename T>
-    typename std::enable_if<std::is_same<int, T>::value || std::is_same<uint32_t, T>::value || std::is_same<float, T>::value, void>::type
-    GetFix32(T &digital, const byte Field)
-    {
-        switch (SkipToField(Field))
-        {
-        case ProtobufStruct::ProtobufStructType::FIX32:
-            digital = List->UnPack.GetInt();
-            break;
-        default:
-            throw "Not FIX32 type";
-            break;
-        }
-    };
+    uint64_t GetVarint(const uint32_t Field);
+    char8_t *GetStr(const uint32_t Field);
+    uint32_t GetBin(byte *&bin, const uint32_t Field);
+    LPBYTE GetBin(const uint32_t Field);
+    int32_t GetFix32(const uint32_t Field);
+    int64_t GetFix64(const uint32_t Field);
 };

@@ -31,6 +31,5 @@ LPBYTE ProfileService::Pb_ReqSystemMsgNew_Group()
     PB.WriteVarint(10, 1);
     PB.WriteVarint(11, 1);
 
-//ProfileService.Pb.ReqSystemMsgNew.Group
     return PB.Pack();
 }

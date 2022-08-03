@@ -214,7 +214,8 @@ namespace Event
         enum class RequestEventType
         {
             add_friend,
-            add_group
+            other_join_group,
+            self_invited
         };
 
         enum class ReturnType
@@ -233,14 +234,28 @@ namespace Event
         struct add_friend
         {
             uint32_t FromQQ;
+            char8_t *FromQQName;
+
             char8_t *msg;
         };
-        struct add_group
+        struct other_join_group
         {
             uint32_t FromGroup;
             uint32_t FromQQ;
+            char8_t *FromGroupName;
+            char8_t *FromQQName;
+            
+            uint32_t InvitorQQ;
+            char8_t *InvitorQQName;
+
             char8_t *msg;
-            uint32_t Type; // 0 Others apply to join the group 他人申请入群 1 Myself was invited to join the group 自己受邀入群
+        };
+        struct self_invited
+        {
+            uint32_t FromGroup;
+            char8_t *FromGroupName;
+            uint32_t InvitorQQ;
+            char8_t *InvitorQQName;
         };
     }
 
