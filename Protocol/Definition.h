@@ -222,12 +222,14 @@ namespace Event
         {
             agree,    // Agree 同意
             disagree, // Disagree 不同意
+            block,    // Block 拒绝并拉黑
             ignore,   // Ignore 忽略
         };
 
         struct RequestEvent
         {
             Event::RequestEvent::RequestEventType RequestEventType;
+            int64_t MsgSeq;
             void *Information;
         };
 

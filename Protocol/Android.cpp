@@ -1351,6 +1351,7 @@ void Android::Unpack_MessageSvc_PushNotify(const LPBYTE BodyBin, const uint sso_
                                                                 uint reqUin = UnPB.GetVarint(5);
                                                                 UnPB.StepIn(50);
                                                                 uint subType = UnPB.GetVarint(1);
+                                                                char8_t *msgAdditional = UnPB.GetStr(4);
                                                                 uint groupCode = UnPB.GetVarint(10);
                                                                 uint actionUin = UnPB.GetVarint(11);
                                                                 uint groupMsgType = UnPB.GetVarint(12);
@@ -1365,12 +1366,14 @@ void Android::Unpack_MessageSvc_PushNotify(const LPBYTE BodyBin, const uint sso_
                                                                     {
                                                                     case 1:
                                                                     {
-                                                                        Event::RequestEvent::RequestEvent RequestEvent{Event::RequestEvent::RequestEventType::other_join_group, new Event::RequestEvent::other_join_group};
+                                                                        Event::RequestEvent::RequestEvent RequestEvent{Event::RequestEvent::RequestEventType::other_join_group, msgSeq, new Event::RequestEvent::other_join_group};
 
                                                                         ((Event::RequestEvent::other_join_group *)RequestEvent.Information)->FromGroup = groupCode;
                                                                         ((Event::RequestEvent::other_join_group *)RequestEvent.Information)->FromQQ = reqUin;
                                                                         ((Event::RequestEvent::other_join_group *)RequestEvent.Information)->FromGroupName = groupName;
                                                                         ((Event::RequestEvent::other_join_group *)RequestEvent.Information)->FromQQName = reqUinNick;
+
+                                                                        ((Event::RequestEvent::other_join_group *)RequestEvent.Information)->msg = msgAdditional;
 
                                                                         Event::OnRequestMsg(&RequestEvent);
                                                                         Log::AddLog(Log::LogType::INFORMATION, Log::MsgType::OTHER, &RequestEvent);
@@ -1378,7 +1381,7 @@ void Android::Unpack_MessageSvc_PushNotify(const LPBYTE BodyBin, const uint sso_
                                                                     break;
                                                                     case 2:
                                                                     {
-                                                                        Event::RequestEvent::RequestEvent RequestEvent{Event::RequestEvent::RequestEventType::self_invited, new Event::RequestEvent::self_invited};
+                                                                        Event::RequestEvent::RequestEvent RequestEvent{Event::RequestEvent::RequestEventType::self_invited, msgSeq, new Event::RequestEvent::self_invited};
 
                                                                         ((Event::RequestEvent::self_invited *)RequestEvent.Information)->FromGroup = groupCode;
                                                                         ((Event::RequestEvent::self_invited *)RequestEvent.Information)->InvitorQQ = actionUin;
@@ -1390,18 +1393,20 @@ void Android::Unpack_MessageSvc_PushNotify(const LPBYTE BodyBin, const uint sso_
                                                                     }
                                                                     case 22:
                                                                     {
-                                                                        Event::RequestEvent::RequestEvent RequestEvent{Event::RequestEvent::RequestEventType::other_join_group, new Event::RequestEvent::other_join_group};
+                                                                        Event::RequestEvent::RequestEvent RequestEvent{Event::RequestEvent::RequestEventType::other_join_group, msgSeq, new Event::RequestEvent::other_join_group};
 
                                                                         ((Event::RequestEvent::other_join_group *)RequestEvent.Information)->FromGroup = groupCode;
                                                                         ((Event::RequestEvent::other_join_group *)RequestEvent.Information)->FromQQ = reqUin;
                                                                         ((Event::RequestEvent::other_join_group *)RequestEvent.Information)->FromGroupName = groupName;
                                                                         ((Event::RequestEvent::other_join_group *)RequestEvent.Information)->FromQQName = reqUinNick;
-                                                                        ((Event::RequestEvent::self_invited *)RequestEvent.Information)->InvitorQQ = actionUin;
+                                                                        ((Event::RequestEvent::other_join_group *)RequestEvent.Information)->InvitorQQ = actionUin;
+                                                                        ((Event::RequestEvent::other_join_group *)RequestEvent.Information)->InvitorQQName = actionUinQqNick;
+
+                                                                        ((Event::RequestEvent::other_join_group *)RequestEvent.Information)->msg = msgAdditional;
 
                                                                         Event::OnRequestMsg(&RequestEvent);
                                                                         Log::AddLog(Log::LogType::INFORMATION, Log::MsgType::OTHER, &RequestEvent);
                                                                     }
-
                                                                     default:
                                                                         break;
                                                                     }
@@ -2357,6 +2362,16 @@ bool Android::QQ_SetGroupBan(const uint Group, const bool Ban)
                                     UnProtobuf UnPB(BodyBin);
                                     return true;
                                 }));
+}
+
+bool Android::QQ_RequestAction(int64_t msgSeq, uint32_t reqUin, uint32_t groupCode, bool IsInvited, ::Event::RequestEvent::ReturnType ReturnType)
+{
+    return Fun_Send_Sync<bool>(11, 1, "ProfileService.Pb.ReqSystemMsgAction.Group", ProfileService::Pb_ReqSystemMsgAction_Group(1, msgSeq, reqUin, groupCode, IsInvited, ReturnType),
+                                [&](uint sso_seq, LPBYTE BodyBin)
+                                    -> bool
+                                {
+                                    return true;
+                                });
 }
 
 const std::vector<QQ::FriendInfo> *Android::QQ_GetFriendList()

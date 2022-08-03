@@ -123,6 +123,14 @@ void Protobuf::WriteFix64(const uint32_t Field, const int64_t l)
                                              {int64_t *l_ = new int64_t;*l_=l; return l_; }()});
 }
 
+void Protobuf::WriteBool(const uint32_t Field, const bool b)
+{
+    if (b)
+        WriteVarint(Field, 1);
+    else
+        WriteVarint(Field, 0);
+}
+
 void Protobuf::WriteStr(const uint32_t Field, const char8_t *str)
 {
     List->BaseTree->Child->emplace_back(Tree{
@@ -302,8 +310,9 @@ uint64_t UnProtobuf::GetVarint(const uint32_t Field)
     }
     catch (...)
     {
-        return 0;
     }
+
+    return 0;
 }
 
 char8_t *UnProtobuf::GetStr(const uint32_t Field)
@@ -321,8 +330,9 @@ char8_t *UnProtobuf::GetStr(const uint32_t Field)
     }
     catch (...)
     {
-        return nullptr;
     }
+
+    return nullptr;
 }
 
 uint32_t UnProtobuf::GetBin(byte *&bin, const uint32_t Field)
@@ -337,10 +347,12 @@ uint32_t UnProtobuf::GetBin(byte *&bin, const uint32_t Field)
             return len;
         }
     }
+
     catch (...)
     {
-        return 0;
     }
+
+    return 0;
 }
 
 LPBYTE UnProtobuf::GetBin(const uint32_t Field)
@@ -358,8 +370,9 @@ LPBYTE UnProtobuf::GetBin(const uint32_t Field)
     }
     catch (...)
     {
-        return nullptr;
     }
+
+    return nullptr;
 }
 
 int32_t UnProtobuf::GetFix32(const uint32_t Field)
@@ -371,8 +384,8 @@ int32_t UnProtobuf::GetFix32(const uint32_t Field)
     }
     catch (...)
     {
-        return 0;
     }
+    return 0;
 }
 
 int64_t UnProtobuf::GetFix64(const uint32_t Field)
@@ -380,10 +393,11 @@ int64_t UnProtobuf::GetFix64(const uint32_t Field)
     try
     {
         if (SkipToField(Field) == ProtobufStruct::ProtobufStructType::FIX64)
-            return (int32_t)List->UnPack.GetLong();
+            return (int64_t)List->UnPack.GetLong();
     }
     catch (...)
     {
-        return 0;
     }
+
+    return 0;
 }

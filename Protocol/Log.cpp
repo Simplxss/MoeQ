@@ -249,6 +249,19 @@ void Database::Init()
         Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"Create table 'GroupMsg' error", (const char8_t *)zErrMsg);
         sqlite3_free(zErrMsg);
     }
+    
+    if (sqlite3_exec(Database_Data,
+                     "CREATE TABLE IF NOT EXISTS RequestMsg("
+                     "ID        INTEGER  PRIMARY KEY  AUTOINCREMENT,"
+                     "Url        TEXT         ,"
+                     "Length     INTEGER      ,"
+                     "Width      INTEGER      ,"
+                     "Height     INTEGER      );",
+                     0, 0, &zErrMsg) != SQLITE_OK)
+    {
+        Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"Create table 'RequestMsg' error", (const char8_t *)zErrMsg);
+        sqlite3_free(zErrMsg);
+    }
 
     if (sqlite3_exec(Database_Data,
                      "CREATE TABLE IF NOT EXISTS Picture("
@@ -714,14 +727,34 @@ void Log::AddLog(const LogType LogType, const MsgType MsgType, const Event::Requ
         MsgSteam += ((Event::RequestEvent::add_friend *)RequestEvent->Information)->msg;
         LogQueue.push(Log({LogType, MsgType, u8"add_friend", MsgSteam}));
         break;
-    case Event::RequestEvent::RequestEventType::add_group:
-        MsgSteam += (char8_t *)std::to_string(((Event::RequestEvent::add_group *)RequestEvent->Information)->FromGroup).c_str();
+    case Event::RequestEvent::RequestEventType::other_join_group:
+        MsgSteam += (char8_t *)std::to_string(((Event::RequestEvent::other_join_group *)RequestEvent->Information)->FromGroup).c_str();
         MsgSteam += u8" ";
-        MsgSteam += (char8_t *)std::to_string(((Event::RequestEvent::add_group *)RequestEvent->Information)->FromQQ).c_str();
+        MsgSteam += (char8_t *)std::to_string(((Event::RequestEvent::other_join_group *)RequestEvent->Information)->FromQQ).c_str();
         MsgSteam += u8" ";
-        MsgSteam += (char8_t *)std::to_string(((Event::RequestEvent::add_group *)RequestEvent->Information)->Type).c_str();
-        // MsgSteam += ((Event::RequestEvent::add_group*)RequestEvent->Information)->msg;
+        MsgSteam += ((Event::RequestEvent::other_join_group *)RequestEvent->Information)->FromGroupName;
+        MsgSteam += u8" ";
+        MsgSteam += ((Event::RequestEvent::other_join_group *)RequestEvent->Information)->FromQQName;
+        if (((Event::RequestEvent::other_join_group *)RequestEvent->Information)->InvitorQQ != 0)
+        {
+            MsgSteam += u8" ";
+            MsgSteam += (char8_t *)std::to_string(((Event::RequestEvent::other_join_group *)RequestEvent->Information)->InvitorQQ).c_str();
+            MsgSteam += u8" ";
+            MsgSteam += ((Event::RequestEvent::other_join_group *)RequestEvent->Information)->InvitorQQName;
+        }
+        MsgSteam += u8" ";
+        MsgSteam += ((Event::RequestEvent::other_join_group *)RequestEvent->Information)->msg;
         LogQueue.push(Log({LogType, MsgType, u8"add_group", MsgSteam}));
+        break;
+    case Event::RequestEvent::RequestEventType::self_invited:
+
+        MsgSteam += (char8_t *)std::to_string(((Event::RequestEvent::self_invited *)RequestEvent->Information)->FromGroup).c_str();
+        MsgSteam += u8" ";
+        MsgSteam += ((Event::RequestEvent::self_invited *)RequestEvent->Information)->FromGroupName;
+        MsgSteam += u8" ";
+        MsgSteam += (char8_t *)std::to_string(((Event::RequestEvent::self_invited *)RequestEvent->Information)->InvitorQQ).c_str();
+        MsgSteam += u8" ";
+        MsgSteam += ((Event::RequestEvent::self_invited *)RequestEvent->Information)->InvitorQQName;
         break;
     }
     ++Semaphore;

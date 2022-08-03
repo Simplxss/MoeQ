@@ -33,7 +33,7 @@ void Event::OnNoticeMsg(const NoticeEvent::NoticeEvent *NoticeEvent)
 
 void Event::OnRequestMsg(const RequestEvent::RequestEvent *RequestEvent)
 {
-    //Todo
+
     Plugin.BroadcastRequestEvent(RequestEvent, 0);
 }
 
@@ -765,17 +765,16 @@ void PluginSystem::BroadcastNoticeEvent(const ::Event::NoticeEvent::NoticeEvent 
     }
 }
 
-void PluginSystem::BroadcastRequestEvent(const ::Event::RequestEvent::RequestEvent *RequestEvent, const uint64_t responseFlag)
+void PluginSystem::BroadcastRequestEvent(const ::Event::RequestEvent::RequestEvent *RequestEvent, const uint64_t ResponseFlag)
 {
     for (size_t i = 0; i < RequestEventList[static_cast<int>(RequestEvent->RequestEventType)].size(); i++)
     {
-        switch (RequestEventList[static_cast<int>(RequestEvent->RequestEventType)][i](RequestEvent, responseFlag))
+        switch (RequestEventList[static_cast<int>(RequestEvent->RequestEventType)][i](RequestEvent, ResponseFlag))
         {
         case ::Event::RequestEvent::ReturnType::agree:
-
-            return;
         case ::Event::RequestEvent::ReturnType::disagree:
-
+        case ::Event::RequestEvent::ReturnType::block:
+            
             return;
         case ::Event::RequestEvent::ReturnType::ignore:
             break;

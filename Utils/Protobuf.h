@@ -81,6 +81,7 @@ public:
     void WriteVarint(const uint32_t Field, const uint64_t l);
     void WriteFix32(const uint32_t Field, const int32_t i);
     void WriteFix64(const uint32_t Field, const int64_t l);
+    void WriteBool(const uint32_t Field, const bool b);
     void WriteStr(const uint32_t Field, const char8_t *str);
     void WriteStr_(const uint32_t Field, char8_t *str);
     void WriteBin(const uint32_t Field, const byte *bin, uint32_t Length);

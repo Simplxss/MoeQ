@@ -106,7 +106,7 @@ private:
 
 private:
     LPBYTE Make_Body_Request_Packet(const byte iVersion, const int iRequestId, const char *sServantName, const char *sFuncName, byte *sBuffer, uint Bufferlen);
-    
+
 private:
     void Un_Tlv_Get(const unsigned short cmd, const byte *bin, const uint len);
     void Unpack_Body_Request_Packet(const LPBYTE BodyBin, LPBYTE &sBuffer);
@@ -161,6 +161,7 @@ public:
     bool QQ_SetGroupMemberCard(const uint Group, const uint QQ, const char *Card);
     bool QQ_SetGroupMemberBan(const uint Group, const uint QQ, const uint Time);
     bool QQ_SetGroupBan(const uint Group, const bool Ban);
+    bool QQ_RequestAction(int64_t msgSeq, uint32_t reqUin, uint32_t groupCode, bool IsInvited, ::Event::RequestEvent::ReturnType ReturnType);
     const std::vector<QQ::FriendInfo> *QQ_GetFriendList();
     const std::vector<QQ::GroupInfo> *QQ_GetGroupList();
     const std::vector<QQ::GroupMemberInfo> *QQ_GetGroupMemberList(uint Group);
