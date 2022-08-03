@@ -109,6 +109,45 @@ namespace Message
         PB.StepOut();
         PB.StepOut();
     }
+    void Pack45(Protobuf &PB, const uint ToNumber, const byte ToType, const uint ReplyQQ, const uint ReplyMsgSendTime, const uint ReplyMsgID, const Message::Msg *ReplyMsg)
+    {
+        PB.StepIn(45);
+        PB.WriteVarint(1, ReplyMsgID);
+        PB.WriteVarint(2, ReplyQQ);
+        PB.WriteVarint(3, ReplyMsgSendTime);
+        PB.WriteVarint(4, ToType == 1 ? 0 : 1);
+        PB.StepIn(5);
+        PB.StepIn(1);
+        // PB.WriteStr_();
+        PB.StepOut();
+        PB.StepOut();
+        PB.WriteVarint(6, 0);
+        PB.StepIn(8);
+        PB.WriteVarint(3, 0);
+        PB.StepIn(5);
+        PB.WriteVarint(1, ReplyMsgID);
+        PB.WriteVarint(2, ReplyMsgID);
+        PB.WriteVarint(3, ReplyMsgID);
+        PB.StepOut();
+        PB.StepOut();
+        PB.StepIn(9);
+        PB.StepIn(1);
+        PB.WriteVarint(1, ReplyQQ);
+        PB.WriteVarint(2, ToNumber);
+        if (ToType == 1)
+        {
+            PB.StepIn(9);
+            PB.WriteVarint(1, ToNumber);
+            PB.StepOut();
+        }
+        PB.WriteVarint(28, 1);
+        PB.StepOut();
+        PB.StepIn(3);
+        PB.StepOut();
+        PB.StepOut();
+        PB.WriteVarint(10, 0);
+        PB.StepOut();
+    }
     void Pack51(Protobuf &PB, const char8_t *Json)
     {
         Pack Pack(500);
@@ -183,69 +222,68 @@ LPBYTE MessageSvc::PbSendMsg(const uint ToNumber, const byte ToType, const Messa
     PB.StepOut();
     PB.StepIn(3);
     PB.StepIn(1);
-    while (Msg != nullptr)
-    {
-        PB.StepIn(2);
-        switch (Msg->MsgType)
-        {
-        case Message::MsgType::text:
-            Message::Pack1(PB, ((Message::text *)Msg->Message)->text, ((Message::text *)Msg->Message)->AtQQ);
-            break;
-        case Message::MsgType::classcal_face:
-            Message::Pack2(PB, ((Message::classcal_face *)Msg->Message)->id);
-            break;
-        case Message::MsgType::expression:
-            Message::Pack6(PB, ((Message::expression *)Msg->Message)->id);
-            break;
-        case Message::MsgType::picture:
-        {
-            // name is not important
-            char8_t *T = new char8_t[37];
-            memcpy(T, XBin::Bin2HexEx(((Message::picture *)Msg->Message)->MD5, 16), 32);
-            memcpy(T + 32, ".jpg", 5);
 
-            if (ToType == 1)
+    if (Msg->MsgType != Message::MsgType::voice)
+    {
+        while (Msg != nullptr)
+        {
+            PB.StepIn(2);
+            switch (Msg->MsgType)
             {
-                uint ImageID = QQ_UploadImage_Group(ToNumber, T, ((Message::picture *)Msg->Message)->MD5, ((Message::picture *)Msg->Message)->Data.Length, ((Message::picture *)Msg->Message)->Width, ((Message::picture *)Msg->Message)->Height, ((Message::picture *)Msg->Message)->Data.Contain);
-                if (ImageID != 0)
-                    Message::Pack8(PB, T, ((Message::picture *)Msg->Message)->MD5, ImageID, ((Message::picture *)Msg->Message)->Data.Length, ((Message::picture *)Msg->Message)->Width, ((Message::picture *)Msg->Message)->Height);
-            }
-            else
+            case Message::MsgType::text:
+                Message::Pack1(PB, ((Message::text *)Msg->Message)->text, ((Message::text *)Msg->Message)->AtQQ);
+                break;
+            case Message::MsgType::classcal_face:
+                Message::Pack2(PB, ((Message::classcal_face *)Msg->Message)->id);
+                break;
+            case Message::MsgType::expression:
+                Message::Pack6(PB, ((Message::expression *)Msg->Message)->id);
+                break;
+            case Message::MsgType::picture:
             {
-                auto [Result, ImageID1, ImageID2] = QQ_UploadImage_Private(ToNumber, T, ((Message::picture *)Msg->Message)->MD5, ((Message::picture *)Msg->Message)->Data.Length, ((Message::picture *)Msg->Message)->Width, ((Message::picture *)Msg->Message)->Height, ((Message::picture *)Msg->Message)->Data.Contain);
-                if (Result)
-                    Message::Pack4(PB, T, ((Message::picture *)Msg->Message)->MD5, ImageID1, ImageID2, ((Message::picture *)Msg->Message)->Data.Length, ((Message::picture *)Msg->Message)->Width, ((Message::picture *)Msg->Message)->Height);
+                // name is not important
+                char8_t *T = new char8_t[37];
+                memcpy(T, XBin::Bin2HexEx(((Message::picture *)Msg->Message)->MD5, 16), 32);
+                memcpy(T + 32, ".jpg", 5);
+
+                if (ToType == 1)
+                {
+                    uint ImageID = QQ_UploadImage_Group(ToNumber, T, ((Message::picture *)Msg->Message)->MD5, ((Message::picture *)Msg->Message)->Data.Length, ((Message::picture *)Msg->Message)->Width, ((Message::picture *)Msg->Message)->Height, ((Message::picture *)Msg->Message)->Data.Contain);
+                    if (ImageID != 0)
+                        Message::Pack8(PB, T, ((Message::picture *)Msg->Message)->MD5, ImageID, ((Message::picture *)Msg->Message)->Data.Length, ((Message::picture *)Msg->Message)->Width, ((Message::picture *)Msg->Message)->Height);
+                }
                 else
                 {
-                    delete ImageID1;
-                    delete ImageID2;
+                    auto [Result, ImageID1, ImageID2] = QQ_UploadImage_Private(ToNumber, T, ((Message::picture *)Msg->Message)->MD5, ((Message::picture *)Msg->Message)->Data.Length, ((Message::picture *)Msg->Message)->Width, ((Message::picture *)Msg->Message)->Height, ((Message::picture *)Msg->Message)->Data.Contain);
+                    if (Result)
+                        Message::Pack4(PB, T, ((Message::picture *)Msg->Message)->MD5, ImageID1, ImageID2, ((Message::picture *)Msg->Message)->Data.Length, ((Message::picture *)Msg->Message)->Width, ((Message::picture *)Msg->Message)->Height);
+                    else
+                    {
+                        delete ImageID1;
+                        delete ImageID2;
+                    }
                 }
             }
-        }
-        break;
-        case Message::MsgType::xml:
             break;
-        case Message::MsgType::reply:
-        {
-            Message::Msg *ReplyMsg = ((Message::reply *)Msg->Message)->Msg;
-            while (ReplyMsg != nullptr)
-            {
+            case Message::MsgType::xml:
+                break;
+            case Message::MsgType::reply:
+                Message::Pack45(PB, ToNumber, ToType, ((Message::reply *)Msg->Message)->QQ, ((Message::reply *)Msg->Message)->Time, ((Message::reply *)Msg->Message)->MsgId, ((Message::reply *)Msg->Message)->Msg);
+                break;
+            case Message::MsgType::json:
+                Message::Pack51(PB, ((Message::json *)Msg->Message)->text);
+                break;
+            default:
+                break;
             }
+            Msg = Msg->NextPoint;
+            PB.StepOut();
         }
-        break;
-        case Message::MsgType::json:
-            Message::Pack51(PB, ((Message::json *)Msg->Message)->text);
-            break;
-        default:
-            break;
-        }
-        Msg = Msg->NextPoint;
+
+        PB.StepIn(2);
+        Message::Pack37(PB);
         PB.StepOut();
     }
-
-    PB.StepIn(2);
-    Message::Pack37(PB);
-    PB.StepOut();
 
     PB.StepOut();
     PB.StepOut();

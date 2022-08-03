@@ -14,14 +14,13 @@
 #define AndroidQQ_SDK_VERSION "6.0.0.2515"
 #define AndroidQQ_BUILDTIME 1657223893
 
-#define TimQQ_APPID 
+#define TimQQ_APPID
 #define TimQQ_VERSION
-#define TimQQ_VERSION_ 
-#define TimQQ_APKID 
-#define TimQQ_ASIG (const byte *)"" // 
+#define TimQQ_VERSION_
+#define TimQQ_APKID
+#define TimQQ_ASIG (const byte *)"" //
 #define TimQQ_SDK_VERSION ""
 #define TimQQ_BUILDTIME 1657223893
-
 
 typedef unsigned char byte;
 typedef unsigned int uint;
@@ -37,6 +36,7 @@ namespace Message
         picture = 8,
         xml = 12,
         red_packet = 24,
+        voice = 37,
         reply = 45,
         json = 51,
     };
@@ -381,6 +381,9 @@ namespace QQ
         std::atomic_int SsoSeq;
         unsigned char *MsgCookie = nullptr; // 4
         LPBYTE SyncCookies = nullptr;
+        LPBYTE UploadVoice_ukey = nullptr; // 104
+        char8_t* UploadVoice_IP = nullptr;
+        int UploadVoice_Port = 0;
         char Version[33] = "|\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0|" AndroidQQ_VERSION_;
         ::QQ::Login *Login = nullptr;
         ::QQ::Token Token;

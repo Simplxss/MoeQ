@@ -23,23 +23,8 @@ Android Sdk("861891778567",
 void Debug()
 {
 
-    //以二进制方式打开图像
-    FILE *fp = fopen("C:\\Users\\Simplxs\\Desktop\\Screenshot.jpg", "rb");
-    //获取图像数据总长度
-    fseek(fp, 0, SEEK_END);
-    int length = ftell(fp);
-    rewind(fp);
-    //根据图像数据长度分配内存buffer
-    byte *ImgBuffer = new byte[length];
-    //将图像数据读入buffer
-    fread(ImgBuffer, length, 1, fp);
-    fclose(fp);
 
-    auto imageInfo = getImageInfo<IIRawDataReader>(IIRawData(ImgBuffer, length));
-    Message::picture Pic{imageInfo.getWidth(), imageInfo.getHeight(), Utils::MD5EX(ImgBuffer, length) + 4, Message::Data(length, ImgBuffer)};
-    Message::Msg Msg{Message::MsgType::picture, nullptr, &Pic};
 
-    Sdk.QQ_SendMsg(932902956, 0, &Msg);
 }
 
 QQ::Token LoadToken(char (&QQ)[],

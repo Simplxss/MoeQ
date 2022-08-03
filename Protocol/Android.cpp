@@ -1292,6 +1292,7 @@ void Android::Unpack_OnlinePush_PbPushGroupMsg(const LPBYTE BodyBin, const uint 
     UnPB.StepIn(1);
     if ((GroupMsg.FromQQ = UnPB.GetVarint(1)) == QQ.QQ)
         return;
+    GroupMsg.MsgType = UnPB.GetVarint(3);
     GroupMsg.MsgID = UnPB.GetVarint(5);
     GroupMsg.SendTime = UnPB.GetVarint(6);
     UnPB.StepIn(9);
@@ -1299,7 +1300,6 @@ void Android::Unpack_OnlinePush_PbPushGroupMsg(const LPBYTE BodyBin, const uint 
     GroupMsg.FromQQName = UnPB.GetStr(4);
     GroupMsg.FromGroupName = UnPB.GetStr(8);
     UnPB.StepOut();
-    GroupMsg.MsgType = UnPB.GetVarint(10);
     UnPB.StepOut();
     UnPB.StepIn(3);
     UnPB.StepIn(1);
@@ -1652,17 +1652,15 @@ void Android::Unpack_ConfigPushSvc_PushReq(const LPBYTE BodyBin, const uint sso_
             int type;
             UnJce.Read(type, 1);
 
-            type = 0; // Todo,暂时懒得搞重定向
+            LPBYTE data;
+            UnJce.Read(data, 2);
+            UnJce.Reset(data);
 
             if (type == 1) // need redirect
             {
                 Log::AddLog(Log::LogType::NOTICE, Log::MsgType::OTHER, u8"Online", u8"Need Redirect");
-                LPBYTE ips;
-                UnJce.Read(ips, 2);
-                UnJce.Reset(ips);
-
                 std::vector<::UnJce> ipl;
-                UnJce.Read(ipl, 1);
+                UnJce.Read(ipl, 0);
 
                 char *IP;
                 int Port;
@@ -1671,12 +1669,26 @@ void Android::Unpack_ConfigPushSvc_PushReq(const LPBYTE BodyBin, const uint sso_
                 ipl[r].Read(IP, 1);
                 ipl[r].Read(Port, 2);
 
-                // Fun_Connect(IP, Port);
+                Fun_Connect(IP, Port);
                 QQ_Online();
 
                 delete[] IP;
-                delete[] ips;
             }
+
+            std::vector<::UnJce> ipl;
+            UnJce.Read(ipl, 3);
+            int r = Utils::GetRandom(0, ipl.size() - 1);
+            if (QQ.UploadVoice_IP != nullptr)
+                delete[] QQ.UploadVoice_IP;
+            ipl[r].Read(QQ.UploadVoice_IP, 1);
+            ipl[r].Read(QQ.UploadVoice_Port, 2);
+            delete[] data;
+
+            UnJce.Read(UnJce, 5);
+
+            if (QQ.UploadVoice_ukey != nullptr)
+                delete[] QQ.UploadVoice_ukey;
+            UnJce.Read(QQ.UploadVoice_ukey, 1);
 
             delete[] Map[i].Value[j].Key;
             delete[] Map[i].Value[j].Value;
@@ -2047,6 +2059,26 @@ void Android::QQ_SyncGroupMemberList(uint Group)
                   });
 }
 
+void Android::QQ_SyncGroupAdminList(uint Group)
+{
+    return Fun_Send_Sync(11, 1, "OidbSvc.0x899_0", OidbSvc::_0x899_0(Group),
+                         [&](uint sso_seq, LPBYTE BodyBin)
+                         {
+                             UnProtobuf UnPB(BodyBin);
+
+                             std::vector<uint> ManagerList;
+
+                             UnPB.StepIn(4);
+                             while (UnPB.IsEnd())
+                             {
+                                 UnPB.StepIn(4);
+                                 ManagerList.emplace_back(UnPB.GetVarint(1));
+                                 UnPB.StepOut();
+                             }
+                             UnPB.StepOut();
+                         });
+}
+
 /// <summary>
 /// Get QQ Online state
 /// </summary>
@@ -2106,16 +2138,20 @@ std::tuple<bool, char8_t *, char8_t *> Android::QQ_UploadImage_Private(const uin
                                                                          {
                                                                              // IP PORT为数组,这里就取第一组
                                                                              // 从右向左入栈,因此这里需要分开写
-                                                                             uint IP = UnPB.GetVarint(7);
-                                                                             uint Port = UnPB.GetVarint(8);
+                                                                             char *IP = XBin::Int2IP(UnPB.GetVarint(6));
+                                                                             uint Port = UnPB.GetVarint(7);
+                                                                             LPBYTE ukey = UnPB.GetBin(8);
                                                                              try
                                                                              {
-                                                                                 PicUp::DataUp(Image, ImageLength, ImageMD5, 1, IP, Port, UnPB.GetBin(9));
+                                                                                 PicUp::DataUp(Image, ImageLength, ImageMD5, 2, IP, Port, ukey);
                                                                              }
                                                                              catch (const char *e)
                                                                              {
                                                                                  Log::AddLog(Log::LogType::NOTICE, Log::MsgType::OTHER, u8"Upload fail", e);
+                                                                                 return std::make_tuple(false, new char8_t, new char8_t);
                                                                              }
+                                                                             delete IP;
+                                                                             delete ukey;
                                                                          }
                                                                          else
                                                                          {
@@ -2151,17 +2187,20 @@ uint Android::QQ_UploadImage_Group(const uint Group, const char8_t *ImageName, c
                                        {
                                            // IP PORT为数组,这里就取第一组
                                            // 从右向左入栈,因此这里需要分开写
-                                           uint IP = UnPB.GetVarint(6);
+                                           char *IP = XBin::Int2IP(UnPB.GetVarint(6));
                                            uint Port = UnPB.GetVarint(7);
+                                           LPBYTE ukey = UnPB.GetBin(8);
                                            try
                                            {
-                                               PicUp::DataUp(Image, ImageLength, ImageMD5, 2, IP, Port, UnPB.GetBin(8));
+                                               PicUp::DataUp(Image, ImageLength, ImageMD5, 2, IP, Port, ukey);
                                            }
                                            catch (const char *e)
                                            {
                                                Log::AddLog(Log::LogType::NOTICE, Log::MsgType::OTHER, u8"Upload fail", e);
                                                return 0;
                                            }
+                                           delete IP;
+                                           delete ukey;
                                        }
                                        else
                                        {
@@ -2178,47 +2217,72 @@ uint Android::QQ_UploadImage_Group(const uint Group, const char8_t *ImageName, c
 
 void Android::QQ_UploadPtt_Private(const uint QQ_, const char8_t *PttName, const byte *PttMD5, const uint PttLength, const uint PttTime, const byte *Ptt)
 {
+    Protobuf PB;
+    PB.WriteVarint(1, 500);
+    PB.WriteVarint(2, 0);
+    PB.StepIn(7);
+    PB.WriteVarint(10, QQ.QQ);
+    PB.WriteVarint(20, QQ_);
+    PB.WriteVarint(30, 2);
+    PB.WriteVarint(40, PttLength);
+    PB.WriteStr(50, PttName);
+    PB.StepOut();
+    PB.WriteVarint(101, 17);
+    PB.WriteVarint(102, 104);
+    PB.StepIn(99999);
+    PB.WriteVarint(1, 3);
+    PB.WriteVarint(2, 0);
+    PB.WriteVarint(90300, 1);
+    PB.WriteVarint(90500, 3);
+    PB.WriteVarint(90600, 1);
+    PB.WriteVarint(90800, PttTime);
+    PB.StepOut();
+
+    PicUp::DataUp(Ptt, PttLength, PttMD5, 26, (char *)QQ.UploadVoice_IP, QQ.UploadVoice_Port, QQ.UploadVoice_ukey, PB.Pack());
+    delete PB.Pack();
+}
+
+void Android::QQ_UploadPtt_Group(const uint Group, const char8_t *PttName, const byte *PttMD5, const uint PttLength, const uint PttTime, const byte *Ptt)
+{
+    Protobuf PB;
+    PB.WriteVarint(1, 3);
+    PB.WriteVarint(2, 3);
+    PB.StepIn(5);
+    PB.WriteVarint(1, Group);
+    PB.WriteVarint(2, QQ.QQ);
+    PB.WriteVarint(3, 0);
+    PB.WriteBin(4, PttMD5, 16);
+    PB.WriteVarint(5, PttLength);
+    PB.WriteStr(6, PttName);
+    PB.WriteVarint(7, 5);
+    PB.WriteVarint(8, 9);
+    PB.WriteVarint(9, 3);
+    PB.WriteStr(10, (const char8_t *)AndroidQQ_VERSION);
+    PB.WriteVarint(12, PttTime);
+    PB.WriteVarint(13, 1);
+    PB.WriteVarint(14, 1);
+    PB.WriteVarint(15, 1);
+    PB.StepOut();
+
+    PicUp::DataUp(Ptt, PttLength, PttMD5, 29, (char *)QQ.UploadVoice_IP, QQ.UploadVoice_Port, QQ.UploadVoice_ukey, PB.Pack());
+    delete PB.Pack();
+}
+
+void Android::QQ_TranslatePtt_Private(const uint QQ_, const char8_t *PttName, const byte *PttMD5, const uint PttLength, const uint PttTime, const byte *Ptt)
+{
     Fun_Send_Sync(11, 1, "pttTrans.TransC2CPttReq", pttTrans::TransC2CPttReq(QQ_, PttName, PttMD5, PttLength, PttTime),
                   [&](uint sso_seq, LPBYTE BodyBin)
                   {
                       UnProtobuf UnPB(BodyBin);
-
-                      UnPB.StepIn(2);
-                      // IP PORT为数组,这里就取第一组
-                      // 从右向左入栈,因此这里需要分开写
-                      uint IP = UnPB.GetVarint(7);
-                      uint Port = UnPB.GetVarint(8);
-                      try
-                      {
-                          PicUp::DataUp(Ptt, PttLength, PttMD5, 26, IP, Port, UnPB.GetBin(9));
-                      }
-                      catch (const char *e)
-                      {
-                          Log::AddLog(Log::LogType::NOTICE, Log::MsgType::OTHER, u8"Upload fail", e);
-                      }
                   });
 }
 
-void Android::QQ_UploadPtt_Group(const uint Group, const char8_t *PttName, const byte *PttMD5, const uint PttLength, const uint PttTime, const byte *Ptt)
+void Android::QQ_TranslatePtt_Group(const uint Group, const char8_t *PttName, const byte *PttMD5, const uint PttLength, const uint PttTime, const byte *Ptt)
 {
     Fun_Send_Sync(11, 1, "pttTrans.TransGroupPttReq", pttTrans::TransGroupPttReq(Group, PttName, PttMD5, PttLength, PttTime),
                   [&](uint sso_seq, LPBYTE BodyBin)
                   {
                       UnProtobuf UnPB(BodyBin);
-
-                      UnPB.StepIn(2);
-                      // IP PORT为数组,这里就取第一组
-                      // 从右向左入栈,因此这里需要分开写
-                      uint IP = UnPB.GetVarint(7);
-                      uint Port = UnPB.GetVarint(8);
-                      try
-                      {
-                          PicUp::DataUp(Ptt, PttLength, PttMD5, 29, IP, Port, UnPB.GetBin(9));
-                      }
-                      catch (const char *e)
-                      {
-                          Log::AddLog(Log::LogType::NOTICE, Log::MsgType::OTHER, u8"Upload fail", e);
-                      }
                   });
 }
 
@@ -2343,29 +2407,6 @@ bool Android::QQ_SetGroupBan(const uint Group, const bool Ban)
                                });
 }
 
-const std::vector<uint> *Android::QQ_GetGroupAdminList(const uint Group)
-{
-    return Fun_Send_Sync<std::vector<uint> *>(11, 1, "OidbSvc.0x899_0", OidbSvc::_0x899_0(Group),
-                                              [&](uint sso_seq, LPBYTE BodyBin)
-                                                  -> std::vector<uint> *
-                                              {
-                                                  UnProtobuf UnPB(BodyBin);
-
-                                                  std::vector<uint> ManagerList;
-
-                                                  UnPB.StepIn(4);
-                                                  while (UnPB.IsEnd())
-                                                  {
-                                                      UnPB.StepIn(4);
-                                                      ManagerList.emplace_back(UnPB.GetVarint(1));
-                                                      UnPB.StepOut();
-                                                  }
-                                                  UnPB.StepOut();
-
-                                                  return &ManagerList;
-                                              });
-}
-
 const std::vector<QQ::FriendInfo> *Android::QQ_GetFriendList()
 {
     return &QQ.FriendList;
@@ -2377,6 +2418,11 @@ const std::vector<QQ::GroupInfo> *Android::QQ_GetGroupList()
 }
 
 const std::vector<QQ::GroupMemberInfo> *Android::QQ_GetGroupMemberList(uint Group)
+{
+    return nullptr;
+}
+
+const std::vector<uint> *Android::QQ_GetGroupAdminList(const uint Group)
 {
     return nullptr;
 }

@@ -9,19 +9,16 @@
 /// <param name="DataType">friend image=1, group image=2, friendPtt=26, groupPtt=29</param>
 /// <param name="IP"></param>
 /// <param name="Port"></param>
-/// <param name="sig"></param>
+/// <param name="ukey"></param>
 /// <returns></returns>
-bool PicUp::DataUp(const byte *TotalData, const uint TotalDataLength, const byte *TotalDataMD5, const int DataType, const uint IP, const uint Port, const LPBYTE sig)
+bool PicUp::DataUp(const byte *TotalData, const uint TotalDataLength, const byte *TotalDataMD5, const int DataType, const char *IP, const uint Port, const LPBYTE ukey, const LPBYTE PttInfo)
 {
     Socket TCP;
 
-    char *ip = XBin::Int2IP(IP);
-    if (!TCP.Connect(ip, 80))
+    if (!TCP.Connect(IP, Port))
     {
-        delete[] ip;
         throw "Connect upload server false";
     };
-    delete[] ip;
 
     uint32_t size;
     if (TotalDataLength > 0x100000)
@@ -54,12 +51,18 @@ bool PicUp::DataUp(const byte *TotalData, const uint TotalDataLength, const byte
         PB.WriteVarint(2, TotalDataLength);
         PB.WriteVarint(3, Offset);
         PB.WriteVarint(4, DataLength);
-        PB.WriteBin(6, sig);
+        PB.WriteBin(6, ukey);
         PB.WriteBin_(8, Utils::MD5(TotalData + Offset, DataLength), 16);
         PB.WriteBin(9, TotalDataMD5, 16);
         PB.WriteVarint(10, 0);
         PB.WriteVarint(13, 0);
         PB.StepOut();
+
+        if (DataType == 26 || DataType == 29)
+        {
+            PB.WriteBin(3, PttInfo);
+        }
+
         Length = PB.Pack(Bin);
 
         Pack.SetByte(0x28);
@@ -91,6 +94,5 @@ bool PicUp::DataUp(const byte *TotalData, const uint TotalDataLength, const byte
     }
     delete[] Bin;
     delete[] Pack.GetAll();
-    delete[] sig;
     return true;
 }

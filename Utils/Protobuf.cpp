@@ -105,25 +105,25 @@ void Protobuf::Recurse(::Pack *Pack, Tree *Tree)
     }
 };
 
-void Protobuf::WriteVarint(const uint16_t Field, const uint64_t l)
+void Protobuf::WriteVarint(const uint32_t Field, const uint64_t l)
 {
     List->BaseTree->Child->emplace_back(Tree{GetField(Field, ProtobufStruct::ProtobufStructType::VARINT), Type::VARINT, [&] -> VarInt *
                                              {VarInt * Data=new VarInt;Int2Varint(l,Data);return Data; }()});
 }
 
-void Protobuf::WriteFix32(const uint16_t Field, const int32_t i)
+void Protobuf::WriteFix32(const uint32_t Field, const int32_t i)
 {
     List->BaseTree->Child->emplace_back(Tree{GetField(Field, ProtobufStruct::ProtobufStructType::FIX32), Type::FIX32, [&] -> void *
                                              {int32_t *i_ = new int32_t;*i_=i; return i_; }()});
 }
 
-void Protobuf::WriteFix64(const uint16_t Field, const int64_t l)
+void Protobuf::WriteFix64(const uint32_t Field, const int64_t l)
 {
     List->BaseTree->Child->emplace_back(Tree{GetField(Field, ProtobufStruct::ProtobufStructType::FIX64), Type::FIX64, [&] -> void *
                                              {int64_t *l_ = new int64_t;*l_=l; return l_; }()});
 }
 
-void Protobuf::WriteStr(const uint16_t Field, const char8_t *str)
+void Protobuf::WriteStr(const uint32_t Field, const char8_t *str)
 {
     List->BaseTree->Child->emplace_back(Tree{
         GetField(Field, ProtobufStruct::ProtobufStructType::LENGTH),
@@ -132,7 +132,7 @@ void Protobuf::WriteStr(const uint16_t Field, const char8_t *str)
         {BinData * Data=new BinData;Data->Length=strlen((char*)str);Int2Varint(Data->Length,&Data->LengthEx); Data->Bin=(byte*)str;return Data; }()});
 }
 
-void Protobuf::WriteStr_(const uint16_t Field, char8_t *str)
+void Protobuf::WriteStr_(const uint32_t Field, char8_t *str)
 {
     List->BaseTree->Child->emplace_back(Tree{
         GetField(Field, ProtobufStruct::ProtobufStructType::LENGTH),
@@ -141,7 +141,7 @@ void Protobuf::WriteStr_(const uint16_t Field, char8_t *str)
         {BinData * Data=new BinData;Data->Length=strlen((char*)str);Int2Varint(Data->Length,&Data->LengthEx); Data->Bin=(byte*)str;return Data; }()});
 }
 
-void Protobuf::WriteBin(const uint16_t Field, const byte *bin, uint32_t Length)
+void Protobuf::WriteBin(const uint32_t Field, const byte *bin, uint32_t Length)
 {
     List->BaseTree->Child->emplace_back(Tree{
         GetField(Field, ProtobufStruct::ProtobufStructType::LENGTH),
@@ -150,7 +150,7 @@ void Protobuf::WriteBin(const uint16_t Field, const byte *bin, uint32_t Length)
         {BinData * Data=new BinData;Data->Length=Length;Int2Varint(Data->Length,&Data->LengthEx); Data->Bin=(byte*)bin;return Data; }()});
 }
 
-void Protobuf::WriteBin_(const uint16_t Field, byte *bin, uint32_t Length)
+void Protobuf::WriteBin_(const uint32_t Field, byte *bin, uint32_t Length)
 {
     List->BaseTree->Child->emplace_back(Tree{
         GetField(Field, ProtobufStruct::ProtobufStructType::LENGTH),
@@ -159,7 +159,7 @@ void Protobuf::WriteBin_(const uint16_t Field, byte *bin, uint32_t Length)
         {BinData * Data=new BinData;Data->Length=Length;Int2Varint(Data->Length,&Data->LengthEx); Data->Bin=bin;return Data; }()});
 }
 
-void Protobuf::WriteBin(const uint16_t Field, const LPBYTE bin)
+void Protobuf::WriteBin(const uint32_t Field, const LPBYTE bin)
 {
     List->BaseTree->Child->emplace_back(Tree{
         GetField(Field, ProtobufStruct::ProtobufStructType::LENGTH),
@@ -168,7 +168,7 @@ void Protobuf::WriteBin(const uint16_t Field, const LPBYTE bin)
         {BinData * Data=new BinData;Data->Length=XBin::Bin2Int(bin) - 4;Int2Varint(Data->Length,&Data->LengthEx); Data->Bin=bin + 4;return Data; }()});
 }
 
-void Protobuf::WriteBin_(const uint16_t Field, LPBYTE bin)
+void Protobuf::WriteBin_(const uint32_t Field, LPBYTE bin)
 {
     List->BaseTree->Child->emplace_back(Tree{
         GetField(Field, ProtobufStruct::ProtobufStructType::LENGTH),
@@ -177,7 +177,7 @@ void Protobuf::WriteBin_(const uint16_t Field, LPBYTE bin)
         {BinData * Data=new BinData;Data->Length=XBin::Bin2Int(bin) - 4;Int2Varint(Data->Length,&Data->LengthEx); Data->Bin=bin + 4;return Data; }()});
 }
 
-void Protobuf::StepIn(const byte Field)
+void Protobuf::StepIn(const uint32_t Field)
 {
     List->BaseTree->Child->emplace_back(Tree{GetField(Field, ProtobufStruct::ProtobufStructType::LENGTH), Type::TREE});
     List = new LinkList{&List->BaseTree->Child->back(), List};

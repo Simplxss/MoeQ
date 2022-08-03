@@ -17,5 +17,5 @@ public:
     };
 
 public:
-    bool DataUp(const byte *TotalData, const uint TotalDataLength, const byte* TotalDataMD5, const int DataType, const uint IP, const uint Port, const LPBYTE sig);
+    bool DataUp(const byte *TotalData, const uint TotalDataLength, const byte *TotalDataMD5, const int DataType, const char *IP, const uint Port, const LPBYTE ukey, const LPBYTE PttInfo = nullptr);
 };

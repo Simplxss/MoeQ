@@ -140,6 +140,7 @@ public:
     void QQ_SyncFriendList(int startIndex);
     void QQ_SyncGroupList();
     void QQ_SyncGroupMemberList(uint Group);
+    void QQ_SyncGroupAdminList(uint Group);
     bool QQ_Status();
     const char8_t *QQ_GetErrorMsg();
     void QQ_Set_Token(QQ::Token *_Token);
@@ -148,6 +149,8 @@ public:
     uint QQ_UploadImage_Group(const uint Group, const char8_t *ImageName, const byte *ImageMD5, const uint ImageLength, const uint ImageWidth, const uint ImageHeight, const byte *Image = nullptr);
     void QQ_UploadPtt_Private(const uint QQ_, const char8_t *PttName, const byte *PttMD5, const uint PttLength, const uint PttTime, const byte *Image);
     void QQ_UploadPtt_Group(const uint Group, const char8_t *PttName, const byte *PttMD5, const uint PttLength, const uint PttTime, const byte *Image);
+    void QQ_TranslatePtt_Private(const uint QQ_, const char8_t *PttName, const byte *PttMD5, const uint PttLength, const uint PttTime, const byte *Image);
+    void QQ_TranslatePtt_Group(const uint Group, const char8_t *PttName, const byte *PttMD5, const uint PttLength, const uint PttTime, const byte *Image);
     uint QQ_Get_Account();
     char *QQ_GetCookies(const char *Host);
     bool QQ_SendLike(const uint QQ, const int Times);
@@ -160,8 +163,8 @@ public:
     bool QQ_SetGroupMemberCard(const uint Group, const uint QQ, const char *Card);
     bool QQ_SetGroupMemberBan(const uint Group, const uint QQ, const uint Time);
     bool QQ_SetGroupBan(const uint Group, const bool Ban);
-    const std::vector<uint> *QQ_GetGroupAdminList(const uint Group);
     const std::vector<QQ::FriendInfo> *QQ_GetFriendList();
     const std::vector<QQ::GroupInfo> *QQ_GetGroupList();
     const std::vector<QQ::GroupMemberInfo> *QQ_GetGroupMemberList(uint Group);
+    const std::vector<uint> *QQ_GetGroupAdminList(const uint Group);
 };
