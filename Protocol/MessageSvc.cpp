@@ -162,28 +162,43 @@ namespace Message
     }
 }
 
-LPBYTE MessageSvc::PbGetMsg()
+LPBYTE MessageSvc::PbGetMsg(LPBYTE serverBuf)
 {
     Protobuf PB;
+    // start = 0, continue = 1, stop = 2
     PB.WriteVarint(1, 0);
     PB.StepIn(2);
     PB.WriteVarint(1, std::time(0));
     PB.WriteVarint(2, std::time(0));
-    PB.WriteVarint(3, 1787282332);
-    PB.WriteVarint(4, 3414434724);
-    PB.WriteVarint(5, 562530569);
-    PB.WriteVarint(9, 2346412847);
-    PB.WriteVarint(11, 1885270429);
-    PB.WriteVarint(12, 41);
+    PB.WriteVarint(3, Utils::GetRandom(0, 0xffffffff));
+    PB.WriteVarint(4, Utils::GetRandom(0, 0xffffffff));
+    PB.WriteVarint(5, QQ->sig.sync_const1);
+    PB.WriteVarint(9, 2346412847); // unknown
+    PB.WriteVarint(11, QQ->sig.sync_const2);
+    PB.WriteVarint(12, QQ->sig.sync_const3);
     PB.WriteVarint(13, std::time(0));
     PB.WriteVarint(14, 0);
     PB.StepOut();
     PB.WriteVarint(3, 0);
     PB.WriteVarint(4, 20);
-    PB.WriteVarint(6, 3);
+    PB.WriteVarint(5, 3);
+    PB.WriteVarint(6, 1);
     PB.WriteVarint(7, 1);
-    PB.WriteVarint(9, 1);
-    PB.WriteBin(12, {}, 0);
+    PB.WriteVarint(9, 0);
+    PB.WriteBin(12, serverBuf);
+    return PB.Pack();
+}
+
+LPBYTE MessageSvc::PbDeleteMsg(const uint ToNumber, const byte msgType, const uint msgSeq, const ulong msgUid)
+{
+    Protobuf PB;
+    PB.StepIn(1);
+    PB.WriteVarint(ToNumber, 1);
+    PB.WriteVarint(QQ->QQ, 2);
+    PB.WriteVarint(msgType, 3);
+    PB.WriteVarint(msgSeq, 4);
+    PB.WriteVarint(msgUid, 5);
+    PB.StepOut();
     return PB.Pack();
 }
 

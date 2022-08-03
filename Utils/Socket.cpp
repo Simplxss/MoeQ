@@ -91,13 +91,11 @@ LPBYTE Socket::Receive()
     if (state < 0)
     {
         throw WSAGetLastError();
-        return nullptr;
     }
     else if (state == 0)
     {
         Connected = false;
         throw "Connection broken";
-        return nullptr;
     }
 
     uint length = XBin::Bin2Int(len);

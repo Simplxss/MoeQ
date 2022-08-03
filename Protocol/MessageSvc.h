@@ -14,13 +14,14 @@ public:
         QQ = _QQ;
     };
 
-public:
+private:
     virtual std::tuple<bool, char8_t *, char8_t *> QQ_UploadImage_Private(const uint QQ, const char8_t *ImageName, const byte *ImageMD5, const uint ImageLength, const uint ImageWidth, const uint ImageHeight, const byte *Image = nullptr) { return std::tuple(bool(), new char8_t, new char8_t); };
     virtual uint QQ_UploadImage_Group(const uint Group, const char8_t *ImageName, const byte *ImageMD5, const uint ImageLength, const uint ImageWidth, const uint ImageHeight, const byte *Image = nullptr) { return uint(); };
     virtual void QQ_UploadPtt_Private(const uint QQ_, const char8_t *PttName, const byte *PttMD5, const uint PttLength, const uint PttTime, const byte *Image){};
     virtual void QQ_UploadPtt_Group(const uint Group, const char8_t *PttName, const byte *PttMD5, const uint PttLength, const uint PttTime, const byte *Image){};
 
 public:
-    LPBYTE PbGetMsg();
+    LPBYTE PbGetMsg(LPBYTE serverBuf);
+    LPBYTE PbDeleteMsg(const uint ToNumber, const byte msgType, const uint msgSeq, const ulong msgUid);
     LPBYTE PbSendMsg(const uint ToNumber, const byte ToType, const Message::Msg *Msg);
 };

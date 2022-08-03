@@ -24,6 +24,7 @@
 
 typedef unsigned char byte;
 typedef unsigned int uint;
+typedef unsigned long long ulong;
 typedef byte *LPBYTE;
 
 namespace Message
@@ -342,6 +343,16 @@ namespace QQ
         byte *TGTkey = nullptr;    // 16
         byte *ksid = nullptr;      // 16
     };
+    struct sig
+    {
+        uint32_t sync_const1;
+        uint32_t sync_const2;
+        uint32_t sync_const3;
+
+        char8_t *UploadVoice_IP = nullptr;
+        int UploadVoice_Port = 0;
+        LPBYTE UploadVoice_ukey = nullptr; // 104
+    };
     struct Login
     {
         Utils::ECDHKEY ECDH;
@@ -380,13 +391,10 @@ namespace QQ
         char8_t *ErrorMsg = nullptr;
         std::atomic_int SsoSeq;
         unsigned char *MsgCookie = nullptr; // 4
-        LPBYTE SyncCookies = nullptr;
-        LPBYTE UploadVoice_ukey = nullptr; // 104
-        char8_t* UploadVoice_IP = nullptr;
-        int UploadVoice_Port = 0;
         char Version[33] = "|\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0|" AndroidQQ_VERSION_;
         ::QQ::Login *Login = nullptr;
         ::QQ::Token Token;
+        ::QQ::sig sig;
         ::QQ::Cookie Cookie;
 
         std::vector<::QQ::FriendInfo> FriendList;

@@ -9,10 +9,15 @@
 #include "friendlist.h"
 #include "OidbSvc.h"
 #include "MessageSvc.h"
+#include "PbMessageSvc.h"
+#include "OnlinePush.h"
 #include "ImgStore.h"
 #include "LongConn.h"
 #include "pttTrans.h"
 #include "PicUp.h"
+#include "SQQzoneSvc.h"
+#include "VisitorSvc.h"
+#include "ProfileService.h"
 
 #include <ctime>
 
@@ -20,7 +25,7 @@
 #define LOGIN_VERIY 2
 #define LOGIN_VERIY_SMS 160
 
-class Android : private wtlogin, private StatSvc, private friendlist, private OidbSvc, private MessageSvc, private ImgStore, private LongConn, private pttTrans, private PicUp
+class Android : private wtlogin, private StatSvc, private friendlist, private OidbSvc, private MessageSvc, private PbMessageSvc, private OnlinePush, private ImgStore, private LongConn, private pttTrans, private PicUp, private SQQzoneSvc, private VisitorSvc, private ProfileService
 {
 private:
     struct SenderInfo
@@ -101,14 +106,7 @@ private:
 
 private:
     LPBYTE Make_Body_Request_Packet(const byte iVersion, const int iRequestId, const char *sServantName, const char *sFuncName, byte *sBuffer, uint Bufferlen);
-
-private:
-    void SQQzoneSvc_getUndealCount();
-    void OnlinePush_RespPush(const LPBYTE protobuf, const int a);
-    bool VisitorSvc_ReqFavorite(const uint QQ, const int Times);
-    bool PbMessageSvc_PbMsgWithDraw(const uint Group, const uint MsgId, const uint MsgId_);
-    void ProfileService_Pb_ReqSystemMsgNew_Group();
-
+    
 private:
     void Un_Tlv_Get(const unsigned short cmd, const byte *bin, const uint len);
     void Unpack_Body_Request_Packet(const LPBYTE BodyBin, LPBYTE &sBuffer);
