@@ -114,13 +114,13 @@ namespace Message
     {
         UnPB->StepIn(24);
         UnPB->StepIn(1);
-        {
-            char8_t *listid = UnPB->GetStr(9);
-            char8_t *authkey = UnPB->GetStr(10);
-            uint channel = UnPB->GetVarint(19);
-            delete[] listid;
-            delete[] authkey;
-        }
+
+        char8_t *listid = UnPB->GetStr(9);
+        char8_t *authkey = UnPB->GetStr(10);
+        uint channel = UnPB->GetVarint(19);
+        delete[] listid;
+        delete[] authkey;
+
         UnPB->StepOut();
         UnPB->StepOut();
     }
@@ -324,10 +324,9 @@ bool Android::Fun_Connect(const char *IP, const unsigned short Port)
     return (true);
 }
 
-int Android::Fun_Send(const uint PacketType, const byte EncodeType, const char *ServiceCmd, LPBYTE Buffer)
+void Android::Fun_Send(const uint PacketType, const byte EncodeType, const char *ServiceCmd, LPBYTE Buffer, int SsoSeq)
 {
     ::Pack Pack(XBin::Bin2Int(Buffer) + 100, true);
-    int SsoSeq = QQ.SsoSeq.fetch_add(1);
 
     switch (PacketType)
     {
@@ -417,8 +416,17 @@ int Android::Fun_Send(const uint PacketType, const byte EncodeType, const char *
     Pack.SetLength();
     TCP.Send(Pack.GetAll());
     delete[] Pack.GetAll();
+}
 
-    return (SsoSeq);
+void Android::Fun_Send_PB(const uint PacketType, const byte EncodeType, const char *ServiceCmd, LPBYTE Buffer, int SsoSeq)
+{
+    Protobuf PB;
+    PB.WriteVarint(1, SsoSeq);
+    PB.WriteStr(2, ServiceCmd);
+    PB.WriteVarint(3, 0x80);
+    PB.WriteBin(4, Buffer);
+    PB.WriteVarint(5, 0);
+    Fun_Send(PacketType, EncodeType, ServiceCmd, PB.Pack(), SsoSeq);
 }
 
 void Android::Fun_Msg_Loop()
@@ -607,6 +615,8 @@ void Android::Fun_Handle(char *serviceCmd, const LPBYTE BodyBin, const uint sso_
     }
     if (!strcmp(first, "StatSvc"))
     {
+        if (!strcmp(second, "QueryHB"))
+            Unpack_StatSvc_QueryHB(BodyBin, sso_seq);
         if (!strcmp(second, "SvcReqMSFLoginNotify"))
             Unpack_StatSvc_SvcReqMSFLoginNotify(BodyBin, sso_seq);
     }
@@ -1064,7 +1074,7 @@ void Android::Unpack_wtlogin(const LPBYTE BodyBin, const uint sso_seq)
      * 160 设备锁
      * 162 短信发送失败
      * 163 短信验证码错误
-     * 180 回滚 (ecdh错误)
+     * 180 回滚 (ecdh错误, ...)
      * 204 设备锁 验证
      * 235 版本过低
      * 237 上网环境异常
@@ -1115,7 +1125,7 @@ void Android::Unpack_OnlinePush_PbPushGroupMsg(const LPBYTE BodyBin, const uint 
     GroupMsg.MsgRand = UnPB.GetVarint(3);
     UnPB.StepOut();
     Message::Msg *ThisMsg = nullptr;
-    while (!UnPB.IsEnd())
+    while (UnPB.GetField() == 2)
     {
         UnPB.StepIn(2);
         switch (UnPB.GetField())
@@ -1262,15 +1272,36 @@ void Android::Unpack_OnlinePush_PbC2CMsgSync(const LPBYTE BodyBin, const uint ss
 
 void Android::Unpack_OnlinePush_ReqPush(const LPBYTE BodyBin, const uint sso_seq)
 {
-    /*
-     * LPBYTE sBuffer;
-     * Unpack_Body_Request_Packet(BodyBin, sBuffer);
-     *
-     * UnJce UnJce(sBuffer);
-     * std::vector<JceStruct::Map<char *, std::vector<JceStruct::Map<char *, LPBYTE>>>> Map;
-     * UnJce.Read(Map, 0);
-     * Fun_Send_Sync(11, 1, "OnlinePush.RespPush", OnlinePush::RespPush(), [&](uint sso_seq, LPBYTE BodyBin) {});
-     */
+    LPBYTE sBuffer;
+    Unpack_Body_Request_Packet(BodyBin + 4, sBuffer);
+
+    UnJce UnJce(sBuffer);
+    std::vector<JceStruct::Map<char *, std::vector<JceStruct::Map<char *, LPBYTE>>>> Map;
+    UnJce.Read(Map, 0);
+    for (size_t i = 0; i < Map.size(); i++)
+    {
+        for (size_t j = 0; j < Map[i].Value.size(); j++)
+        {
+            UnJce.Reset(Map[i].Value[j].Value);
+            UnJce.Read(UnJce, 0);
+
+            std::vector<Jce *> list;
+            int del_infos;
+            UnJce.Read(list, 2);
+            UnJce.Read(del_infos, 3);
+            std::vector<std::tuple<int, LPBYTE>> info;
+            for (size_t k = 0; k < list.size(); k++)
+            {
+                int shMsgSeq;
+                LPBYTE vMsgCookies;
+                UnJce.Reset(list[k]);
+                UnJce.GetShort(shMsgSeq, 5);
+                UnJce.GetBin(vMsgCookies, 8);
+                info.emplace(shMsgSeq, vMsgCookies);
+            }
+            Fun_Send_Sync_PB(11, 1, "OnlinePush.RespPush", OnlinePush::RespPush(sso_seq, del_infos, info), [&](uint sso_seq, LPBYTE BodyBin) {});
+        }
+    }
 }
 
 void Android::Unpack_MessageSvc_PushNotify(const LPBYTE BodyBin, const uint sso_seq)
@@ -1288,7 +1319,7 @@ void Android::Unpack_MessageSvc_PushNotify(const LPBYTE BodyBin, const uint sso_
             UnJce.Reset(Map[i].Value[j].Value);
             UnJce.Read(UnJce, 0);
 
-            LPBYTE serverBuf;
+            LPBYTE serverBuf = nullptr;
             UnJce.Read(serverBuf, 11);
 
             Fun_Send_Sync(11, 1, "MessageSvc.PbGetMsg", MessageSvc::PbGetMsg(serverBuf),
@@ -1312,7 +1343,7 @@ void Android::Unpack_MessageSvc_PushNotify(const LPBYTE BodyBin, const uint sso_
                                       PrivateMsg.MsgType = UnPB.GetVarint(4);
                                       PrivateMsg.MsgID = UnPB.GetVarint(5);
                                       UnPB.StepOut();
-                                      printf("%l", MsgType);
+                                      Log::AddLog(Log::LogType::NOTICE, Log::MsgType::OTHER, u8"MessageSvc.PbGetMsg", u8"MsgType: %u", true, MsgType);
                                       switch (MsgType)
                                       {
                                       case 33:
@@ -1338,7 +1369,15 @@ void Android::Unpack_MessageSvc_PushNotify(const LPBYTE BodyBin, const uint sso_
                                           Log::AddLog(Log::LogType::INFORMATION, Log::MsgType::OTHER, &NoticeEvent);
                                       }
                                       break;
-                                      case 34:
+                                      case 35:
+                                      case 36:
+                                      case 37:
+                                      case 45:
+                                      case 46:
+                                      case 84: //申请进群
+                                      case 85:
+                                      case 86:
+                                      case 87:
                                           Fun_Send_Sync(11, 1, "ProfileService.Pb.ReqSystemMsgNew.Group", ProfileService::Pb_ReqSystemMsgNew_Group(),
                                                         [&](uint sso_seq, LPBYTE BodyBin)
                                                         {
@@ -1421,21 +1460,21 @@ void Android::Unpack_MessageSvc_PushNotify(const LPBYTE BodyBin, const uint sso_
                                                             }
                                                         });
                                           break;
-                                      case 84:
-                                          break;
                                       case 166:
+                                      {
                                           UnPB.StepIn(3);
                                           UnPB.StepIn(1);
                                           UnPB.StepIn(1);
                                           PrivateMsg.SendTime = UnPB.GetVarint(2);
                                           PrivateMsg.MsgRand = UnPB.GetVarint(3);
                                           UnPB.StepOut();
+                                          Message::Msg *ThisMsg = nullptr;
                                           while (UnPB.GetField() == 2)
                                           {
                                               UnPB.StepIn(2);
-                                              Message::Msg *ThisMsg = nullptr;
                                               switch (UnPB.GetField())
                                               {
+
 #define UnPack(id)                                 \
     case id:                                       \
         if (PrivateMsg.Msg == nullptr)             \
@@ -1446,7 +1485,8 @@ void Android::Unpack_MessageSvc_PushNotify(const LPBYTE BodyBin, const uint sso_
         else                                       \
         {                                          \
             UnPack##id(&UnPB, ThisMsg->NextPoint); \
-            ThisMsg = ThisMsg->NextPoint;          \
+            if (ThisMsg->NextPoint != nullptr)     \
+                ThisMsg = ThisMsg->NextPoint;      \
         }                                          \
         break;
 
@@ -1476,6 +1516,52 @@ void Android::Unpack_MessageSvc_PushNotify(const LPBYTE BodyBin, const uint sso_
                                           if (PrivateMsg.Msg != nullptr)
                                               Event::OnPrivateMsg(&PrivateMsg);
                                           Message::DestoryMsg(PrivateMsg.Msg);
+                                      }
+                                      break;
+                                      case 187:
+                                      case 188:
+                                      case 189:
+                                      case 190:
+                                      case 191:
+                                          Fun_Send_Sync(11, 1, "ProfileService.Pb.ReqSystemMsgNew.Friend", ProfileService::Pb_ReqSystemMsgNew_Friend(),
+                                                        [&](uint sso_seq, LPBYTE BodyBin)
+                                                        {
+                                                            UnProtobuf UnPB(BodyBin);
+                                                            UnPB.GetVarint(6);
+                                                            while (UnPB.GetField() == 9)
+                                                            {
+                                                                UnPB.StepIn(9);
+                                                                uint msgSeq = UnPB.GetVarint(3);
+                                                                uint reqUin = UnPB.GetVarint(5);
+                                                                UnPB.StepIn(50);
+                                                                uint subType = UnPB.GetVarint(1);
+                                                                char8_t *msgAdditional = UnPB.GetStr(4);
+                                                                char8_t *reqUinNick = UnPB.GetStr(51);
+
+                                                                switch (subType)
+                                                                {
+                                                                case 1: //好友申请
+                                                                {
+                                                                    Event::RequestEvent::RequestEvent RequestEvent{Event::RequestEvent::RequestEventType::add_friend, msgSeq, new Event::RequestEvent::add_friend};
+
+                                                                    ((Event::RequestEvent::add_friend *)RequestEvent.Information)->FromQQ = reqUin;
+                                                                    ((Event::RequestEvent::add_friend *)RequestEvent.Information)->FromQQName = reqUinNick;
+
+                                                                    ((Event::RequestEvent::add_friend *)RequestEvent.Information)->msg = msgAdditional;
+
+                                                                    Event::OnRequestMsg(&RequestEvent);
+                                                                    Log::AddLog(Log::LogType::INFORMATION, Log::MsgType::OTHER, &RequestEvent);
+                                                                }
+                                                                break;
+                                                                case 3: //已同意
+                                                                    break;
+                                                                case 7: //已拒绝
+                                                                    break;
+                                                                default:
+                                                                    break;
+                                                                }
+                                                            }
+                                                        });
                                           break;
                                       default:
                                           Log::AddLog(Log::LogType::NOTICE, Log::MsgType::OTHER, u8"MessageSvc.PbGetMsg", u8"unknown MsgType: %u", true, MsgType);
@@ -1501,6 +1587,11 @@ void Android::Unpack_MessageSvc_PushNotify(const LPBYTE BodyBin, const uint sso_
 void Android::Unpack_MessageSvc_PushForceOffline(const LPBYTE BodyBin, const uint sso_seq)
 {
     QQ_Offline();
+    QQ_Online();
+}
+
+void Android::Unpack_StatSvc_QueryHB(const LPBYTE BodyBin, const uint sso_seq)
+{
     QQ_Online();
 }
 
@@ -2366,12 +2457,12 @@ bool Android::QQ_SetGroupBan(const uint Group, const bool Ban)
 
 bool Android::QQ_RequestAction(int64_t msgSeq, uint32_t reqUin, uint32_t groupCode, bool IsInvited, ::Event::RequestEvent::ReturnType ReturnType)
 {
-    return Fun_Send_Sync<bool>(11, 1, "ProfileService.Pb.ReqSystemMsgAction.Group", ProfileService::Pb_ReqSystemMsgAction_Group(1, msgSeq, reqUin, groupCode, IsInvited, ReturnType),
-                                [&](uint sso_seq, LPBYTE BodyBin)
-                                    -> bool
-                                {
-                                    return true;
-                                });
+    return Fun_Send_Sync_PB<bool>(11, 1, "ProfileService.Pb.ReqSystemMsgAction.Group", ProfileService::Pb_ReqSystemMsgAction_Group(1, msgSeq, reqUin, groupCode, IsInvited, ReturnType),
+                                  [&](uint sso_seq, LPBYTE BodyBin)
+                                      -> bool
+                                  {
+                                      return true;
+                                  });
 }
 
 const std::vector<QQ::FriendInfo> *Android::QQ_GetFriendList()

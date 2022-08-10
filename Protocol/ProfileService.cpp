@@ -33,6 +33,29 @@ LPBYTE ProfileService::Pb_ReqSystemMsgNew_Group()
     return PB.Pack();
 }
 
+LPBYTE ProfileService::Pb_ReqSystemMsgNew_Friend()
+{
+    Protobuf PB;
+    PB.WriteVarint(1, 20);
+    PB.WriteVarint(2, 1633136467000000 );
+    PB.WriteVarint(3, 1659594208305346 );
+    PB.WriteVarint(4, 1000);
+    PB.WriteVarint(5, 2);
+    PB.StepIn(6);
+    PB.WriteVarint(4, 1);
+    PB.WriteVarint(7, 1);
+    PB.WriteVarint(9, 1);
+    PB.WriteVarint(10, 1);
+    PB.WriteVarint(17, 1);
+    PB.StepOut();
+    PB.WriteVarint(8, 0);
+    PB.WriteVarint(9, 0);
+    PB.WriteVarint(10, 1);
+    PB.WriteVarint(11, 1);
+
+    return PB.Pack();
+}
+
 LPBYTE ProfileService::Pb_ReqSystemMsgAction_Group(int32_t sso_seq, int64_t msgSeq, uint32_t reqUin, uint32_t groupCode, bool IsInvited, ::Event::RequestEvent::ReturnType ReturnType)
 {
     Protobuf PB;
@@ -57,3 +80,4 @@ LPBYTE ProfileService::Pb_ReqSystemMsgAction_Group(int32_t sso_seq, int64_t msgS
     PB.WriteVarint(5, 1);
     return PB.Pack();
 }
+

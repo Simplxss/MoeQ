@@ -47,7 +47,8 @@ public:
 
 private:
     bool Fun_Connect(const char *IP = nullptr, const unsigned short Port = 0);
-    int Fun_Send(const uint PacketType, const byte EncodeType, const char *ServiceCmd, LPBYTE Buffer);
+    void Fun_Send(const uint PacketType, const byte EncodeType, const char *ServiceCmd, LPBYTE Buffer, int SsoSeq);
+    void Fun_Send_PB(const uint PacketType, const byte EncodeType, const char *ServiceCmd, LPBYTE Buffer, int SsoSeq);
     /// <summary>
     /// Send package synchronously
     /// </summary>
@@ -64,7 +65,9 @@ private:
         std::mutex lock;
         std::unique_lock<std::mutex> ulock(lock);
 
-        int SsoSeq = Fun_Send(PacketType, EncodeType, ServiceCmd, Buffer);
+        int SsoSeq = QQ.SsoSeq.fetch_add(1);
+
+        Fun_Send(PacketType, EncodeType, ServiceCmd, Buffer, SsoSeq);
 
         SendList[SsoSeq & 0x3F].cv.wait(ulock);
         std::condition_variable *condition_variable = SendList[SsoSeq & 0x3F].condition_variable;
@@ -86,7 +89,9 @@ private:
         std::mutex lock;
         std::unique_lock<std::mutex> ulock(lock);
 
-        int SsoSeq = Fun_Send(PacketType, EncodeType, ServiceCmd, Buffer);
+        int SsoSeq = QQ.SsoSeq.fetch_add(1);
+
+        Fun_Send(PacketType, EncodeType, ServiceCmd, Buffer, SsoSeq);
 
         SendList[SsoSeq & 0x3F].cv.wait(ulock);
         std::condition_variable *condition_variable = SendList[SsoSeq & 0x3F].condition_variable;
@@ -99,6 +104,26 @@ private:
         }
         condition_variable->notify_one();
     };
+    void Fun_Send_Sync_PB(const uint PacketType, const byte EncodeType, const char *ServiceCmd, LPBYTE Buffer, std::function<void(uint, LPBYTE)> Function)
+    {
+        std::mutex lock;
+        std::unique_lock<std::mutex> ulock(lock);
+
+        int SsoSeq = QQ.SsoSeq.fetch_add(1);
+
+        Fun_Send_PB(PacketType, EncodeType, ServiceCmd, Buffer, SsoSeq);
+
+        SendList[SsoSeq & 0x3F].cv.wait(ulock);
+        std::condition_variable *condition_variable = SendList[SsoSeq & 0x3F].condition_variable;
+        try
+        {
+            Function(SsoSeq, SendList[SsoSeq & 0x3F].BodyBin);
+        }
+        catch (std::exception e)
+        {
+        }
+        condition_variable->notify_one();
+    }
     void Fun_Msg_Loop();
     void Fun_Receice(LPBYTE bin);
     void Fun_Handle(char *serviceCmd, const LPBYTE BodyBin, const uint sso_seq);
@@ -117,6 +142,7 @@ private:
     void Unpack_OnlinePush_PbPushTransMsg(const LPBYTE BodyBin, const uint sso_seq);
     void Unpack_MessageSvc_PushNotify(const LPBYTE BodyBin, const uint sso_seq);
     void Unpack_MessageSvc_PushForceOffline(const LPBYTE BodyBin, const uint sso_seq);
+    void Unpack_StatSvc_QueryHB(const LPBYTE BodyBin, const uint sso_seq);
     void Unpack_StatSvc_SvcReqMSFLoginNotify(const LPBYTE BodyBin, const uint sso_seq);
     void Unpack_ConfigPushSvc_PushReq(const LPBYTE BodyBin, const uint sso_seq);
 

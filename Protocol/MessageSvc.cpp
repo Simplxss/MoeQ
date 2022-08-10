@@ -185,7 +185,8 @@ LPBYTE MessageSvc::PbGetMsg(LPBYTE serverBuf)
     PB.WriteVarint(6, 1);
     PB.WriteVarint(7, 1);
     PB.WriteVarint(9, 0);
-    PB.WriteBin(12, serverBuf);
+    if (serverBuf != nullptr)
+        PB.WriteBin(12, serverBuf);
     return PB.Pack();
 }
 

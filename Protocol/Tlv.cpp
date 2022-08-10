@@ -73,7 +73,7 @@ FUNC(106, const uint QQ, const char *QQ_Str, const byte md5[16], const byte md52
     _Pack.SetByte(1);
     _Pack.SetBin(md5, 16);
     _Pack.SetBin(TGTKey, 16);
-    _Pack.SetInt(emp ? 1 : 0);
+    _Pack.SetInt(emp ? 0x85 : 0);
     _Pack.SetByte(1);
     _Pack.SetBin(GUID, 16);
     _Pack.SetInt(APPID);
@@ -148,7 +148,7 @@ FUNC(128, const char *_device, const char *Brand, const byte GUID[16])
     Pack.SetByte(0);
     Pack.SetByte(1);
     Pack.SetByte(0);
-    Pack.SetInt(0x1000);
+    Pack.SetInt(0x10000000);
     Pack.SetShort(strlen(_device));
     Pack.SetStr(_device);
     Pack.SetShort(16);
@@ -282,10 +282,10 @@ FUNC(187)
     return Pack.Pack(0X0187);
 }
 
-FUNC(188)
+FUNC(188, const char *IMEI)
 {
     ::TlvPack Pack(bin, len);
-    Pack.SetBin_(Utils::GetRandomBin(16), 16);
+    Pack.SetMD5((byte *)IMEI, strlen(IMEI));
     return Pack.Pack(0X0188);
 }
 
@@ -348,7 +348,7 @@ FUNC(400, const long long QQ, const byte GUID[16], const uint Time, const byte *
     _Pack.SetBin(token_403, 8);
 
     std::vector<byte> data;
-    Tea::encrypt(GUID, _Pack.GetAll(), _Pack.Length(), data);
+    Tea::encrypt(GUID, _Pack.GetAll(), _Pack.Length(), data); //key is unknown
     delete[] _Pack.GetAll();
 
     ::TlvPack Pack(bin, len);
@@ -440,7 +440,7 @@ FUNC(52D)
     PB.WriteStr(3,u8"REL");
     PB.WriteStr(4,u8"V12.5.1.0.QEBCNXM");
     PB.WriteStr(5,u8"Xiaomi/sirius/sirius:10/QKQ1.190828.002/V12.5.1.0.QEBCNXM:user/release-keys");
-    PB.WriteStr(6,u8"30417589-e527-49fc-bb09-bb8607684674");
+    PB.WriteStr(6,u8"8ab1c9ed-19d1-4bfe-b0d8-8c1a99b4cdf7");
     PB.WriteStr(7,u8"81fc47b45c9ffc34");
     PB.WriteStr(8,u8"");
     PB.WriteStr(9,u8"V12.5.1.0.QEBCNXM");
@@ -455,9 +455,9 @@ FUNC(542)
     return Pack.Pack(0X0542);
 }
 
-FUNC(544, const char *AndroidQQ_APKID, const byte AndroidQQ_ASIG[16])
+FUNC(544)
 {
-    //构造在so层
+    //Unknown
     ::TlvPack Pack(bin, len);
     Pack.SetInt(0x68656861);
     Pack.SetBin((byte *)"\x00\x00\x00\x01\x01\x00\x00\x00\x00\x00\x00\x00\x01\x01\x00\x05\x05\x00\x00\x00\x00", 22);
@@ -495,7 +495,7 @@ FUNC(544, const char *AndroidQQ_APKID, const byte AndroidQQ_ASIG[16])
 
     Pack.SetShort(8);
     Pack.SetShort(4);
-    Pack.SetInt(0x01000005);
+    Pack.SetInt(0x01000006);
 
     Pack.SetShort(9);
     Pack.SetShort(0x20);

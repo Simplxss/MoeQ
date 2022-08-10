@@ -49,7 +49,7 @@ namespace Tlv
 	FUNC(525, const uint QQ, const char *IP, const uint Time, const uint APPID, const bool IsEmp);
 	FUNC(52D);
 	FUNC(542);
-	FUNC(544, const char *QQ_APKID, const byte QQ_ASIG[16]);
+	FUNC(544);
 	FUNC(545);
 	FUNC(547, const byte *ClientPow);
 	FUNC(548);
