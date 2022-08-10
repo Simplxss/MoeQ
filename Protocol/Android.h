@@ -84,6 +84,31 @@ private:
         }
         return R();
     };
+    template <typename R>
+    std::enable_if<!std::is_void<R>::value, R>::type Fun_Send_Sync_PB(const uint PacketType, const byte EncodeType, const char *ServiceCmd, LPBYTE Buffer, std::function<R(uint, LPBYTE)> Function)
+    {
+        std::mutex lock;
+        std::unique_lock<std::mutex> ulock(lock);
+
+        int SsoSeq = QQ.SsoSeq.fetch_add(1);
+
+        Fun_Send(PacketType, EncodeType, ServiceCmd, Buffer, SsoSeq);
+
+        SendList[SsoSeq & 0x3F].cv.wait(ulock);
+        std::condition_variable *condition_variable = SendList[SsoSeq & 0x3F].condition_variable;
+        try
+        {
+            R ret = Function(SsoSeq, SendList[SsoSeq & 0x3F].BodyBin);
+
+            condition_variable->notify_one();
+            return ret;
+        }
+        catch (std::exception e)
+        {
+            condition_variable->notify_one();
+        }
+        return R();
+    };
     void Fun_Send_Sync(const uint PacketType, const byte EncodeType, const char *ServiceCmd, LPBYTE Buffer, std::function<void(uint, LPBYTE)> Function)
     {
         std::mutex lock;
@@ -187,7 +212,8 @@ public:
     bool QQ_SetGroupMemberCard(const uint Group, const uint QQ, const char *Card);
     bool QQ_SetGroupMemberBan(const uint Group, const uint QQ, const uint Time);
     bool QQ_SetGroupBan(const uint Group, const bool Ban);
-    bool QQ_RequestAction(int64_t msgSeq, uint32_t reqUin, uint32_t groupCode, bool IsInvited, ::Event::RequestEvent::ReturnType ReturnType);
+    bool QQ_RequestFriendAction(int64_t msgSeq, uint32_t reqUin, int ReturnType);
+    bool QQ_RequestGroupAction(int64_t msgSeq, uint32_t reqUin, uint32_t groupCode, bool IsInvited, int ReturnType);
     const std::vector<QQ::FriendInfo> *QQ_GetFriendList();
     const std::vector<QQ::GroupInfo> *QQ_GetGroupList();
     const std::vector<QQ::GroupMemberInfo> *QQ_GetGroupMemberList(uint Group);

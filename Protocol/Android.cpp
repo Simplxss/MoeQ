@@ -422,7 +422,7 @@ void Android::Fun_Send_PB(const uint PacketType, const byte EncodeType, const ch
 {
     Protobuf PB;
     PB.WriteVarint(1, SsoSeq);
-    PB.WriteStr(2, ServiceCmd);
+    PB.WriteStr(2, (const char8_t *)ServiceCmd);
     PB.WriteVarint(3, 0x80);
     PB.WriteBin(4, Buffer);
     PB.WriteVarint(5, 0);
@@ -1285,7 +1285,7 @@ void Android::Unpack_OnlinePush_ReqPush(const LPBYTE BodyBin, const uint sso_seq
             UnJce.Reset(Map[i].Value[j].Value);
             UnJce.Read(UnJce, 0);
 
-            std::vector<Jce *> list;
+            std::vector<::UnJce> list;
             int del_infos;
             UnJce.Read(list, 2);
             UnJce.Read(del_infos, 3);
@@ -1294,10 +1294,9 @@ void Android::Unpack_OnlinePush_ReqPush(const LPBYTE BodyBin, const uint sso_seq
             {
                 int shMsgSeq;
                 LPBYTE vMsgCookies;
-                UnJce.Reset(list[k]);
-                UnJce.GetShort(shMsgSeq, 5);
-                UnJce.GetBin(vMsgCookies, 8);
-                info.emplace(shMsgSeq, vMsgCookies);
+                list[k].Read(shMsgSeq, 5);
+                list[k].Read(vMsgCookies, 8);
+                info.emplace_back(std::tuple(shMsgSeq, vMsgCookies));
             }
             Fun_Send_Sync_PB(11, 1, "OnlinePush.RespPush", OnlinePush::RespPush(sso_seq, del_infos, info), [&](uint sso_seq, LPBYTE BodyBin) {});
         }
@@ -1405,7 +1404,7 @@ void Android::Unpack_MessageSvc_PushNotify(const LPBYTE BodyBin, const uint sso_
                                                                     {
                                                                     case 1:
                                                                     {
-                                                                        Event::RequestEvent::RequestEvent RequestEvent{Event::RequestEvent::RequestEventType::other_join_group, msgSeq, new Event::RequestEvent::other_join_group};
+                                                                        Event::RequestEvent::RequestEvent RequestEvent{Event::RequestEvent::RequestEventType::other_join_group, new Event::RequestEvent::other_join_group};
 
                                                                         ((Event::RequestEvent::other_join_group *)RequestEvent.Information)->FromGroup = groupCode;
                                                                         ((Event::RequestEvent::other_join_group *)RequestEvent.Information)->FromQQ = reqUin;
@@ -1414,25 +1413,25 @@ void Android::Unpack_MessageSvc_PushNotify(const LPBYTE BodyBin, const uint sso_
 
                                                                         ((Event::RequestEvent::other_join_group *)RequestEvent.Information)->msg = msgAdditional;
 
-                                                                        Event::OnRequestMsg(&RequestEvent);
+                                                                        Event::OnRequestMsg(&RequestEvent, msgSeq);
                                                                         Log::AddLog(Log::LogType::INFORMATION, Log::MsgType::OTHER, &RequestEvent);
                                                                     }
                                                                     break;
                                                                     case 2:
                                                                     {
-                                                                        Event::RequestEvent::RequestEvent RequestEvent{Event::RequestEvent::RequestEventType::self_invited, msgSeq, new Event::RequestEvent::self_invited};
+                                                                        Event::RequestEvent::RequestEvent RequestEvent{Event::RequestEvent::RequestEventType::self_invited, new Event::RequestEvent::self_invited};
 
                                                                         ((Event::RequestEvent::self_invited *)RequestEvent.Information)->FromGroup = groupCode;
                                                                         ((Event::RequestEvent::self_invited *)RequestEvent.Information)->InvitorQQ = actionUin;
                                                                         ((Event::RequestEvent::self_invited *)RequestEvent.Information)->FromGroupName = groupName;
                                                                         ((Event::RequestEvent::self_invited *)RequestEvent.Information)->InvitorQQName = actionUinQqNick;
 
-                                                                        Event::OnRequestMsg(&RequestEvent);
+                                                                        Event::OnRequestMsg(&RequestEvent, msgSeq);
                                                                         Log::AddLog(Log::LogType::INFORMATION, Log::MsgType::OTHER, &RequestEvent);
                                                                     }
                                                                     case 22:
                                                                     {
-                                                                        Event::RequestEvent::RequestEvent RequestEvent{Event::RequestEvent::RequestEventType::other_join_group, msgSeq, new Event::RequestEvent::other_join_group};
+                                                                        Event::RequestEvent::RequestEvent RequestEvent{Event::RequestEvent::RequestEventType::other_join_group, new Event::RequestEvent::other_join_group};
 
                                                                         ((Event::RequestEvent::other_join_group *)RequestEvent.Information)->FromGroup = groupCode;
                                                                         ((Event::RequestEvent::other_join_group *)RequestEvent.Information)->FromQQ = reqUin;
@@ -1443,7 +1442,7 @@ void Android::Unpack_MessageSvc_PushNotify(const LPBYTE BodyBin, const uint sso_
 
                                                                         ((Event::RequestEvent::other_join_group *)RequestEvent.Information)->msg = msgAdditional;
 
-                                                                        Event::OnRequestMsg(&RequestEvent);
+                                                                        Event::OnRequestMsg(&RequestEvent, msgSeq);
                                                                         Log::AddLog(Log::LogType::INFORMATION, Log::MsgType::OTHER, &RequestEvent);
                                                                     }
                                                                     default:
@@ -1542,14 +1541,14 @@ void Android::Unpack_MessageSvc_PushNotify(const LPBYTE BodyBin, const uint sso_
                                                                 {
                                                                 case 1: //好友申请
                                                                 {
-                                                                    Event::RequestEvent::RequestEvent RequestEvent{Event::RequestEvent::RequestEventType::add_friend, msgSeq, new Event::RequestEvent::add_friend};
+                                                                    Event::RequestEvent::RequestEvent RequestEvent{Event::RequestEvent::RequestEventType::add_friend, new Event::RequestEvent::add_friend};
 
                                                                     ((Event::RequestEvent::add_friend *)RequestEvent.Information)->FromQQ = reqUin;
                                                                     ((Event::RequestEvent::add_friend *)RequestEvent.Information)->FromQQName = reqUinNick;
 
                                                                     ((Event::RequestEvent::add_friend *)RequestEvent.Information)->msg = msgAdditional;
 
-                                                                    Event::OnRequestMsg(&RequestEvent);
+                                                                    Event::OnRequestMsg(&RequestEvent, msgSeq);
                                                                     Log::AddLog(Log::LogType::INFORMATION, Log::MsgType::OTHER, &RequestEvent);
                                                                 }
                                                                 break;
@@ -2455,9 +2454,21 @@ bool Android::QQ_SetGroupBan(const uint Group, const bool Ban)
                                 }));
 }
 
-bool Android::QQ_RequestAction(int64_t msgSeq, uint32_t reqUin, uint32_t groupCode, bool IsInvited, ::Event::RequestEvent::ReturnType ReturnType)
+//ReturnType 0 accept 1 reject 2 block
+bool Android::QQ_RequestFriendAction(int64_t msgSeq, uint32_t reqUin, int ReturnType)
 {
-    return Fun_Send_Sync_PB<bool>(11, 1, "ProfileService.Pb.ReqSystemMsgAction.Group", ProfileService::Pb_ReqSystemMsgAction_Group(1, msgSeq, reqUin, groupCode, IsInvited, ReturnType),
+    return Fun_Send_Sync<bool>(11, 1, "ProfileService.Pb.ReqSystemMsgAction.Friend", ProfileService::Pb_ReqSystemMsgAction_Friend(msgSeq, reqUin, ReturnType),
+                                  [&](uint sso_seq, LPBYTE BodyBin)
+                                      -> bool
+                                  {
+                                      return true;
+                                  });
+}
+
+//ReturnType 0 accept 1 reject 2 block
+bool Android::QQ_RequestGroupAction(int64_t msgSeq, uint32_t reqUin, uint32_t groupCode, bool IsInvited, int ReturnType)
+{
+    return Fun_Send_Sync<bool>(11, 1, "ProfileService.Pb.ReqSystemMsgAction.Group", ProfileService::Pb_ReqSystemMsgAction_Group(msgSeq, reqUin, groupCode, IsInvited, ReturnType),
                                   [&](uint sso_seq, LPBYTE BodyBin)
                                       -> bool
                                   {

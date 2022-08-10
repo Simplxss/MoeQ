@@ -249,17 +249,30 @@ void Database::Init()
         Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"Create table 'GroupMsg' error", (const char8_t *)zErrMsg);
         sqlite3_free(zErrMsg);
     }
-    
+
     if (sqlite3_exec(Database_Data,
-                     "CREATE TABLE IF NOT EXISTS RequestMsg("
-                     "ID        INTEGER  PRIMARY KEY  AUTOINCREMENT,"
-                     "Url        TEXT         ,"
-                     "Length     INTEGER      ,"
-                     "Width      INTEGER      ,"
-                     "Height     INTEGER      );",
+                     "CREATE TABLE IF NOT EXISTS FriendRequestMsg("
+                     "ID         INTEGER  AUTOINCREMENT,"
+                     "MsgSeq     INTEGER  PRIMARY KEY,"
+                     "FromQQ     INTEGER     ,"
+                     "msg        TEXT        );",
                      0, 0, &zErrMsg) != SQLITE_OK)
     {
-        Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"Create table 'RequestMsg' error", (const char8_t *)zErrMsg);
+        Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"Create table 'FriendRequestMsg' error", (const char8_t *)zErrMsg);
+        sqlite3_free(zErrMsg);
+    }
+
+    if (sqlite3_exec(Database_Data,
+                     "CREATE TABLE IF NOT EXISTS GroupRequestMsg("
+                     "ID         INTEGER  AUTOINCREMENT,"
+                     "MsgSeq     INTEGER  PRIMARY KEY,"
+                     "FromGroup  INTEGER     ,"
+                     "FromQQ     INTEGER     ,"
+                     "InvitorQQ  INTEGER     ,"
+                     "msg        TEXT        );",
+                     0, 0, &zErrMsg) != SQLITE_OK)
+    {
+        Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"Create table 'GroupRequestMsg' error", (const char8_t *)zErrMsg);
         sqlite3_free(zErrMsg);
     }
 
@@ -317,12 +330,12 @@ uint64_t Database::AddPrivateMsg(const Event::PrivateMsg *PrivateMsg)
         sqlite3_finalize(pStmt);
         return 0;
     }
-    uint MsgID = sqlite3_last_insert_rowid(Database_Data);
+    uint64_t MsgID = sqlite3_last_insert_rowid(Database_Data);
     sqlite3_finalize(pStmt);
 
     Log::AddLog(Log::LogType::INFORMATION, Log::MsgType::PRIVATE, u8"Simple Message", Msg.c_str());
 
-    return (MsgID);
+    return MsgID;
 }
 
 uint64_t Database::AddGroupMsg(const Event::GroupMsg *GroupMsg)
@@ -350,12 +363,91 @@ uint64_t Database::AddGroupMsg(const Event::GroupMsg *GroupMsg)
         sqlite3_finalize(pStmt);
         return 0;
     }
-    uint MsgID = sqlite3_last_insert_rowid(Database_Data);
+    uint64_t MsgID = sqlite3_last_insert_rowid(Database_Data);
     sqlite3_finalize(pStmt);
 
     Log::AddLog(Log::LogType::INFORMATION, Log::MsgType::_GROUP, u8"Simple Message", Msg.c_str());
 
-    return (MsgID);
+    return MsgID;
+}
+
+uint64_t Database::AddRequestMsg(const Event::RequestEvent::RequestEvent *RequestMsg, const int64_t MsgSeq)
+{
+    sqlite3_stmt *pStmt;
+    uint64_t responseFlag = 0;
+    switch (RequestMsg->RequestEventType)
+    {
+    case Event::RequestEvent::RequestEventType::add_friend:
+        if (sqlite3_prepare_v2(Database_Data,
+                               "INSERT INTO FriendRequestMsg(MsgSeq,FromQQ,msg) VALUES(?,?,?);", 63, &pStmt, nullptr) != SQLITE_OK)
+        {
+            Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"Insert into 'FriendRequestMsg' error", (const char8_t *)sqlite3_errmsg(Database_Data));
+            return 0;
+        }
+
+        sqlite3_bind_int64(pStmt, 1, MsgSeq);
+        sqlite3_bind_int64(pStmt, 2, ((Event::RequestEvent::add_friend *)RequestMsg->Information)->FromQQ);
+        sqlite3_bind_text(pStmt, 3, (char *)((Event::RequestEvent::add_friend *)RequestMsg->Information)->msg, strlen((char *)((Event::RequestEvent::add_friend *)RequestMsg->Information)->msg), SQLITE_STATIC);
+
+        if (sqlite3_step(pStmt) != SQLITE_DONE)
+        {
+            Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"Insert into 'FriendRequestMsg' error", (const char8_t *)sqlite3_errmsg(Database_Data));
+            sqlite3_finalize(pStmt);
+            return 0;
+        }
+        responseFlag = sqlite3_last_insert_rowid(Database_Data);
+        sqlite3_finalize(pStmt);
+        break;
+    case Event::RequestEvent::RequestEventType::self_invited:
+        if (sqlite3_prepare_v2(Database_Data,
+                               "INSERT INTO GroupRequestMsg(MsgSeq,FromGroup,InvitorQQ) VALUES(?,?,?);", 71, &pStmt, nullptr) != SQLITE_OK)
+        {
+            Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"Insert into 'GroupRequestMsg' error", (const char8_t *)sqlite3_errmsg(Database_Data));
+            return 0;
+        }
+
+        sqlite3_bind_int64(pStmt, 1, MsgSeq);
+        sqlite3_bind_int64(pStmt, 2, ((Event::RequestEvent::self_invited *)RequestMsg->Information)->FromGroup);
+        sqlite3_bind_int64(pStmt, 3, ((Event::RequestEvent::self_invited *)RequestMsg->Information)->InvitorQQ);
+        if (sqlite3_step(pStmt) != SQLITE_DONE)
+        {
+            Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"Insert into 'GroupRequestMsg' error", (const char8_t *)sqlite3_errmsg(Database_Data));
+            sqlite3_finalize(pStmt);
+            return 0;
+        }
+        responseFlag = sqlite3_last_insert_rowid(Database_Data);
+        sqlite3_finalize(pStmt);
+        break;
+    case Event::RequestEvent::RequestEventType::other_join_group:
+        if (sqlite3_prepare_v2(Database_Data,
+                               "INSERT INTO GroupRequestMsg(MsgSeq,FromGroup,FromQQ,InvitorQQ,msg) VALUES(?,?,?,?,?);", 86, &pStmt, nullptr) != SQLITE_OK)
+        {
+            Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"Insert into 'GroupRequestMsg' error", (const char8_t *)sqlite3_errmsg(Database_Data));
+            return 0;
+        }
+
+        sqlite3_bind_int64(pStmt, 1, MsgSeq);
+        sqlite3_bind_int64(pStmt, 2, ((Event::RequestEvent::other_join_group *)RequestMsg->Information)->FromGroup);
+        sqlite3_bind_int64(pStmt, 3, ((Event::RequestEvent::other_join_group *)RequestMsg->Information)->FromQQ);
+        sqlite3_bind_int64(pStmt, 4, ((Event::RequestEvent::other_join_group *)RequestMsg->Information)->InvitorQQ);
+        sqlite3_bind_text(pStmt, 5, (char *)((Event::RequestEvent::other_join_group *)RequestMsg->Information)->msg, strlen((char *)((Event::RequestEvent::other_join_group *)RequestMsg->Information)->msg), SQLITE_STATIC);
+
+        if (sqlite3_step(pStmt) != SQLITE_DONE)
+        {
+            Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"Insert into 'GroupRequestMsg' error", (const char8_t *)sqlite3_errmsg(Database_Data));
+            sqlite3_finalize(pStmt);
+            return 0;
+        }
+        responseFlag = sqlite3_last_insert_rowid(Database_Data);
+        sqlite3_finalize(pStmt);
+        break;
+    default:
+        break;
+    }
+
+    Log::AddLog(Log::LogType::INFORMATION, Log::MsgType::OTHER, RequestMsg);
+
+    return responseFlag;
 }
 
 void Database::AddPicture(const char MD5[16], const char8_t *Url, const unsigned short Length, const unsigned short Width, const unsigned short Height)
@@ -432,7 +524,7 @@ void Database::AddLog(const Log::LogType LogType, const Log::MsgType MsgType, co
 std::tuple<uint, uint> Database::GetPrivateMsg(const uint64_t MsgID_)
 {
     sqlite3_stmt *pStmt;
-    if (sqlite3_prepare_v2(Database_Data, "SELECT MsgID,MsgRand FROM PrivateMsg WHERE Id = ?", 50, &pStmt, nullptr) != SQLITE_OK)
+    if (sqlite3_prepare_v2(Database_Data, "SELECT MsgID,MsgRand FROM PrivateMsg WHERE ID = ?", 50, &pStmt, nullptr) != SQLITE_OK)
     {
         Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"Select 'PrivateMsg' error", (const char8_t *)sqlite3_errmsg(Database_Data));
         return {0, 0};
@@ -457,7 +549,7 @@ std::tuple<uint, uint> Database::GetPrivateMsg(const uint64_t MsgID_)
 std::tuple<uint, uint> Database::GetGroupMsg(const uint64_t MsgID_)
 {
     sqlite3_stmt *pStmt;
-    if (sqlite3_prepare_v2(Database_Data, "SELECT MsgID,MsgRand FROM GroupMsg WHERE Id = ?", 48, &pStmt, nullptr) != SQLITE_OK)
+    if (sqlite3_prepare_v2(Database_Data, "SELECT MsgID,MsgRand FROM GroupMsg WHERE ID = ?", 48, &pStmt, nullptr) != SQLITE_OK)
     {
         Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"Select 'GroupMsg' error", (const char8_t *)sqlite3_errmsg(Database_Data));
         return {0, 0};
@@ -477,6 +569,58 @@ std::tuple<uint, uint> Database::GetGroupMsg(const uint64_t MsgID_)
     sqlite3_finalize(pStmt);
 
     return {MsgID, MsgRand};
+}
+
+std::tuple<uint, uint> Database::GetFriendRequestMsg(const uint64_t ResponseFlag)
+{
+    sqlite3_stmt *pStmt;
+    if (sqlite3_prepare_v2(Database_Data, "SELECT MsgSeq,FromQQ FROM FriendRequestMsg WHERE ID = ?", 56, &pStmt, nullptr) != SQLITE_OK)
+    {
+        Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"Select 'FriendRequestMsg' error", (const char8_t *)sqlite3_errmsg(Database_Data));
+        return {0, 0};
+    }
+
+    sqlite3_bind_int64(pStmt, 1, ResponseFlag);
+
+    if (sqlite3_step(pStmt) != SQLITE_ROW)
+    {
+        Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"Select 'FriendRequestMsg' error", (const char8_t *)sqlite3_errmsg(Database_Data));
+        sqlite3_finalize(pStmt);
+        return {0, 0};
+    }
+
+    uint MsgSeq = sqlite3_column_int64(pStmt, 0);
+    uint FromQQ = sqlite3_column_int64(pStmt, 1);
+    sqlite3_finalize(pStmt);
+
+    return {MsgSeq, FromQQ};
+}
+
+std::tuple<uint, uint, uint, uint> Database::GetGroupRequestMsg(const uint64_t ResponseFlag)
+{
+    sqlite3_stmt *pStmt;
+    if (sqlite3_prepare_v2(Database_Data, "SELECT MsgSeq,FromGroup,FromQQ,InvitorQQ FROM GroupRequestMsg WHERE ID = ?", 56, &pStmt, nullptr) != SQLITE_OK)
+    {
+        Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"Select 'GroupRequestMsg' error", (const char8_t *)sqlite3_errmsg(Database_Data));
+        return {0, 0, 0, 0};
+    }
+
+    sqlite3_bind_int64(pStmt, 1, ResponseFlag);
+
+    if (sqlite3_step(pStmt) != SQLITE_ROW)
+    {
+        Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"Select 'GroupRequestMsg' error", (const char8_t *)sqlite3_errmsg(Database_Data));
+        sqlite3_finalize(pStmt);
+        return {0, 0, 0, 0};
+    }
+
+    uint MsgSeq = sqlite3_column_int64(pStmt, 0);
+    uint FromGroup = sqlite3_column_int64(pStmt, 1);
+    uint FromQQ = sqlite3_column_int64(pStmt, 2);
+    uint InvitorQQ = sqlite3_column_int64(pStmt, 3);
+    sqlite3_finalize(pStmt);
+
+    return {MsgSeq, FromGroup, FromQQ, InvitorQQ};
 }
 
 std::u8string Database::GetPictureUrl(const char MD5[16])

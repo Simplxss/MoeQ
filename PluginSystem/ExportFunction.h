@@ -183,7 +183,7 @@ FUNC(bool, setGroupMemberTitle, const uint32_t Group, const uint32_t QQ, const c
 FUNC(bool, setGroupMemberCard, const uint32_t Group, const uint32_t QQ, const char8_t *Card)
 {
 	if (Plugin.VieryAuth(AuthCode, 11))
-		return Sdk.QQ_SetGroupMemberCard(Group, QQ, (char*)Card);
+		return Sdk.QQ_SetGroupMemberCard(Group, QQ, (char *)Card);
 	else
 	{
 		Log::AddLog(Log::LogType::WARNING, Log::MsgType::PLUGIN, Plugin.AuthCode2Name(AuthCode), u8"Plugin called setGroupMemberCard which it don't have right.");
@@ -314,6 +314,34 @@ FUNC(LPBYTE, getGroupAdminList, uint32_t group_code)
 	{
 		Log::AddLog(Log::LogType::WARNING, Log::MsgType::PLUGIN, Plugin.AuthCode2Name(AuthCode), u8"Plugin called getGroupList which it don't have right.");
 		return 0;
+	}
+};
+
+FUNC(bool, respFriendReq, uint64_t ResponseFlag, Event::RequestEvent::ReturnType ReturnType)
+{
+	if (Plugin.VieryAuth(AuthCode, 19))
+	{
+		auto [MsgSeq, FromQQ] = Database::GetFriendRequestMsg(ResponseFlag);
+		return Sdk.QQ_RequestFriendAction(MsgSeq, FromQQ, static_cast<int>(ReturnType));
+	}
+	else
+	{
+		Log::AddLog(Log::LogType::WARNING, Log::MsgType::PLUGIN, Plugin.AuthCode2Name(AuthCode), u8"Plugin called respFriendReq which it don't have right.");
+		return false;
+	}
+};
+
+FUNC(bool, respGroupReq, uint64_t ResponseFlag, Event::RequestEvent::ReturnType ReturnType)
+{
+	if (Plugin.VieryAuth(AuthCode, 20))
+	{
+		auto [MsgSeq, FromGroup, FromQQ, InvitorQQ] = Database::GetGroupRequestMsg(ResponseFlag);
+		return Sdk.QQ_RequestGroupAction(MsgSeq, FromGroup, FromQQ, InvitorQQ != 0,  static_cast<int>(ReturnType));
+	}
+	else
+	{
+		Log::AddLog(Log::LogType::WARNING, Log::MsgType::PLUGIN, Plugin.AuthCode2Name(AuthCode), u8"Plugin called respGroupReq which it don't have right.");
+		return false;
 	}
 };
 

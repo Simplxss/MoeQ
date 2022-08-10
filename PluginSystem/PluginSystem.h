@@ -20,7 +20,7 @@ namespace Event
 	void OnGroupMsg(const GroupMsg *GroupMsg);
 	void OnPrivateMsg(const PrivateMsg *PrivateMsg);
 	void OnNoticeMsg(const NoticeEvent::NoticeEvent *NoticeEvent);
-	void OnRequestMsg(const RequestEvent::RequestEvent *RequestEvent);
+	void OnRequestMsg(const RequestEvent::RequestEvent *RequestEvent, int64_t MsgSeq);
 }
 
 class PluginSystem
@@ -74,8 +74,8 @@ private:
 	typedef ::Event::ReturnType(__stdcall *NoticeEvent)(const ::Event::NoticeEvent::NoticeEvent *);
 	std::vector<NoticeEvent> NoticeEventList[4]; //4 subevents
 
-	typedef ::Event::RequestEvent::ReturnType(__stdcall *RequestEvent)(const ::Event::RequestEvent::RequestEvent *RequestEvent, const uint64_t responseFlag);
-	std::vector<RequestEvent> RequestEventList[2]; //2 subevents
+	typedef ::Event::ReturnType(__stdcall *RequestEvent)(const ::Event::RequestEvent::RequestEvent *RequestEvent, const uint64_t responseFlag);
+	std::vector<RequestEvent> RequestEventList[3]; //3 subevents
 #endif
 #if defined(_LINUX_PLATFORM_)
 	typedef void (*LifeCycleEvent)(const ::Event::LifeCycleEvent::LifeCycleEventType);
@@ -87,8 +87,8 @@ private:
 	typedef ::Event::ReturnType (*NoticeEvent)(const ::Event::NoticeEvent::NoticeEvent *);
 	std::vector<NoticeEvent> NoticeEventList[4]; //4 subevents
 
-	typedef ::Event::RequestEvent::ReturnType (*RequestEvent)(const ::Event::RequestEvent::RequestEvent *, const uint64_t);
-	std::vector<RequestEvent> RequestEventList[2]; //2 subevents
+	typedef ::Event::::ReturnType (*RequestEvent)(const ::Event::RequestEvent::RequestEvent *, const uint64_t);
+	std::vector<RequestEvent> RequestEventList[3]; //3 subevents
 #endif
 public:
 	void Load(

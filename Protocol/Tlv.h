@@ -34,7 +34,7 @@ namespace Tlv
 	FUNC(17A);
 	FUNC(17C, const char *code);
 	FUNC(187);
-	FUNC(188);
+    FUNC(188, const char *IMEI);
 	FUNC(191, const byte CodeType);
 	FUNC(193, const char *Ticket);
 	FUNC(194);

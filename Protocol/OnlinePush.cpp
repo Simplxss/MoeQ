@@ -17,17 +17,18 @@ LPBYTE OnlinePush::RespPush(const int sso_seq, const int del_infos, const std::v
         Jce->Write(0, 8);           // ssoSeq
         Jce->Write(0, 9);           // ssoIp
         Jce->Write(0, 10);          // clientIp
-        list.emplace(Jce);
+        list.emplace_back(Jce);
     }
 
-    ::Jce Jce_;
-    Jce_.Write(QQ->QQ, 0);
-    Jce_.Write(&list, 1);
-    Jce_.Write(del_infos, 2);
-    Jce_.Write(0, 4);
+    ::Jce Jce;
+    Jce.Write(QQ->QQ, 0);
+    Jce.Write(&list, 1);
+    Jce.Write(del_infos, 2);
+    Jce.Write(0, 4);
 
-    Jce.Write(&Jce_, 0);
-    LPBYTE bin = Jce.GetAll_();
+    ::Jce Jce_;
+    Jce_.Write(&Jce, 0);
+    LPBYTE bin = Jce_.GetAll_();
 
     const std::vector<JceStruct::Map<const char *, const LPBYTE>> JceMap{JceStruct::Map<const char *, const LPBYTE>{"resp", bin}};
     Jce.Write(&JceMap, 0);

@@ -31,10 +31,11 @@ void Event::OnNoticeMsg(const NoticeEvent::NoticeEvent *NoticeEvent)
     Plugin.BroadcastNoticeEvent(NoticeEvent);
 }
 
-void Event::OnRequestMsg(const RequestEvent::RequestEvent *RequestEvent)
+void Event::OnRequestMsg(const RequestEvent::RequestEvent *RequestEvent, int64_t MsgSeq)
 {
-
-    Plugin.BroadcastRequestEvent(RequestEvent, 0);
+    if (uint64_t ResponseFlag = Database::AddRequestMsg(RequestEvent, MsgSeq))
+        if (ResponseFlag != 0)
+            Plugin.BroadcastRequestEvent(RequestEvent, ResponseFlag);
 }
 
 void PluginSystem::Load(
@@ -351,21 +352,21 @@ void PluginSystem::Load(
                     void *Handle = dlopen(PluginPath_, RTLD_NOW);
                     if (Handle == NULL)
                     {
-                        Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PLUGIN, (char8_t*)(dirent->d_name), u8"dlopen fail, GetLastError:%d", true, dlerror());
+                        Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PLUGIN, (char8_t *)(dirent->d_name), u8"dlopen fail, GetLastError:%d", true, dlerror());
                         continue;
                     }
                     typedef int (*Initialize)(const uint64_t);
                     Initialize _Initialize = (Initialize)dlsym(Handle, "Initialize");
                     if (_Initialize == NULL)
                     {
-                        Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PLUGIN, (char8_t*)(dirent->d_name), u8"Can't get address of function Initialize");
+                        Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PLUGIN, (char8_t *)(dirent->d_name), u8"Can't get address of function Initialize");
                         continue;
                     }
 
                     std::ifstream input(PluginPath__);
                     if (!input.is_open())
                     {
-                        Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PLUGIN, (char8_t*)(dirent->d_name), u8"Read Json error");
+                        Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PLUGIN, (char8_t *)(dirent->d_name), u8"Read Json error");
                         continue;
                     }
                     char Json[5000] = {0};
@@ -378,13 +379,13 @@ void PluginSystem::Load(
 
                     if (d.HasParseError())
                     {
-                        Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PLUGIN, (char8_t*)(dirent->d_name), u8"Parse Json fail, ParseErrorCode:%d, ErrorOffset:%llu", true, d.GetParseError(), d.GetErrorOffset());
+                        Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PLUGIN, (char8_t *)(dirent->d_name), u8"Parse Json fail, ParseErrorCode:%d, ErrorOffset:%llu", true, d.GetParseError(), d.GetErrorOffset());
                         return;
                     }
 
                     if (!d.HasMember("name"))
                     {
-                        Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PLUGIN, (char8_t*)(dirent->d_name), u8"Json is incomplete");
+                        Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PLUGIN, (char8_t *)(dirent->d_name), u8"Json is incomplete");
                         d.Clear();
                         return;
                     }
@@ -396,7 +397,7 @@ void PluginSystem::Load(
                     ThisPlugin.Name[d["name"].GetStringLength()] = 0;
                     if (!d.HasMember("appid"))
                     {
-                        Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PLUGIN, (char8_t*)(dirent->d_name), u8"Json is incomplete");
+                        Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PLUGIN, (char8_t *)(dirent->d_name), u8"Json is incomplete");
                         d.Clear();
                         return;
                     }
@@ -405,13 +406,13 @@ void PluginSystem::Load(
                     ThisPlugin.Appid[d["appid"].GetStringLength()] = 0;
                     if (strcmp((const char *)ThisPlugin.Appid, dirent->d_name))
                     {
-                        Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PLUGIN, u8"LoadPlugin", u8"Appid is not same, the folder name is %s, while the appid is %s", true, (char8_t*)(dirent->d_name), ThisPlugin.Appid);
+                        Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PLUGIN, u8"LoadPlugin", u8"Appid is not same, the folder name is %s, while the appid is %s", true, (char8_t *)(dirent->d_name), ThisPlugin.Appid);
                         d.Clear();
                         return;
                     }
                     if (!d.HasMember("version"))
                     {
-                        Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PLUGIN, (char8_t*)(dirent->d_name), u8"Json is incomplete");
+                        Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PLUGIN, (char8_t *)(dirent->d_name), u8"Json is incomplete");
                         d.Clear();
                         return;
                     }
@@ -420,7 +421,7 @@ void PluginSystem::Load(
                     ThisPlugin.Version[d["version"].GetStringLength()] = 0;
                     if (!d.HasMember("author"))
                     {
-                        Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PLUGIN, (char8_t*)(dirent->d_name), u8"Json is incomplete");
+                        Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PLUGIN, (char8_t *)(dirent->d_name), u8"Json is incomplete");
                         d.Clear();
                         return;
                     }
@@ -429,7 +430,7 @@ void PluginSystem::Load(
                     ThisPlugin.Author[d["author"].GetStringLength()] = 0;
                     if (!d.HasMember("description"))
                     {
-                        Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PLUGIN, (char8_t*)(dirent->d_name), u8"Json is incomplete");
+                        Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PLUGIN, (char8_t *)(dirent->d_name), u8"Json is incomplete");
                         d.Clear();
                         return;
                     }
@@ -446,7 +447,7 @@ void PluginSystem::Load(
                         {
                             if (!v.HasMember("type"))
                             {
-                                Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PLUGIN, (char8_t*)(dirent->d_name), u8"Json is incomplete");
+                                Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PLUGIN, (char8_t *)(dirent->d_name), u8"Json is incomplete");
                                 d.Clear();
                                 error = true;
                                 break;
@@ -454,7 +455,7 @@ void PluginSystem::Load(
                             ThisPlugin.EventList[j].type = v["type"].GetInt();
                             if (!v.HasMember("function"))
                             {
-                                Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PLUGIN, (char8_t*)(dirent->d_name), u8"Json is incomplete");
+                                Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PLUGIN, (char8_t *)(dirent->d_name), u8"Json is incomplete");
                                 d.Clear();
                                 error = true;
                                 break;
@@ -462,14 +463,14 @@ void PluginSystem::Load(
                             ThisPlugin.EventList[j].function = dlsym(Handle, v["function"].GetString());
                             if (ThisPlugin.EventList[j].function == NULL)
                             {
-                                Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PLUGIN, (char8_t*)(dirent->d_name), u8"GetProcAddress error, function name:%s", true, v["function"].GetString());
+                                Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PLUGIN, (char8_t *)(dirent->d_name), u8"GetProcAddress error, function name:%s", true, v["function"].GetString());
                                 d.Clear();
                                 error = true;
                                 break;
                             }
                             if (!v.HasMember("subevent"))
                             {
-                                Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PLUGIN, (char8_t*)(dirent->d_name), u8"Json is incomplete");
+                                Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PLUGIN, (char8_t *)(dirent->d_name), u8"Json is incomplete");
                                 d.Clear();
                                 error = true;
                                 break;
@@ -479,7 +480,7 @@ void PluginSystem::Load(
                             {
                                 if (!v_.HasMember("id"))
                                 {
-                                    Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PLUGIN, (char8_t*)(dirent->d_name), u8"Json is incomplete");
+                                    Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PLUGIN, (char8_t *)(dirent->d_name), u8"Json is incomplete");
                                     d.Clear();
                                     error = true;
                                     break;
@@ -487,7 +488,7 @@ void PluginSystem::Load(
                                 ThisPlugin.EventList[j].subevent |= 1 << v_["id"].GetInt();
                                 if (!v_.HasMember("priority"))
                                 {
-                                    Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PLUGIN, (char8_t*)(dirent->d_name), u8"Json is incomplete");
+                                    Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PLUGIN, (char8_t *)(dirent->d_name), u8"Json is incomplete");
                                     d.Clear();
                                     error = true;
                                     break;
@@ -519,20 +520,20 @@ void PluginSystem::Load(
                     {
                         if (!d["menu"].HasMember("function"))
                         {
-                            Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PLUGIN, (char8_t*)(dirent->d_name), u8"Json is incomplete");
+                            Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PLUGIN, (char8_t *)(dirent->d_name), u8"Json is incomplete");
                             d.Clear();
                             return;
                         }
                         ThisPlugin.Menu.function = (PluginSystem::Menu::Munu)dlsym(Handle, d["menu"]["function"].GetString());
                         if (ThisPlugin.Menu.function == NULL)
                         {
-                            Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PLUGIN, (char8_t*)(dirent->d_name), u8"GetProcAddress error, function name:%s", true, d["menu"]["function"].GetString());
+                            Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PLUGIN, (char8_t *)(dirent->d_name), u8"GetProcAddress error, function name:%s", true, d["menu"]["function"].GetString());
                             d.Clear();
                             return;
                         }
                         if (!d["menu"].HasMember("caption"))
                         {
-                            Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PLUGIN, (char8_t*)(dirent->d_name), u8"Json is incomplete");
+                            Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PLUGIN, (char8_t *)(dirent->d_name), u8"Json is incomplete");
                             d.Clear();
                             return;
                         }
@@ -611,7 +612,7 @@ void PluginSystem::LoadEvent()
     NoticeEventList->clear();
     RequestEventList->clear();
 
-    std::vector<PluginSystem::Event> EventList_;
+    std::vector<PluginSystem::Event> EventList;
     for (size_t i = 0; i < PluginList.size(); i++)
     {
         if (!PluginList[i].Enable)
@@ -619,24 +620,24 @@ void PluginSystem::LoadEvent()
         for (size_t j = 0; j < PluginList[i].EventList.size(); j++)
         {
             if (PluginList[i].EventList[j].type == 0)
-                EventList_.insert(EventList_.end(), PluginList[i].EventList[j]);
+                EventList.emplace_back(PluginList[i].EventList[j]);
         }
     }
-    for (size_t i = 0; i < 4; i++) //max 0 mini 3
+    for (size_t i = 0; i < 4; i++) // max 0 mini 3
     {
-        for (size_t j = 0; j < EventList_.size(); j++)
+        for (size_t j = 0; j < EventList.size(); j++)
         {
             for (size_t k = 0; k < 4; k++)
             {
-                if ((EventList_[j].subevent & (1 << k)) == 0)
+                if ((EventList[j].subevent & (1 << k)) == 0)
                     continue;
-                if (((EventList_[j].priority >> (k * 2)) & 3) == i)
-                    LifeCycleEventList[k].insert(LifeCycleEventList[k].end(), (LifeCycleEvent)EventList_[j].function);
+                if (((EventList[j].priority >> (k * 2)) & 3) == i)
+                    LifeCycleEventList[k].emplace_back((LifeCycleEvent)EventList[j].function);
             }
         }
     }
 
-    EventList_.clear();
+    EventList.clear();
     for (size_t i = 0; i < PluginList.size(); i++)
     {
         if (!PluginList[i].Enable)
@@ -644,24 +645,24 @@ void PluginSystem::LoadEvent()
         for (size_t j = 0; j < PluginList[i].EventList.size(); j++)
         {
             if (PluginList[i].EventList[j].type == 1)
-                EventList_.insert(EventList_.end(), PluginList[i].EventList[j]);
+                EventList.emplace_back(PluginList[i].EventList[j]);
         }
     }
-    for (size_t i = 0; i < 4; i++) //max 0 mini 3
+    for (size_t i = 0; i < 4; i++) // max 0 mini 3
     {
-        for (size_t j = 0; j < EventList_.size(); j++)
+        for (size_t j = 0; j < EventList.size(); j++)
         {
             for (size_t k = 0; k < 2; k++)
             {
-                if ((EventList_[j].subevent & (1 << k)) == 0)
+                if ((EventList[j].subevent & (1 << k)) == 0)
                     continue;
-                if (((EventList_[j].priority >> (k * 2)) & 3) == i)
-                    MessageEventList[k].insert(MessageEventList[k].end(), (MessageEvent)EventList_[j].function);
+                if (((EventList[j].priority >> (k * 2)) & 3) == i)
+                    MessageEventList[k].emplace_back((MessageEvent)EventList[j].function);
             }
         }
     }
 
-    EventList_.clear();
+    EventList.clear();
     for (size_t i = 0; i < PluginList.size(); i++)
     {
         if (!PluginList[i].Enable)
@@ -669,24 +670,24 @@ void PluginSystem::LoadEvent()
         for (size_t j = 0; j < PluginList[i].EventList.size(); j++)
         {
             if (PluginList[i].EventList[j].type == 2)
-                EventList_.insert(EventList_.end(), PluginList[i].EventList[j]);
+                EventList.emplace_back(PluginList[i].EventList[j]);
         }
     }
-    for (size_t i = 0; i < 4; i++) //max 0 mini 3
+    for (size_t i = 0; i < 4; i++) // max 0 mini 3
     {
-        for (size_t j = 0; j < EventList_.size(); j++)
+        for (size_t j = 0; j < EventList.size(); j++)
         {
             for (size_t k = 0; k < 4; k++)
             {
-                if ((EventList_[j].subevent & (1 << k)) == 0)
+                if ((EventList[j].subevent & (1 << k)) == 0)
                     continue;
-                if (((EventList_[j].priority >> (k * 2)) & 3) == i)
-                    NoticeEventList[k].insert(NoticeEventList[k].end(), (NoticeEvent)EventList_[j].function);
+                if (((EventList[j].priority >> (k * 2)) & 3) == i)
+                    NoticeEventList[k].emplace_back((NoticeEvent)EventList[j].function);
             }
         }
     }
 
-    EventList_.clear();
+    EventList.clear();
     for (size_t i = 0; i < PluginList.size(); i++)
     {
         if (!PluginList[i].Enable)
@@ -694,19 +695,19 @@ void PluginSystem::LoadEvent()
         for (size_t j = 0; j < PluginList[i].EventList.size(); j++)
         {
             if (PluginList[i].EventList[j].type == 3)
-                EventList_.insert(EventList_.end(), PluginList[i].EventList[j]);
+                EventList.emplace_back(PluginList[i].EventList[j]);
         }
     }
-    for (size_t i = 0; i < 4; i++) //max 0 mini 3
+    for (size_t i = 0; i < 4; i++) // max 0 mini 3
     {
-        for (size_t j = 0; j < EventList_.size(); j++)
+        for (size_t j = 0; j < EventList.size(); j++)
         {
-            for (size_t k = 0; k < 2; k++)
+            for (size_t k = 0; k < 3; k++)
             {
-                if ((EventList_[j].subevent & (1 << k)) == 0)
+                if ((EventList[j].subevent & (1 << k)) == 0)
                     continue;
-                if (((EventList_[j].priority >> (k * 2)) & 3) == i)
-                    RequestEventList[k].insert(RequestEventList[k].end(), (RequestEvent)EventList_[j].function);
+                if (((EventList[j].priority >> (k * 2)) & 3) == i)
+                    RequestEventList[k].emplace_back((RequestEvent)EventList[j].function);
             }
         }
     }
@@ -769,15 +770,7 @@ void PluginSystem::BroadcastRequestEvent(const ::Event::RequestEvent::RequestEve
 {
     for (size_t i = 0; i < RequestEventList[static_cast<int>(RequestEvent->RequestEventType)].size(); i++)
     {
-        switch (RequestEventList[static_cast<int>(RequestEvent->RequestEventType)][i](RequestEvent, ResponseFlag))
-        {
-        case ::Event::RequestEvent::ReturnType::agree:
-        case ::Event::RequestEvent::ReturnType::disagree:
-        case ::Event::RequestEvent::ReturnType::block:
-            
-            return;
-        case ::Event::RequestEvent::ReturnType::ignore:
+        if (RequestEventList[static_cast<int>(RequestEvent->RequestEventType)][i](RequestEvent, ResponseFlag) == ::Event::ReturnType::block)
             break;
-        }
     }
 }
