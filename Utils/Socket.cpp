@@ -71,13 +71,14 @@ bool Socket::Receive(byte *buffer, uint32_t Length)
     int state = recv(Client, (char *)buffer, 4, 0);
     if (state < 0)
     {
+        Connected = false;
         throw WSAGetLastError();
         return false;
     }
     else if (state == 0)
     {
         Connected = false;
-        throw "Connection broken";
+        throw WSAGetLastError();
         return false;
     }
     return true;
@@ -90,12 +91,8 @@ LPBYTE Socket::Receive()
     int state = recv(Client, (char *)len, 4, MSG_PEEK);
     if (state < 0)
     {
-        throw WSAGetLastError();
-    }
-    else if (state == 0)
-    {
         Connected = false;
-        throw "Connection broken";
+        throw WSAGetLastError();
     }
 
     uint length = XBin::Bin2Int(len);
@@ -107,7 +104,8 @@ LPBYTE Socket::Receive()
         if (state < 0 && errno != EINTR)
         {
             delete[] buffer;
-            return nullptr;
+            Connected = false;
+            throw WSAGetLastError();
         }
         reclen += state;
     }

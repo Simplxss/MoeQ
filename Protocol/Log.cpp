@@ -252,8 +252,8 @@ void Database::Init()
 
     if (sqlite3_exec(Database_Data,
                      "CREATE TABLE IF NOT EXISTS FriendRequestMsg("
-                     "ID         INTEGER  AUTOINCREMENT,"
-                     "MsgSeq     INTEGER  PRIMARY KEY,"
+                     "ID         INTEGER  PRIMARY KEY  AUTOINCREMENT,"
+                     "MsgSeq     INTEGER  UNIQUE,"
                      "FromQQ     INTEGER     ,"
                      "msg        TEXT        );",
                      0, 0, &zErrMsg) != SQLITE_OK)
@@ -264,8 +264,8 @@ void Database::Init()
 
     if (sqlite3_exec(Database_Data,
                      "CREATE TABLE IF NOT EXISTS GroupRequestMsg("
-                     "ID         INTEGER  AUTOINCREMENT,"
-                     "MsgSeq     INTEGER  PRIMARY KEY,"
+                     "ID         INTEGER  PRIMARY KEY  AUTOINCREMENT,"
+                     "MsgSeq     INTEGER  UNIQUE,"
                      "FromGroup  INTEGER     ,"
                      "FromQQ     INTEGER     ,"
                      "InvitorQQ  INTEGER     ,"

@@ -114,6 +114,5 @@ LPBYTE StatSvc::SetStatusFromClient(const byte state)
 
     uint len = Jce.GetAll(bin);
 
-    LPBYTE sBuffer;
     return Make_Body_Request_Packet(3, 0, "PushService", "SvcReqRegister", bin, len);
 }

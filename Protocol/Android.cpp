@@ -438,31 +438,18 @@ void Android::Fun_Msg_Loop()
         {
             bin = TCP.Receive();
         }
-        catch (const char *e)
-        {
-            Log::AddLog(Log::LogType::WARNING, Log::MsgType::OTHER, u8"Connection", e);
-            if (!strcmp(e, "Connection broken"))
-            {
-                try
-                {
-                    Fun_Connect();
-                    Log::AddLog(Log::LogType::WARNING, Log::MsgType::OTHER, u8"Connection", u8"Connected");
-                    QQ_Online();
-                }
-                catch (const char *e)
-                {
-                    Log::AddLog(Log::LogType::WARNING, Log::MsgType::OTHER, u8"Connection", e);
-                }
-            }
-            else
-                return;
-        }
         catch (const int e)
         {
-            if (e == 0)
-                if (Fun_Connect())
-                    continue;
-            Log::AddLog(Log::LogType::WARNING, Log::MsgType::OTHER, u8"Connection", u8"Receive error, code: %d", e);
+            try
+            {
+                Fun_Connect();
+                Log::AddLog(Log::LogType::WARNING, Log::MsgType::OTHER, u8"Connection", u8"Connected");
+                QQ_Online();
+            }
+            catch (const char *e)
+            {
+                Log::AddLog(Log::LogType::WARNING, Log::MsgType::OTHER, u8"Connection", u8"Receive error, code: %d", e);
+            }
         }
         HandleThreads.exec(std::bind(&Android::Fun_Receice, this, bin), bin);
     }
@@ -1289,16 +1276,18 @@ void Android::Unpack_OnlinePush_ReqPush(const LPBYTE BodyBin, const uint sso_seq
             int del_infos;
             UnJce.Read(list, 2);
             UnJce.Read(del_infos, 3);
-            std::vector<std::tuple<int, LPBYTE>> info;
+            std::vector<std::tuple<int, int, LPBYTE>> info;
             for (size_t k = 0; k < list.size(); k++)
             {
-                int shMsgSeq;
-                LPBYTE vMsgCookies;
-                list[k].Read(shMsgSeq, 5);
-                list[k].Read(vMsgCookies, 8);
-                info.emplace_back(std::tuple(shMsgSeq, vMsgCookies));
+                int from_uin;
+                int msg_seq;
+                LPBYTE msg_cookies;
+                list[k].Read(from_uin, 0);
+                list[k].Read(msg_seq, 3);
+                list[k].Read(msg_cookies, 8);
+                info.emplace_back(std::tuple(from_uin, msg_seq, msg_cookies));
             }
-            Fun_Send_Sync_PB(11, 1, "OnlinePush.RespPush", OnlinePush::RespPush(sso_seq, del_infos, info), [&](uint sso_seq, LPBYTE BodyBin) {});
+            Fun_Send(11, 1, "OnlinePush.RespPush", OnlinePush::RespPush(sso_seq, del_infos, info));
         }
     }
 }
@@ -1517,7 +1506,7 @@ void Android::Unpack_MessageSvc_PushNotify(const LPBYTE BodyBin, const uint sso_
                                           Message::DestoryMsg(PrivateMsg.Msg);
                                       }
                                       break;
-                                      case 187:
+                                      case 187: //加好友
                                       case 188:
                                       case 189:
                                       case 190:
@@ -1832,7 +1821,8 @@ char *Android::QQ_Get_Viery_PhoneNumber()
 
 void Android::QQ_Online()
 {
-    QQ_SetOnlineType(QQ.Status = 11);
+    QQ_SetOnlineType(11);
+    QQ.Status = 11;
     std::thread Thread(std::bind(&Android::Fun_Life_Event, this));
     Thread.detach();
     /*
@@ -1885,34 +1875,13 @@ void Android::QQ_SetOnlineType(const byte Type)
      * Fun_Send_Sync(10, 1, "StatSvc.SetStatusFromClient", StatSvc::SetStatusFromClient(Type),
      *            [&](uint sso_seq, LPBYTE BodyBin)
      *            {
-     *                LPBYTE sBuffer;
-     *                Unpack_Body_Request_Packet(BodyBin, sBuffer);
-     *
-     *                ::UnJce UnJce(sBuffer);
-     *                std::vector<JceStruct::Map<char *, std::vector<JceStruct::Map<char *, LPBYTE>>>> Map;
-     *                UnJce.Read(Map, 0);
-     *
-     *                for (size_t i = 0; i < Map.size(); i++)
-     *                {
-     *                    for (size_t j = 0; j < Map[i].Value.size(); j++)
-     *                    {
-     *                        UnJce.Reset(Map[i].Value[j].Value);
-     *                        UnJce.Read(UnJce, 0);
-     *
-     *                        delete[] Map[i].Value[j].Key;
-     *                        delete[] Map[i].Value[j].Value;
-     *                    }
-     *
-     *                    delete[] Map[i].Key;
-     *                }
-     *                delete[] sBuffer;
      *            });
      */
 }
 
 void Android::QQ_Heart_Beat()
 {
-    Fun_Send_Sync(10, 1, "StatSvc.register", StatSvc::SimpleGet(),
+    Fun_Send_Sync(10, 1, "StatSvc.SimpleGet", StatSvc::SimpleGet(),
                   [&](uint sso_seq, LPBYTE BodyBin) {
                   });
 }
@@ -2454,26 +2423,26 @@ bool Android::QQ_SetGroupBan(const uint Group, const bool Ban)
                                 }));
 }
 
-//ReturnType 0 accept 1 reject 2 block
+// ReturnType 0 accept 1 reject 2 block
 bool Android::QQ_RequestFriendAction(int64_t msgSeq, uint32_t reqUin, int ReturnType)
 {
     return Fun_Send_Sync<bool>(11, 1, "ProfileService.Pb.ReqSystemMsgAction.Friend", ProfileService::Pb_ReqSystemMsgAction_Friend(msgSeq, reqUin, ReturnType),
-                                  [&](uint sso_seq, LPBYTE BodyBin)
-                                      -> bool
-                                  {
-                                      return true;
-                                  });
+                               [&](uint sso_seq, LPBYTE BodyBin)
+                                   -> bool
+                               {
+                                   return true;
+                               });
 }
 
-//ReturnType 0 accept 1 reject 2 block
+// ReturnType 0 accept 1 reject 2 block
 bool Android::QQ_RequestGroupAction(int64_t msgSeq, uint32_t reqUin, uint32_t groupCode, bool IsInvited, int ReturnType)
 {
     return Fun_Send_Sync<bool>(11, 1, "ProfileService.Pb.ReqSystemMsgAction.Group", ProfileService::Pb_ReqSystemMsgAction_Group(msgSeq, reqUin, groupCode, IsInvited, ReturnType),
-                                  [&](uint sso_seq, LPBYTE BodyBin)
-                                      -> bool
-                                  {
-                                      return true;
-                                  });
+                               [&](uint sso_seq, LPBYTE BodyBin)
+                                   -> bool
+                               {
+                                   return true;
+                               });
 }
 
 const std::vector<QQ::FriendInfo> *Android::QQ_GetFriendList()

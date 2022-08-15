@@ -25,7 +25,6 @@ LPBYTE friendlist::getFriendGroupList(const int StartIndex)
 
     uint len = Jce.GetAll(bin);
 
-    LPBYTE sBuffer;
     return Make_Body_Request_Packet(3, 0, "mqq.IMService.FriendListServiceServantObj", "GetFriendListReq", bin, len);
 }
 

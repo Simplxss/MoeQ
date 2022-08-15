@@ -49,6 +49,11 @@ private:
     bool Fun_Connect(const char *IP = nullptr, const unsigned short Port = 0);
     void Fun_Send(const uint PacketType, const byte EncodeType, const char *ServiceCmd, LPBYTE Buffer, int SsoSeq);
     void Fun_Send_PB(const uint PacketType, const byte EncodeType, const char *ServiceCmd, LPBYTE Buffer, int SsoSeq);
+    void Fun_Send(const uint PacketType, const byte EncodeType, const char *ServiceCmd, LPBYTE Buffer)
+    {
+        int SsoSeq = QQ.SsoSeq.fetch_add(1);
+        Fun_Send(PacketType, EncodeType, ServiceCmd, Buffer, SsoSeq);
+    }
     /// <summary>
     /// Send package synchronously
     /// </summary>

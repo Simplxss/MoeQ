@@ -1,15 +1,15 @@
 #include "OnlinePush.h"
 
-LPBYTE OnlinePush::RespPush(const int sso_seq, const int del_infos, const std::vector<std::tuple<int, LPBYTE>> info)
+LPBYTE OnlinePush::RespPush(const int sso_seq, const int del_infos, const std::vector<std::tuple<int, int, LPBYTE>> info)
 {
     std::vector<::Jce *> list;
-    for (auto [shMsgSeq, vMsgCookies] : info)
+    for (auto [from_uin, msg_seq, msg_cookies] : info)
     {
         Jce *Jce = new ::Jce;
-        Jce->Write(QQ->QQ, 0);      // lFromUin
+        Jce->Write(from_uin, 0);      // lFromUin
         Jce->Write(0, 1);           // uMsgTime
-        Jce->Write(shMsgSeq, 2);    // shMsgSeq
-        Jce->Write(vMsgCookies, 3); // vMsgCookies
+        Jce->Write(msg_seq, 2);    // shMsgSeq
+        Jce->Write(msg_cookies, 3); // vMsgCookies
         Jce->Write(0, 4);           // wCmd
         Jce->Write(0, 5);           // uMsgType
         Jce->Write(0, 6);           // uAppId
@@ -26,17 +26,17 @@ LPBYTE OnlinePush::RespPush(const int sso_seq, const int del_infos, const std::v
     Jce.Write(del_infos, 2);
     Jce.Write(0, 4);
 
-    ::Jce Jce_;
-    Jce_.Write(&Jce, 0);
-    LPBYTE bin = Jce_.GetAll_();
+    Jce.Write(&Jce, 0);
+    LPBYTE bin = Jce.GetAll_();
 
     const std::vector<JceStruct::Map<const char *, const LPBYTE>> JceMap{JceStruct::Map<const char *, const LPBYTE>{"resp", bin}};
     Jce.Write(&JceMap, 0);
+    delete[] bin;
+    
     for (size_t i = 0; i < list.size(); i++)
         delete list[i];
 
-    delete[] bin;
 
     uint len = Jce.GetAll(bin);
-    return Make_Body_Request_Packet(2, sso_seq, "OnlinePush", "SvcRespPushMsg", bin, len);
+    return Make_Body_Request_Packet(3, sso_seq, "OnlinePush", "SvcRespPushMsg", bin, len);
 }

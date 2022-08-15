@@ -1,7 +1,7 @@
 #include "MoeQ.h"
 
 #if defined(_WIN_PLATFORM_)
-wchar_t DataPath[MAX_PATH + 1]; // "~/data/"
+wchar_t DataPath[MAX_PATH + 1]; // "./data/"
 #endif
 
 #if defined(_LINUX_PLATFORM_)
