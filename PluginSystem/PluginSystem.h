@@ -12,7 +12,7 @@
 #include <dlfcn.h>
 #endif
 
-#include "../Protocol/Log.h"
+#include "../Main/Log.h"
 #include "../Utils/Socket.h"
 
 namespace Event

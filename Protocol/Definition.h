@@ -49,7 +49,7 @@ D9 1B 6B 0E 50 70 93 77 CE B9 EF 8C 2E FD 12 CC
 D8 43 83 27 20 70 2E 28 B4 14 91 FB C3 A2 05 F5
 F2 F4 25 26 D6 7F 17 61 4D 8A 97 4D E6 48 7B 2C
 86 6E FE DE 3B 4E 49 A0 F9 16 BA A3 C1 33 6F D2
-EE 1B 16 29 65 20 49 
+EE 1B 16 29 65 20 49
 */
 #define AndroidQQ_SDK_VERSION "6.0.0.2515"
 #define AndroidQQ_BUILDTIME 1657223893
@@ -201,7 +201,9 @@ namespace Event
             group_adminchange,  // Group administrator changes 群管理员变动
             group_memberchange, // The change in the number of group members 群成员数量变动
             group_mute,         // Group ban 群禁言
-            friend_added,       // Friend added 好友已添加
+            group_recall,       // Group recall 群消息撤回
+            friend_recall,      // Friend recall 好友消息撤回
+            friend_added        // Friend added 好友已添加
         };
 
         struct NoticeEvent
@@ -239,9 +241,24 @@ namespace Event
         struct group_mute
         {
             uint32_t FromGroup;
+            uint32_t FromQQ; // 0 全群禁言
+            uint32_t OperateQQ;
+            uint32_t Duration; // 单位为秒 0 即被解禁
+        };
+        struct group_recall
+        {
+            uint32_t FromGroup;
             uint32_t FromQQ;
             uint32_t OperateQQ;
-            uint32_t Type; // 0 Ban 被禁言 1 Free 被解禁
+            uint32_t MsgId;
+            uint32_t Time;
+        };
+        struct friend_recall
+        {
+            uint32_t FromQQ;
+            uint32_t OperateQQ;
+            uint32_t MsgId;
+            uint32_t Time;
         };
         struct friend_added
         {
@@ -284,7 +301,7 @@ namespace Event
             uint32_t FromQQ;
             char8_t *FromGroupName;
             char8_t *FromQQName;
-            
+
             uint32_t InvitorQQ;
             char8_t *InvitorQQName;
 
@@ -325,6 +342,29 @@ namespace Event
         uint32_t MsgRand;
 
         Message::Msg *Msg = nullptr;
+    };
+
+    struct GroupWithdrawMsg
+    {
+        uint32_t FromGroup;
+        uint32_t FromQQ;
+        uint32_t OperateQQ;
+
+        uint32_t SendTime;
+        uint32_t MsgType;
+        uint32_t MsgID;
+        uint32_t MsgRand;
+    };
+
+    struct PrivateWithdrawMsg
+    {
+        uint32_t FromQQ;
+        uint32_t OperateQQ;
+
+        uint32_t SendTime;
+        uint32_t MsgType;
+        uint32_t MsgID;
+        uint32_t MsgRand;
     };
 }
 

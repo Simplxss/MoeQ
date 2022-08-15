@@ -1184,13 +1184,13 @@ void Android::Unpack_OnlinePush_PbPushTransMsg(const LPBYTE BodyBin, const uint 
     ::UnProtobuf UnPB(BodyBin);
     uint Type = UnPB.GetVarint(3);
     UnPack UnPack(UnPB.GetBin(10));
-    Event::NoticeEvent::NoticeEvent NoticeEvent;
+    ;
     byte SubType;
     switch (Type)
     {
     case 34:
     {
-        NoticeEvent = Event::NoticeEvent::NoticeEvent{Event::NoticeEvent::NoticeEventType::group_memberchange, new Event::NoticeEvent::group_memberchange};
+        Event::NoticeEvent::NoticeEvent NoticeEvent{Event::NoticeEvent::NoticeEventType::group_memberchange, new Event::NoticeEvent::group_memberchange};
         ((Event::NoticeEvent::group_memberchange *)NoticeEvent.Information)->FromGroup = UnPack.GetInt();
         UnPack.Skip(1);
         ((Event::NoticeEvent::group_memberchange *)NoticeEvent.Information)->FromQQ = UnPack.GetInt();
@@ -1218,11 +1218,13 @@ void Android::Unpack_OnlinePush_PbPushTransMsg(const LPBYTE BodyBin, const uint 
             Log::AddLog(Log::LogType::NOTICE, Log::MsgType::_GROUP, u8"OnlinePush.PbPushTransMsg", u8"unknown MsgType: %u", true, SubType);
             break;
         }
+        Event::OnNoticeMsg(&NoticeEvent);
     }
 
     break;
     case 44:
-        NoticeEvent = Event::NoticeEvent::NoticeEvent{Event::NoticeEvent::NoticeEventType::group_adminchange, new Event::NoticeEvent::group_adminchange};
+    {
+        Event::NoticeEvent::NoticeEvent NoticeEvent{Event::NoticeEvent::NoticeEventType::group_adminchange, new Event::NoticeEvent::group_adminchange};
         ((Event::NoticeEvent::group_adminchange *)NoticeEvent.Information)->FromGroup = UnPack.GetInt();
         UnPack.Skip(1);
         SubType = UnPack.GetByte();
@@ -1243,14 +1245,14 @@ void Android::Unpack_OnlinePush_PbPushTransMsg(const LPBYTE BodyBin, const uint 
         default:
             Log::AddLog(Log::LogType::NOTICE, Log::MsgType::_GROUP, u8"OnlinePush.PbPushTransMsg", u8"unknown SubType: %u", true, SubType);
             break;
+            Event::OnNoticeMsg(&NoticeEvent);
         }
-        break;
+    }
+    break;
     default:
         Log::AddLog(Log::LogType::NOTICE, Log::MsgType::_GROUP, u8"OnlinePush.PbPushTransMsg", u8"unknown SubType: %u", true, Type);
         break;
     }
-    Event::OnNoticeMsg(&NoticeEvent);
-    Log::AddLog(Log::LogType::INFORMATION, Log::MsgType::OTHER, &NoticeEvent);
 }
 
 void Android::Unpack_OnlinePush_PbC2CMsgSync(const LPBYTE BodyBin, const uint sso_seq)
@@ -1280,11 +1282,101 @@ void Android::Unpack_OnlinePush_ReqPush(const LPBYTE BodyBin, const uint sso_seq
             for (size_t k = 0; k < list.size(); k++)
             {
                 int from_uin;
+                int msg_type;
                 int msg_seq;
+                LPBYTE v_msg;
                 LPBYTE msg_cookies;
                 list[k].Read(from_uin, 0);
+                list[k].Read(msg_type, 2);
                 list[k].Read(msg_seq, 3);
+                list[k].Read(v_msg, 8);
                 list[k].Read(msg_cookies, 8);
+
+                switch (msg_type)
+                {
+                case 528:
+                {
+                    int sub_msg_type;
+                    LPBYTE v_protobuf;
+                    ::UnJce UnJce(v_msg);
+                    UnJce.Read(sub_msg_type, 0);
+                    UnProtobuf UnPB(v_protobuf);
+                    switch (sub_msg_type)
+                    {
+                    case 0x27:
+                        break;
+                    case 0x44:
+                        break;
+                    case 0x8A:
+                    case 0x8B:
+                    {
+                    }
+                    break;
+                    case 0xB3:
+                        break;
+                    case 0xD4:
+                        break;
+                    case 0x122:
+                    case 0x123:
+                        break;
+                    }
+                    delete[] v_protobuf;
+                }
+                break;
+                case 732:
+                {
+                    UnPack UnPack(v_msg);
+                    uint group_code = UnPack.GetInt();
+                    byte i_type = UnPack.GetByte();
+                    UnPack.GetByte();
+                    switch (i_type)
+                    {
+                    case 0x10:
+                    case 0x11: //群消息撤回
+                    case 0x14:
+                    case 0x15:
+                    {
+                        int len = UnPack.GetByte();
+                        UnProtobuf UnPB(UnPack.GetBin(len), len);
+                        UnPB.StepIn(11);
+                        uint uin = UnPB.GetVarint(1);
+                        while (UnPB.GetField() == 3)
+                        {
+                            Event::GroupWithdrawMsg GroupWithdrawMsg;
+                            GroupWithdrawMsg.FromGroup = group_code;
+                            GroupWithdrawMsg.OperateQQ = uin;
+                            UnPB.StepIn(3);
+                            GroupWithdrawMsg.MsgID = UnPB.GetVarint(1);
+                            GroupWithdrawMsg.SendTime = UnPB.GetVarint(2);
+                            GroupWithdrawMsg.MsgRand = UnPB.GetVarint(3);
+                            GroupWithdrawMsg.MsgType = UnPB.GetVarint(4);
+                            GroupWithdrawMsg.FromQQ = UnPB.GetVarint(6);
+                            UnPB.StepOut();
+
+                            Event::NoticeEvent::NoticeEvent NoticeEvent{Event::NoticeEvent::NoticeEventType::group_recall, new Event::NoticeEvent::group_recall{GroupWithdrawMsg.FromGroup, GroupWithdrawMsg.FromQQ, GroupWithdrawMsg.OperateQQ, 0, GroupWithdrawMsg.SendTime}};
+                            Event::OnNoticeMsg(&NoticeEvent);
+                        }
+                        UnPB.StepOut();
+                    }
+                    break;
+                    case 0x0c: //全群禁言
+                    {
+                        Event::NoticeEvent::NoticeEvent NoticeEvent{Event::NoticeEvent::NoticeEventType::group_mute, new Event::NoticeEvent::group_mute};
+                        ((Event::NoticeEvent::group_mute *)NoticeEvent.Information)->FromGroup = group_code;
+                        ((Event::NoticeEvent::group_mute *)NoticeEvent.Information)->OperateQQ = UnPack.GetInt();
+                        ((Event::NoticeEvent::group_mute *)NoticeEvent.Information)->FromQQ = UnPack.GetInt();
+                        ((Event::NoticeEvent::group_mute *)NoticeEvent.Information)->Duration = UnPack.GetInt();
+                        Event::OnNoticeMsg(&NoticeEvent);
+                    }
+                    break;
+                    default:
+                        break;
+                    }
+                }
+                break;
+                default:
+                    break;
+                }
                 info.emplace_back(std::tuple(from_uin, msg_seq, msg_cookies));
             }
             Fun_Send(11, 1, "OnlinePush.RespPush", OnlinePush::RespPush(sso_seq, del_infos, info));
