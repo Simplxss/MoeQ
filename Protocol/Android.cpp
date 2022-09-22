@@ -1278,7 +1278,7 @@ void Android::Unpack_OnlinePush_ReqPush(const LPBYTE BodyBin, const uint sso_seq
             int del_infos;
             UnJce.Read(list, 2);
             UnJce.Read(del_infos, 3);
-            std::vector<std::tuple<int, int, LPBYTE>> info;
+            std::vector<std::tuple<int, int, LPBYTE>> infos;
             for (size_t k = 0; k < list.size(); k++)
             {
                 int from_uin;
@@ -1353,7 +1353,7 @@ void Android::Unpack_OnlinePush_ReqPush(const LPBYTE BodyBin, const uint sso_seq
                             GroupWithdrawMsg.FromQQ = UnPB.GetVarint(6);
                             UnPB.StepOut();
 
-                            Event::NoticeEvent::NoticeEvent NoticeEvent{Event::NoticeEvent::NoticeEventType::group_recall, new Event::NoticeEvent::group_recall{GroupWithdrawMsg.FromGroup, GroupWithdrawMsg.FromQQ, GroupWithdrawMsg.OperateQQ, 0, GroupWithdrawMsg.SendTime}};
+                            Event::NoticeEvent::NoticeEvent NoticeEvent{Event::NoticeEvent::NoticeEventType::group_recall, new Event::NoticeEvent::group_recall{GroupWithdrawMsg.FromGroup, GroupWithdrawMsg.FromQQ, GroupWithdrawMsg.OperateQQ, Database::UpdataGroupMsgState(GroupWithdrawMsg.MsgID, GroupWithdrawMsg.MsgRand), GroupWithdrawMsg.SendTime}};
                             Event::OnNoticeMsg(&NoticeEvent);
                         }
                         UnPB.StepOut();
@@ -1377,9 +1377,9 @@ void Android::Unpack_OnlinePush_ReqPush(const LPBYTE BodyBin, const uint sso_seq
                 default:
                     break;
                 }
-                info.emplace_back(std::tuple(from_uin, msg_seq, msg_cookies));
+                infos.emplace_back(std::tuple(from_uin, msg_seq, msg_cookies));
             }
-            Fun_Send(11, 1, "OnlinePush.RespPush", OnlinePush::RespPush(sso_seq, del_infos, info));
+            Fun_Send(11, 1, "OnlinePush.RespPush", OnlinePush::RespPush(sso_seq, del_infos, infos));
         }
     }
 }
@@ -1667,7 +1667,7 @@ void Android::Unpack_MessageSvc_PushNotify(const LPBYTE BodyBin, const uint sso_
 void Android::Unpack_MessageSvc_PushForceOffline(const LPBYTE BodyBin, const uint sso_seq)
 {
     QQ_Offline();
-    QQ_Online();
+    //QQ_Online();
 }
 
 void Android::Unpack_StatSvc_QueryHB(const LPBYTE BodyBin, const uint sso_seq)
