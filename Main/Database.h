@@ -15,6 +15,8 @@ namespace Database
 	void AddLog(const Log::LogType LogType, const Log::MsgType MsgType, const char8_t *Type, const char8_t *Msg);
 	std::tuple<uint, uint> GetPrivateMsg(const uint64_t MsgID);
 	std::tuple<uint, uint> GetGroupMsg(const uint64_t MsgID);
+	uint64_t UpdataPrivateMsgState(uint MsgID, uint MsgRand);
+	uint64_t UpdataGroupMsgState(uint MsgID, uint MsgRand);
 	std::tuple<uint, uint> GetFriendRequestMsg(const uint64_t ResponseFlag);
 	std::tuple<uint, uint, uint, uint> GetGroupRequestMsg(const uint64_t ResponseFlag);
 	std::u8string GetPictureUrl(const char MD5[16]);

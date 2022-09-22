@@ -86,7 +86,7 @@ There are a lot of features of c++11 and c++23 using by this project, please not
 
 **If you want to help us improve or expand features, you should learn the following.**
 
-But, you **CAN'T** add features like *send or receive red envelopes*.
+But, you **CAN'T** add features have something to do with QQ Walt.
 
 ### *Android QQ* Protocol
 

@@ -27,7 +27,7 @@ bool PicUp::DataUp(const byte *TotalData, const uint TotalDataLength, const byte
         size = 0x2000;
 
     //文件分片发送
-    uint Offset = 0, DataLength, Length, i = Utils::GetRandom(1000, 10000);
+    uint Offset = 0, DataLength, i = Utils::GetRandom(1000, 10000);
     Protobuf PB;
     byte *Bin;
     Pack Pack(size + 0x100, false);
@@ -63,7 +63,7 @@ bool PicUp::DataUp(const byte *TotalData, const uint TotalDataLength, const byte
             PB.WriteBin(3, PttInfo);
         }
 
-        Length = PB.Pack(Bin);
+        uint Length = PB.Pack(Bin);
 
         Pack.SetByte(0x28);
         Pack.SetInt(Length);

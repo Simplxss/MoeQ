@@ -420,6 +420,86 @@ std::tuple<uint, uint> Database::GetGroupMsg(const uint64_t MsgID_)
     return {MsgID, MsgRand};
 }
 
+uint64_t Database::UpdataPrivateMsgState(uint MsgID, uint MsgRand)
+{
+    sqlite3_stmt *pStmt;
+    if (sqlite3_prepare_v2(Database_Data, "SELECT ID FROM PrivateMsg WHERE MsgID = ? AND MsgRand = ?", 58, &pStmt, nullptr) != SQLITE_OK)
+    {
+        Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"Select 'PrivateMsg' error", (const char8_t *)sqlite3_errmsg(Database_Data));
+        return 0;
+    }
+
+    sqlite3_bind_int64(pStmt, 1, MsgID);
+    sqlite3_bind_int64(pStmt, 2, MsgRand);
+
+    if (sqlite3_step(pStmt) != SQLITE_DONE)
+    {
+        Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"Select 'PrivateMsg' error", (const char8_t *)sqlite3_errmsg(Database_Data));
+        sqlite3_finalize(pStmt);
+        return 0;
+    }
+    
+    uint MsgID_ = sqlite3_column_int64(pStmt, 0);
+
+    if (sqlite3_prepare_v2(Database_Data, "UPDATE PrivateMsg SET State = 1 WHERE ID = ?", 45, &pStmt, nullptr) != SQLITE_OK)
+    {
+        Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"Update 'PrivateMsg' error", (const char8_t *)sqlite3_errmsg(Database_Data));
+        return 0;
+    }
+
+    sqlite3_bind_int64(pStmt, 1, MsgID_);
+
+    if (sqlite3_step(pStmt) != SQLITE_DONE)
+    {
+        Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"Update 'PrivateMsg' error", (const char8_t *)sqlite3_errmsg(Database_Data));
+        sqlite3_finalize(pStmt);
+        return 0;
+    }
+
+    sqlite3_finalize(pStmt);
+    return MsgID_;
+}
+
+uint64_t Database::UpdataGroupMsgState(uint MsgID, uint MsgRand)
+{
+    sqlite3_stmt *pStmt;
+    if (sqlite3_prepare_v2(Database_Data, "SELECT ID FROM GroupMsg WHERE MsgID = ? AND MsgRand = ?", 58, &pStmt, nullptr) != SQLITE_OK)
+    {
+        Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"Select 'GroupMsg' error", (const char8_t *)sqlite3_errmsg(Database_Data));
+        return 0;
+    }
+
+    sqlite3_bind_int64(pStmt, 1, MsgID);
+    sqlite3_bind_int64(pStmt, 2, MsgRand);
+
+    if (sqlite3_step(pStmt) != SQLITE_DONE)
+    {
+        Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"Select 'GroupMsg' error", (const char8_t *)sqlite3_errmsg(Database_Data));
+        sqlite3_finalize(pStmt);
+        return 0;
+    }
+    
+    uint MsgID_ = sqlite3_column_int64(pStmt, 0);
+
+    if (sqlite3_prepare_v2(Database_Data, "UPDATE GroupMsg SET State = 1 WHERE ID = ?", 45, &pStmt, nullptr) != SQLITE_OK)
+    {
+        Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"Update 'GroupMsg' error", (const char8_t *)sqlite3_errmsg(Database_Data));
+        return 0;
+    }
+
+    sqlite3_bind_int64(pStmt, 1, MsgID_);
+
+    if (sqlite3_step(pStmt) != SQLITE_DONE)
+    {
+        Log::AddLog(Log::LogType::_ERROR, Log::MsgType::PROGRAM, u8"Update 'GroupMsg' error", (const char8_t *)sqlite3_errmsg(Database_Data));
+        sqlite3_finalize(pStmt);
+        return 0;
+    }
+
+    sqlite3_finalize(pStmt);
+    return MsgID_;
+}
+
 std::tuple<uint, uint> Database::GetFriendRequestMsg(const uint64_t ResponseFlag)
 {
     sqlite3_stmt *pStmt;
