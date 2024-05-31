@@ -95,7 +95,7 @@ void UnPack::Reset(const byte *buffer, const uint32_t bufferlen)
 	BufferLen = bufferlen;
 }
 
-//自动跳长度
+// 自动跳长度
 void UnPack::Reset(const LPBYTE buffer)
 {
 	ByteInputStream::Set(buffer);
@@ -266,7 +266,7 @@ void ByteOutputStream::SetBin(const byte *bin, const uint32_t len)
 	Offset += len;
 }
 
-//带长度写入
+// 带长度写入
 void ByteOutputStream::SetBin(const LPBYTE bin)
 {
 	memcpy(Buffer + Offset, bin, XBin::Bin2Int(bin));
@@ -329,7 +329,10 @@ void Pack::Reset(bool Length = false)
 {
 	Reset();
 	if (Length)
+	{
+		CheckBufferLen(4);
 		ByteOutputStream::Skip(4);
+	}
 }
 
 void Pack::SetByte(const uint8_t i)
@@ -377,7 +380,7 @@ void Pack::SetStr(const char *str)
 
 void Pack::SetStr(const char8_t *str)
 {
-	SetStr((const char*)str);
+	SetStr((const char *)str);
 }
 
 void Pack::SetStr_(const char *str)
@@ -394,7 +397,7 @@ void Pack::SetBin(const byte *bin, const uint32_t len)
 	ByteOutputStream::SetBin(bin, len);
 }
 
-//带长度写入
+// 带长度写入
 void Pack::SetBin(const LPBYTE bin)
 {
 	CheckBufferLen(XBin::Bin2Int(bin));
@@ -408,7 +411,7 @@ void Pack::SetBin(const std::vector<byte> *bin)
 	ByteOutputStream::SetBin((*bin).data(), len);
 }
 
-//会自动delete参数
+// 会自动delete参数
 void Pack::SetBin_(const byte *bin, const uint32_t len)
 {
 	CheckBufferLen(len);
@@ -416,7 +419,7 @@ void Pack::SetBin_(const byte *bin, const uint32_t len)
 	delete[] bin;
 }
 
-//带长度写入,会自动delete参数
+// 带长度写入,会自动delete参数
 void Pack::SetBin_(const LPBYTE bin)
 {
 	CheckBufferLen(XBin::Bin2Int(bin));
@@ -424,7 +427,7 @@ void Pack::SetBin_(const LPBYTE bin)
 	delete[] bin;
 }
 
-//返回且清空
+// 返回且清空
 byte *Pack::GetAll(bool Length)
 {
 	ByteOutputStream::Reset();
@@ -433,7 +436,7 @@ byte *Pack::GetAll(bool Length)
 	return ByteOutputStream::GetAll();
 }
 
-//返回且清空
+// 返回且清空
 uint32_t Pack::GetAll(byte *&bin, bool Length)
 {
 	uint32_t len = ByteOutputStream::Length();
@@ -444,7 +447,7 @@ uint32_t Pack::GetAll(byte *&bin, bool Length)
 	return len;
 }
 
-//申请新的内存返回且清空
+// 申请新的内存返回且清空
 byte *Pack::GetAll_(bool Length)
 {
 	byte *bin = new byte[ByteOutputStream::Length()];
@@ -549,7 +552,7 @@ void TlvPack::SetMD5(const byte *bin, const size_t length)
 
 uint16_t TlvPack::Pack(const unsigned short cmd)
 {
-	uint32_t len = ByteOutputStream::Length() - 4; //去掉头
+	uint32_t len = ByteOutputStream::Length() - 4; // 去掉头
 	byte *Buffer = ByteOutputStream::GetAll();
 	Buffer[0] = cmd >> 8;
 	Buffer[1] = cmd;

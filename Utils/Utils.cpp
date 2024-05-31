@@ -8,7 +8,7 @@ uint64_t Utils::GetRandom(const uint64_t mini, const uint64_t max)
     return u(mt);
 }
 
-//大小写混合
+// 大小写混合
 char *Utils::GetRandomLetter(const uint length)
 {
     const char LetterTable[] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'};
@@ -37,184 +37,189 @@ byte *Utils::GetRandomBin(const uint length)
     return tmp;
 }
 
-void Utils::MD5(const byte *bin, const size_t length, byte *md5)
+void Utils::MD5(const byte *buf, const size_t buf_size, byte *md5)
 {
-    MD5_CTX ctx;
+    EVP_MD_CTX *mdctx;
+    unsigned int md5_digest_len = EVP_MD_size(EVP_md5());
 
-    MD5_Init(&ctx);
-    MD5_Update(&ctx, bin, length);
-    MD5_Final(md5, &ctx);
+    // MD5_Init
+    mdctx = EVP_MD_CTX_new();
+    EVP_DigestInit_ex(mdctx, EVP_md5(), NULL);
+
+    // MD5_Update
+    EVP_DigestUpdate(mdctx, buf, buf_size);
+
+    // MD5_Final
+    EVP_DigestFinal_ex(mdctx, md5, &md5_digest_len);
+    EVP_MD_CTX_free(mdctx);
 }
 
-byte *Utils::MD5(const byte *bin, const size_t length)
+byte *Utils::MD5(const byte *buf, const size_t buf_size)
 {
-    MD5_CTX ctx;
-    byte *md5 = new byte[16];
+    EVP_MD_CTX *mdctx;
+    uint md5_digest_len = EVP_MD_size(EVP_md5());
 
-    MD5_Init(&ctx);
-    MD5_Update(&ctx, bin, length);
-    MD5_Final(md5, &ctx);
-    return md5;
+    // MD5_Init
+    mdctx = EVP_MD_CTX_new();
+    EVP_DigestInit_ex(mdctx, EVP_md5(), NULL);
+
+    // MD5_Update
+    EVP_DigestUpdate(mdctx, buf, buf_size);
+
+    // MD5_Final
+    byte *md5_digest = new byte[md5_digest_len];
+    EVP_DigestFinal_ex(mdctx, md5_digest, &md5_digest_len);
+    EVP_MD_CTX_free(mdctx);
+
+    return md5_digest;
 }
 
-LPBYTE Utils::MD5EX(const byte *bin, const size_t length)
+LPBYTE Utils::MD5EX(const byte *buf, const size_t buf_size)
 {
-    MD5_CTX ctx;
-    byte *md5 = new byte[20];
-    memcpy(md5, "\0\0\0\x14", 4);
+    EVP_MD_CTX *mdctx;
+    uint md5_digest_len = EVP_MD_size(EVP_md5());
 
-    MD5_Init(&ctx);
-    MD5_Update(&ctx, bin, length);
-    MD5_Final(md5 + 4, &ctx);
-    return md5;
+    // MD5_Init
+    mdctx = EVP_MD_CTX_new();
+    EVP_DigestInit_ex(mdctx, EVP_md5(), NULL);
+
+    // MD5_Update
+    EVP_DigestUpdate(mdctx, buf, buf_size);
+
+    // MD5_Final
+    byte *md5_digest = new byte[md5_digest_len + 4];
+    memcpy(md5_digest, "\0\0\0\x14", 4);
+    EVP_DigestFinal_ex(mdctx, md5_digest + 4, &md5_digest_len);
+    EVP_MD_CTX_free(mdctx);
+
+    return md5_digest;
 }
 
-void Utils::Sha256(const byte *bin, const size_t length, byte *sha256)
+void Utils::Sha256(const byte *buf, const size_t buf_size, byte *sha256)
 {
-    SHA256_CTX ctx;
+    EVP_MD_CTX *mdctx;
+    unsigned int sha256_digest_len = EVP_MD_size(EVP_sha256());
 
-    SHA256_Init(&ctx);
-    SHA256_Update(&ctx, bin, length);
-    SHA256_Final(sha256, &ctx);
+    // SHA256_Init
+    mdctx = EVP_MD_CTX_new();
+    EVP_DigestInit_ex(mdctx, EVP_sha256(), NULL);
+
+    // SHA256_Update
+    EVP_DigestUpdate(mdctx, buf, buf_size);
+
+    // SHA256_Final
+    EVP_DigestFinal_ex(mdctx, sha256, &sha256_digest_len);
+    EVP_MD_CTX_free(mdctx);
 }
 
-byte *Utils::Sha256(const byte *bin, const size_t length)
+byte *Utils::Sha256(const byte *buf, const size_t buf_size)
 {
-    SHA256_CTX ctx;
-    byte *sha256 = new byte[32];
-    SHA256_Init(&ctx);
-    SHA256_Update(&ctx, bin, length);
-    SHA256_Final(sha256, &ctx);
-    return sha256;
+    EVP_MD_CTX *mdctx;
+    uint sha256_digest_len = EVP_MD_size(EVP_sha256());
+
+    // SHA256_Init
+    mdctx = EVP_MD_CTX_new();
+    EVP_DigestInit_ex(mdctx, EVP_sha256(), NULL);
+
+    // SHA256_Update
+    EVP_DigestUpdate(mdctx, buf, buf_size);
+
+    // SHA256_Final
+    byte *sha256_digest = new byte[sha256_digest_len];
+    EVP_DigestFinal_ex(mdctx, sha256_digest, &sha256_digest_len);
+    EVP_MD_CTX_free(mdctx);
+
+    return sha256_digest;
 }
 
 bool Utils::Ecdh_Crypt(ECDHKEY &ECDHKEY, byte *SvrPubKey, int SvrPubKeyLen)
 {
-    int len;
-    int ret;
-    EC_KEY *ecdh;
-    const EC_GROUP *group;
-    EC_POINT *p_ecdh2_public;
-
-    // ecdh = EC_KEY_new_by_curve_name(NID_secp192k1); //old
-
-    ecdh = EC_KEY_new_by_curve_name(NID_X9_62_prime256v1); // new
-
-    if (ecdh == NULL)
+    EC_KEY *key;
+    if (NULL == (key = EC_KEY_new_by_curve_name(NID_X9_62_prime256v1)))
     {
-        EC_KEY_free(ecdh);
         throw "Ecdh key by curve name error.";
         return false;
     }
 
-    if (!EC_KEY_generate_key(ecdh))
+    if (!EC_KEY_generate_key(key))
     {
-        EC_KEY_free(ecdh);
+        EC_KEY_free(key);
         throw "Failed to generate EC key.";
         return false;
     }
 
-    group = EC_KEY_get0_group(ecdh);
+    const EC_GROUP *group = EC_KEY_get0_group(key);
 
-    if (!(ECDHKEY.pubkeyLen = EC_POINT_point2oct(group, EC_KEY_get0_public_key(ecdh), POINT_CONVERSION_UNCOMPRESSED, ECDHKEY.pubkey, 100, NULL)))
+    if (!(ECDHKEY.pubkeyLen = EC_POINT_point2oct(group, EC_KEY_get0_public_key(key), POINT_CONVERSION_UNCOMPRESSED, ECDHKEY.pubkey, 100, NULL)))
     {
-        EC_KEY_free(ecdh);
+        EC_KEY_free(key);
         throw "EC_POINT oct2point error.";
         return false;
     }
 
-    if (!(ECDHKEY.prikey = EC_KEY_get0_private_key(ecdh)))
+    if (!(ECDHKEY.prikey = EC_KEY_get0_private_key(key)))
     {
-        EC_KEY_free(ecdh);
+        EC_KEY_free(key);
         throw "EC_POINT oct2point error.";
         return false;
     }
 
-    p_ecdh2_public = EC_POINT_new(group);
+    EC_POINT *p_ecdh2_public = EC_POINT_new(group);
     if (!EC_POINT_oct2point(group, p_ecdh2_public, SvrPubKey, SvrPubKeyLen, NULL))
     {
+        EC_KEY_free(key);
         EC_POINT_clear_free(p_ecdh2_public);
-        EC_KEY_free(ecdh);
         throw "EC_POINT oct2point error.";
         return false;
     }
 
-    EC_KEY_set_public_key(ecdh, p_ecdh2_public);
+    EC_KEY_set_public_key(key, p_ecdh2_public);
 
-    if (!(ECDHKEY.sharekeyLen = ECDH_compute_key(ECDHKEY.sharekey, 100, p_ecdh2_public, ecdh, NULL)))
+    if (!(ECDHKEY.sharekeyLen = ECDH_compute_key(ECDHKEY.sharekey, 100, p_ecdh2_public, key, NULL)))
     {
-        EC_KEY_free(ecdh);
-        throw "Ecdh compute key error.";
+        EC_KEY_free(key);
+        throw "pctx compute key error.";
         return false;
     }
 
     EC_POINT_clear_free(p_ecdh2_public);
 
-    EC_KEY_free(ecdh);
+    EC_KEY_free(key);
     CRYPTO_cleanup_all_ex_data();
     return true;
 }
 
 bool Utils::Ecdh_CountSharekey(ECDHKEY &ECDHKEY)
 {
-    EC_KEY *ecdh;
+    EC_KEY *pctx;
     const EC_GROUP *group;
     EC_POINT *p_ecdh2_public;
 
-    // ecdh = EC_KEY_new_by_curve_name(NID_secp192k1); //old
+    // pctx = EC_KEY_new_by_curve_name(NID_secp192k1); //old
 
-    ecdh = EC_KEY_new_by_curve_name(NID_X9_62_prime256v1); // new
+    pctx = EC_KEY_new_by_curve_name(NID_X9_62_prime256v1); // new
 
-    EC_KEY_set_private_key(ecdh, ECDHKEY.prikey);
+    EC_KEY_set_private_key(pctx, ECDHKEY.prikey);
 
-    group = EC_KEY_get0_group(ecdh);
+    group = EC_KEY_get0_group(pctx);
     p_ecdh2_public = EC_POINT_new(group);
     EC_POINT_oct2point(group, p_ecdh2_public, ECDHKEY.pubkey, ECDHKEY.pubkeyLen, NULL);
 
-    if (!EC_KEY_set_public_key(ecdh, p_ecdh2_public))
+    if (!EC_KEY_set_public_key(pctx, p_ecdh2_public))
     {
-        EC_KEY_free(ecdh);
-        throw "Ecdh set public key error.";
+        EC_KEY_free(pctx);
+        throw "pctx set public key error.";
         return false;
     }
 
-    if (!(ECDHKEY.sharekeyLen = ECDH_compute_key(ECDHKEY.sharekey, 100, p_ecdh2_public, ecdh, NULL)))
+    if (!(ECDHKEY.sharekeyLen = ECDH_compute_key(ECDHKEY.sharekey, 100, p_ecdh2_public, pctx, NULL)))
     {
-        EC_KEY_free(ecdh);
-        throw "Ecdh compute key error.";
+        EC_KEY_free(pctx);
+        throw "pctx compute key error.";
         return false;
     }
     EC_POINT_clear_free(p_ecdh2_public);
     return true;
-}
-
-uint Utils::DES_ECB_Encrypt(byte *_key, byte *data, uint len, byte *&bin)
-{
-    DES_cblock key;
-    DES_key_schedule schedule;
-    //转换成schedule
-    memcpy(key, _key, 8);
-    DES_set_odd_parity(&key);
-    DES_set_key_unchecked(&key, &schedule);
-
-    int i = 0, j = len / 8 + 1, k = len % 8;
-    int nPidding_size = 8 - k;
-    char *szArray;
-    szArray = (char *)malloc(len + nPidding_size);
-    memcpy(szArray, data, len);
-    memset(szArray + len, 0, j * 8 - len);
-    bin = new byte[j * 8];
-
-    const_DES_cblock sInput;
-    DES_cblock sOutput;
-    for (int i = 0; i < j; ++i)
-    {
-        memcpy(sInput, szArray + (i * 8), 8);
-        DES_ecb_encrypt(&sInput, &sOutput, &schedule, DES_ENCRYPT);
-        memcpy(bin + (i * 8), sOutput, 8);
-    }
-    delete[] szArray;
-    return j * 8;
 }
 
 long Utils::CurrentTimeMillis()
@@ -224,7 +229,7 @@ long Utils::CurrentTimeMillis()
 
 LPBYTE Utils::ZlibCompress(const char *source)
 {
-    uint sourceLen = strlen(source) - 1; //去掉尾部0
+    uint sourceLen = strlen(source) - 1; // 去掉尾部0
     uLong destLen = compressBound(sourceLen);
     LPBYTE dest = new byte[destLen + 4];
     if (compress(dest + 4, &destLen, (byte *)source, sourceLen) == 0)
@@ -391,7 +396,7 @@ char *XBin::Bin2HexEx(const byte *bin, const uint len)
     return Hex;
 }
 
-//传入无空格,小写
+// 传入无空格,小写
 uint XBin::Hex2Bin(const char *hex, byte *&bin)
 {
 #pragma warning(disable : 4996)
@@ -459,7 +464,7 @@ uint XBin::Hex2Bin(const char *hex, byte *&bin)
     }
 }
 
-//传入无空格,大写
+// 传入无空格,大写
 uint XBin::Hex2BinEx(const char *hex, byte *&bin)
 {
     const byte Table1[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
@@ -571,6 +576,14 @@ std::u8string Iconv::UnicodeToUtf8(const wchar_t *str, const int Length)
 }
 
 #endif
+
+bool BigInteger::Add(byte *BigInteger, int len, int value)
+{
+    for (size_t i = 0; i < value; i++)
+        if (!AddOne(BigInteger, len))
+            return false;
+    return true;
+}
 
 bool BigInteger::AddOne(byte *BigInteger, int len)
 {

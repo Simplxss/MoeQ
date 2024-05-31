@@ -12,9 +12,9 @@ namespace Tlv
 	FUNC(008);
 	FUNC(008);
 	FUNC(018, const uint QQ);
-	FUNC(100, const uint APPID, const bool IsFreshSkey);
+	FUNC(100, const uint SUB_APPID, const bool IsFreshSkey);
 	FUNC(104, const byte VieryToken2[36]);
-	FUNC(106, const uint QQ, const char *QQ_Str, const byte md5[16], const byte md52[16], const byte TGTKey[16], const byte GUID[16], const uint Time, const uint APPID, bool emp);
+	FUNC(106, const uint QQ, const char *QQ_Str, const byte md5[16], const byte md52[16], const byte TGTKey[16], const byte GUID[16], const uint Time, const uint SUB_APPID, bool emp);
 	FUNC(107);
 	FUNC(108, const byte ksid[16]);
 	FUNC(109, const char *IMEI);
@@ -46,13 +46,14 @@ namespace Tlv
 	FUNC(511, const char **domainList, const byte ListSize);
 	FUNC(516);
 	FUNC(521);
-	FUNC(525, const uint QQ, const char *IP, const uint Time, const uint APPID, const bool IsEmp);
+	FUNC(525, const uint QQ, const char *IP, const uint Time, const uint SUB_APPID, const bool IsEmp);
 	FUNC(52D);
 	FUNC(542);
 	FUNC(544);
 	FUNC(545);
 	FUNC(547, const byte *ClientPow);
 	FUNC(548);
+	FUNC(553);
 };
 
 #undef FUNC

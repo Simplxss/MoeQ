@@ -21,7 +21,6 @@ private:
 
 public:
     LPBYTE login();
-    LPBYTE login_ScanCode();
     LPBYTE login_Send_Sms();
     LPBYTE login_Viery_Ticket(const char *Ticket);
     LPBYTE login_Viery_Sms(const char *SmsCode);

@@ -42,7 +42,7 @@ bool PicUp::DataUp(const byte *TotalData, const uint TotalDataLength, const byte
         PB.WriteStr(3, u8"PicUp.DataUp");
         PB.WriteVarint(4, ++i);
         PB.WriteVarint(5, 0);
-        PB.WriteVarint(6, AndroidQQ_APPID);
+        PB.WriteVarint(6, AndroidQQ_SUB_APPID);
         PB.WriteVarint(7, 4096);
         PB.WriteVarint(8, DataType);
         PB.WriteVarint(10, 2052);

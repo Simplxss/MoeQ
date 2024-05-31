@@ -6,10 +6,11 @@
 
 #include "../Utils/Utils.h"
 
-#define AndroidQQ_APPID 537127041
-#define AndroidQQ_VERSION "8.9.2.3072"
+#define AndroidQQ_SUB_APPID 537137212
+#define AndroidQQ_VERSION "8.9.13"
 #define AndroidQQ_VERSION_ "A8.9.2.4e64659d"
 #define AndroidQQ_APKID "com.tencent.mobileqq"
+#define AndroidQQ_KSID (const byte *)"\x27\x45\x93\x49\xC9\x00\x31\xD1\x6F\x7F\xFF\xD9\x4E\xE6\xAF\xC8" // 27459349C90031D16F7FFFD94EE6AFC8
 #define AndroidQQ_ASIG (const byte *)"\xA6\xB7\x45\xBF\x24\xA2\xC2\x77\x52\x77\x16\xF6\xF3\x6E\xB6\x8D" // A6B745BF24A2C277527716F6F36EB68D
 /* AndroidQQ_ASIG 为 MD5('...')
 30 82 02 53 30 82 01 BC A0 03 02 01 02 02 04 4B
@@ -51,16 +52,16 @@ F2 F4 25 26 D6 7F 17 61 4D 8A 97 4D E6 48 7B 2C
 86 6E FE DE 3B 4E 49 A0 F9 16 BA A3 C1 33 6F D2
 EE 1B 16 29 65 20 49
 */
-#define AndroidQQ_SDK_VERSION "6.0.0.2515"
-#define AndroidQQ_BUILDTIME 1657223893
+#define AndroidQQ_SDK_VERSION "6.0.0.2558"
+#define AndroidQQ_BUILDTIME 1709211987
 
-#define TimQQ_APPID
+#define TimQQ_SUB_APPID
 #define TimQQ_VERSION
 #define TimQQ_VERSION_
 #define TimQQ_APKID
 #define TimQQ_ASIG (const byte *)"" //
 #define TimQQ_SDK_VERSION ""
-#define TimQQ_BUILDTIME 1657223893
+#define TimQQ_BUILDTIME 1709211987
 
 typedef unsigned char byte;
 typedef unsigned int uint;
@@ -250,7 +251,7 @@ namespace Event
             uint32_t FromGroup;
             uint32_t FromQQ;
             uint32_t OperateQQ;
-            uint32_t MsgId;
+            uint64_t MsgId;
             uint32_t Time;
         };
         struct friend_recall

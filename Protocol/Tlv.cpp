@@ -5,20 +5,22 @@
 FUNC(001, uint QQ, uint Time)
 {
     ::TlvPack Pack(bin, len);
-    Pack.SetShort(1);
-    Pack.SetBin_(Utils::GetRandomBin(4), 4);
+    Pack.SetShort(1); // _ip_ver
+    Pack.SetBin_(Utils::GetRandomBin(4), 4); // random
     Pack.SetInt(QQ);
     Pack.SetInt(Time);
-    Pack.SetBin((byte *)"\0\0\0\0\0\0", 6);
+    Pack.SetInt(0); // unknown
+    Pack.SetShort(0); // const
     return Pack.Pack(0x0001);
 }
 
 FUNC(002, const char *code, const char VieryToken1[4])
 {
     ::TlvPack Pack(bin, len);
-    Pack.SetInt(strlen(code));
+    Pack.SetShort(0); // _sigVer
+    Pack.SetShort(strlen(code));
     Pack.SetStr(code);
-    Pack.SetShort(4);
+    Pack.SetShort(strlen(VieryToken1)); // len
     Pack.SetStr(VieryToken1);
     return Pack.Pack(0x0002);
 }
@@ -26,26 +28,32 @@ FUNC(002, const char *code, const char VieryToken1[4])
 FUNC(008)
 {
     ::TlvPack Pack(bin, len);
-    Pack.SetLong(0x08040000);
+    Pack.SetShort(0);
+    Pack.SetInt(0x0804);
+    Pack.SetShort(0);
     return Pack.Pack(0x0008);
 }
 
 FUNC(018, const uint QQ)
 {
     ::TlvPack Pack(bin, len);
-    Pack.SetBin((const unsigned char *)"\0\1\0\0\6\0\0\0\0\x10\0\0\0\0", 14);
-    Pack.SetInt(QQ);
+    Pack.SetShort(1); // _ping_version
+    Pack.SetInt(1536); // _sso_version
+    Pack.SetInt(16);
     Pack.SetInt(0);
+    Pack.SetInt(QQ);
+    Pack.SetShort(0);
+    Pack.SetShort(0); // const
     return Pack.Pack(0x0018);
 }
 
-FUNC(100, const uint APPID, const bool IsFreshSkey)
+FUNC(100, const uint SUB_APPID, const bool IsFreshSkey)
 {
     ::TlvPack Pack(bin, len);
     Pack.SetShort(1);  //_db_buf_ver
-    Pack.SetInt(0x12); //_sso_ver
-    Pack.SetInt(0X10);
-    Pack.SetInt(IsFreshSkey ? APPID : 1); // Fresh D2Key
+    Pack.SetInt(0x15); //_sso_ver
+    Pack.SetInt(0X10); // appid
+    Pack.SetInt(IsFreshSkey ? SUB_APPID : 1); // Fresh D2Key
     Pack.SetInt(0);
     Pack.SetInt(IsFreshSkey ? 0x021410E0 : 0X001000C0);
     return Pack.Pack(0x0100);
@@ -59,12 +67,12 @@ FUNC(104, const byte VieryToken2[36])
     ;
 }
 
-FUNC(106, const uint QQ, const char *QQ_Str, const byte md5[16], const byte md52[16], const byte TGTKey[16], const byte GUID[16], const uint Time, const uint APPID, bool emp)
+FUNC(106, const uint QQ, const char *QQ_Str, const byte md5[16], const byte md52[16], const byte TGTKey[16], const byte GUID[16], const uint Time, const uint SUB_APPID, bool emp)
 {
     ::Pack _Pack;
     _Pack.SetShort(4); //_TGTGTVer
     _Pack.SetInt(Utils::GetRandom(129312, 123128723));
-    _Pack.SetInt(0x12); //_SSoVer
+    _Pack.SetInt(0x15); //_SSoVer
     _Pack.SetInt(0X10);
     _Pack.SetInt(0);
     _Pack.SetLong(QQ);
@@ -76,7 +84,7 @@ FUNC(106, const uint QQ, const char *QQ_Str, const byte md5[16], const byte md52
     _Pack.SetInt(emp ? 0x85 : 0);
     _Pack.SetByte(1);
     _Pack.SetBin(GUID, 16);
-    _Pack.SetInt(APPID);
+    _Pack.SetInt(SUB_APPID);
     _Pack.SetInt(1);
     _Pack.SetShort(strlen(QQ_Str));
     _Pack.SetStr(QQ_Str);
@@ -95,7 +103,10 @@ FUNC(106, const uint QQ, const char *QQ_Str, const byte md5[16], const byte md52
 FUNC(107)
 {
     ::TlvPack Pack(bin, len);
-    Pack.SetBin((const byte *)"\0\0\0\0\0\1", 6);
+    Pack.SetShort(0);
+    Pack.SetByte(0);
+    Pack.SetShort(0);
+    Pack.SetByte(1);
     return Pack.Pack(0x0107);
     ;
 }
@@ -118,7 +129,7 @@ FUNC(116)
 {
     ::TlvPack Pack(bin, len);
     Pack.SetByte(0);         // _ver
-    Pack.SetInt(0x08F7FF7C); // mMiscBitmap
+    Pack.SetInt(0x0AF7FF7C); // mMiscBitmap
     Pack.SetInt(0x00010400); // mSubSigMap
     Pack.SetByte(1);         // arr length
     Pack.SetInt(0x5F5E10E2);
@@ -264,7 +275,6 @@ FUNC(17A)
     ::TlvPack Pack(bin, len);
     Pack.SetInt(9);
     return Pack.Pack(0X017A);
-    ;
 }
 
 FUNC(17C, const char *code)
@@ -396,36 +406,36 @@ FUNC(521)
     return Pack.Pack(0X0521);
 }
 
-FUNC(525, const uint QQ, const char *IP, const uint Time, const uint APPID, const bool IsEmp)
+FUNC(525, const uint QQ, const char *IP, const uint Time, const uint SUB_APPID, const bool IsEmp)
 {
     ::TlvPack Pack(bin, len);
     Pack.SetInt(0x00010536);
     Pack.SetByte(0);
-    Pack.SetByte(0x4D);
+    Pack.SetByte(2);
     Pack.SetByte(1);
     Pack.SetByte(0); // ArrLegth
 
-    /*
+    /*  
     Pack.SetInt(0);
     Pack.SetInt(QQ);
     Pack.SetByte(4);
     Pack.SetBin_(XBin::IP2Bin(IP), 4);
     Pack.SetInt(Time);
-    Pack.SetInt(APPID);
+    Pack.SetInt(SUB_APPID);
 
     Pack.SetInt(0);
     Pack.SetInt(QQ);
     Pack.SetByte(4);
     Pack.SetBin_(XBin::IP2Bin(IP), 4);
     Pack.SetInt(Time);
-    Pack.SetInt(APPID);
+    Pack.SetInt(SUB_APPID);
 
     Pack.SetInt(0);
     Pack.SetInt(QQ);
     Pack.SetByte(4);
     Pack.SetBin_(XBin::IP2Bin(IP), 4);
     Pack.SetInt(Time);
-    Pack.SetInt(APPID);
+    Pack.SetInt(SUB_APPID);
     */
 
     return Pack.Pack(0X0525);
@@ -438,12 +448,12 @@ FUNC(52D)
     PB.WriteStr(1,u8"unknown");
     PB.WriteStr(2,u8"");
     PB.WriteStr(3,u8"REL");
-    PB.WriteStr(4,u8"V12.5.1.0.QEBCNXM");
-    PB.WriteStr(5,u8"Xiaomi/sirius/sirius:10/QKQ1.190828.002/V12.5.1.0.QEBCNXM:user/release-keys");
-    PB.WriteStr(6,u8"8ab1c9ed-19d1-4bfe-b0d8-8c1a99b4cdf7");
-    PB.WriteStr(7,u8"81fc47b45c9ffc34");
+    PB.WriteStr(4,u8"V816.0.24.2.20.DEV");
+    PB.WriteStr(5,u8"Xiaomi/fuxi/fuxi:13/TKQ1.221114.001/V816.0.24.2.20.DEV:user/release-keys");
+    PB.WriteStr(6,u8"2eeb42bb-2cae-484b-9005-0da4bac22386");
+    PB.WriteStr(7,u8"4f86468ca2f7ecd7");
     PB.WriteStr(8,u8"");
-    PB.WriteStr(9,u8"V12.5.1.0.QEBCNXM");
+    PB.WriteStr(9,u8"V816.0.24.2.20.DEV");
     Pack.SetBinEx_(PB.Pack());
     return Pack.Pack(0x052D);
 }
@@ -451,7 +461,9 @@ FUNC(52D)
 FUNC(542)
 {
     ::TlvPack Pack(bin, len);
-    Pack.SetInt(0x4A026001);
+    Pack.SetByte(0x4A);
+    Pack.SetByte(7);
+    Pack.SetBin((const byte*)"\x60\x01\x78\x01\x80\x01\x01", 7);
     return Pack.Pack(0X0542);
 }
 
@@ -459,64 +471,7 @@ FUNC(544)
 {
     //Unknown
     ::TlvPack Pack(bin, len);
-    Pack.SetInt(0x68656861);
-    Pack.SetBin((byte *)"\x00\x00\x00\x01\x01\x00\x00\x00\x00\x00\x00\x00\x01\x01\x00\x05\x05\x00\x00\x00\x00", 22);
-    Pack.SetInt(0xB18E8915);
-    Pack.SetInt(0x2);
-    Pack.SetInt(0xA6);
-
-    Pack.SetShort(1);
-    Pack.SetShort(8);
-    Pack.SetLong(0x01821F7E440B);
-
-    Pack.SetShort(2);
-    Pack.SetShort(10);
-    Pack.SetStr("E#qfCr$gsM");
-
-    Pack.SetShort(3);
-    Pack.SetShort(4);
-    Pack.SetInt(0x01000001);
-
-    Pack.SetShort(5);
-    Pack.SetShort(4);
-    Pack.SetInt(0x01000001);
-
-    Pack.SetShort(4);
-    Pack.SetShort(4);
-    Pack.SetInt(0);
-
-    Pack.SetShort(6);
-    Pack.SetShort(4);
-    Pack.SetInt(1);
-
-    Pack.SetShort(7);
-    Pack.SetShort(4);
-    Pack.SetInt(0x01000005);
-
-    Pack.SetShort(8);
-    Pack.SetShort(4);
-    Pack.SetInt(0x01000006);
-
-    Pack.SetShort(9);
-    Pack.SetShort(0x20);
-    Pack.SetBin((byte *)"\x9F\x45\x49\x3B\x6A\xDE\x97\xC3\x7E\xDA\x54\x80\x1F\x68\x76\x07\xD6\x36\x43\xEE\xF4\x02\x2F\x95\x85\x42\x97\x61\x55\x04\x39\xEC", 32);
-
-    Pack.SetShort(10);
-    Pack.SetShort(0x10);
-    Pack.SetBin((byte *)"\xC4\x74\xDB\x96\x88\xB6\x03\x36\x3D\x37\x30\x81\x63\x11\x32\x15", 16);
-
-    Pack.SetShort(11);
-    Pack.SetShort(0x10);
-    Pack.SetBin((byte *)"\xFF\xD1\x8C\x92\x18\xE1\x1C\x33\xFC\x07\xEE\xA7\x51\x46\xEB\xC8", 16);
-
-    Pack.SetShort(12);
-    Pack.SetShort(4);
-    Pack.SetInt(0x01000001);
-
-    Pack.SetShort(13);
-    Pack.SetShort(4);
-    Pack.SetInt(2);
-
+    Pack.SetBin((const byte *)"\x0C\x17\x04\x04\x81\xA2\x37\x3A\x9D\xA5\xB3\xC8\x24\x37\x15\x91\x8F\xFC\xE3\xF2\x21\xF0\x1D\xB1\x1F\x16\x43\x5C\x66\x71\xED\xCA\xC5\x8A\x63\x3C\x42\xF6\x0B\xBA\xE0\x2D\x5B\xEC\x9A\x2B\x0D\x6E\x58\x34\x6D\x9C\x3E\x41\x3B\x7D\x9F\x91\xBC\xCF\x00\x87\x8B\x83\xD8\x0F\x5F\x82", 69);
     return Pack.Pack(0x0544);
 }
 
@@ -524,7 +479,7 @@ FUNC(545)
 {
     //算法未知 在so层中
     ::TlvPack Pack(bin, len);
-    Pack.SetBin_((byte *)XBin::Bin2Hex(Utils::GetRandomBin(16), 16), 32); // IMEI
+    Pack.SetBin_((byte *)XBin::Bin2Hex(Utils::GetRandomBin(18), 18), 36); // IMEI
     return Pack.Pack(0x0545);
 }
 
@@ -709,6 +664,8 @@ FUNC(548)
     PowValue.version = 1;
     PowValue.checkType = 2;
     PowValue.algorithmType = 1;
+    PowValue.hasHashResult = 1;
+
     PowValue.baseCount = 10;
     PowValue.filling;
 
@@ -734,8 +691,6 @@ FUNC(548)
     PowValue.sm = _Pack.GetAll();
     PowValue.sm3Size = _Pack.Length();
 
-    PowValue.hasHashResult = 1;
-
     PowValue.hashResultSize = 128;
     PowValue.hashResult = new byte[PowValue.hashResultSize];
     memcpy(PowValue.hashResult, PowValue.origin, PowValue.originSize);
@@ -745,6 +700,15 @@ FUNC(548)
 
     PackPowValue(&Pack, &PowValue);
     return Pack.Pack(0X0548);
+}
+
+FUNC(553)
+{
+    // qSec.getFeKitAttach(u.w, "", "0x810", "0x12")
+    // Todo
+    ::TlvPack Pack(bin, len);
+    // Pack.SetBin();
+    return Pack.Pack(0X0553);
 }
 
 #undef FUNC

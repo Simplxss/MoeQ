@@ -73,18 +73,18 @@ void Protobuf::Recurse(::Pack *Pack, Tree *Tree)
         case Type::BIN:
             SetVarint(Pack, &((BinData *)(*Tree->Child)[i].Data)->LengthEx);
             Pack->SetBin(((BinData *)(*Tree->Child)[i].Data)->Bin, ((BinData *)(*Tree->Child)[i].Data)->Length);
-            delete[](BinData *)(*Tree->Child)[i].Data;
+            delete[] (BinData *)(*Tree->Child)[i].Data;
             break;
         case Type::BIN_EX:
             SetVarint(Pack, &((BinData *)(*Tree->Child)[i].Data)->LengthEx);
             Pack->SetBin(((BinData *)(*Tree->Child)[i].Data)->Bin, ((BinData *)(*Tree->Child)[i].Data)->Length);
-            delete[](((BinData *)(*Tree->Child)[i].Data)->Bin);
+            delete[] (((BinData *)(*Tree->Child)[i].Data)->Bin);
             delete (BinData *)(*Tree->Child)[i].Data;
             break;
         case Type::LPBYTE_EX:
             SetVarint(Pack, &((BinData *)(*Tree->Child)[i].Data)->LengthEx);
             Pack->SetBin(((BinData *)(*Tree->Child)[i].Data)->Bin, ((BinData *)(*Tree->Child)[i].Data)->Length);
-            delete[](((BinData *)(*Tree->Child)[i].Data)->Bin - 4);
+            delete[] (((BinData *)(*Tree->Child)[i].Data)->Bin - 4);
             delete (BinData *)(*Tree->Child)[i].Data;
             break;
         case Type::TREE:
@@ -107,19 +107,19 @@ void Protobuf::Recurse(::Pack *Pack, Tree *Tree)
 
 void Protobuf::WriteVarint(const uint32_t Field, const uint64_t l)
 {
-    List->BaseTree->Child->emplace_back(Tree{GetField(Field, ProtobufStruct::ProtobufStructType::VARINT), Type::VARINT, [&] -> VarInt *
+    List->BaseTree->Child->emplace_back(Tree{GetField(Field, ProtobufStruct::ProtobufStructType::VARINT), Type::VARINT, [&]() -> VarInt *
                                              {VarInt * Data=new VarInt;Int2Varint(l,Data);return Data; }()});
 }
 
 void Protobuf::WriteFix32(const uint32_t Field, const int32_t i)
 {
-    List->BaseTree->Child->emplace_back(Tree{GetField(Field, ProtobufStruct::ProtobufStructType::FIX32), Type::FIX32, [&] -> void *
+    List->BaseTree->Child->emplace_back(Tree{GetField(Field, ProtobufStruct::ProtobufStructType::FIX32), Type::FIX32, [&]() -> int32_t *
                                              {int32_t *i_ = new int32_t;*i_=i; return i_; }()});
 }
 
 void Protobuf::WriteFix64(const uint32_t Field, const int64_t l)
 {
-    List->BaseTree->Child->emplace_back(Tree{GetField(Field, ProtobufStruct::ProtobufStructType::FIX64), Type::FIX64, [&] -> void *
+    List->BaseTree->Child->emplace_back(Tree{GetField(Field, ProtobufStruct::ProtobufStructType::FIX64), Type::FIX64, [&]() -> int64_t *
                                              {int64_t *l_ = new int64_t;*l_=l; return l_; }()});
 }
 
@@ -136,7 +136,7 @@ void Protobuf::WriteStr(const uint32_t Field, const char8_t *str)
     List->BaseTree->Child->emplace_back(Tree{
         GetField(Field, ProtobufStruct::ProtobufStructType::LENGTH),
         Type::BIN,
-        [&] -> BinData *
+        [&]() -> BinData *
         {BinData * Data=new BinData;Data->Length=strlen((char*)str);Int2Varint(Data->Length,&Data->LengthEx); Data->Bin=(byte*)str;return Data; }()});
 }
 
@@ -145,7 +145,7 @@ void Protobuf::WriteStr_(const uint32_t Field, char8_t *str)
     List->BaseTree->Child->emplace_back(Tree{
         GetField(Field, ProtobufStruct::ProtobufStructType::LENGTH),
         Type::BIN_EX,
-        [&] -> BinData *
+        [&]() -> BinData *
         {BinData * Data=new BinData;Data->Length=strlen((char*)str);Int2Varint(Data->Length,&Data->LengthEx); Data->Bin=(byte*)str;return Data; }()});
 }
 
@@ -154,7 +154,7 @@ void Protobuf::WriteBin(const uint32_t Field, const byte *bin, uint32_t Length)
     List->BaseTree->Child->emplace_back(Tree{
         GetField(Field, ProtobufStruct::ProtobufStructType::LENGTH),
         Type::BIN,
-        [&] -> BinData *
+        [&]() -> BinData *
         {BinData * Data=new BinData;Data->Length=Length;Int2Varint(Data->Length,&Data->LengthEx); Data->Bin=(byte*)bin;return Data; }()});
 }
 
@@ -163,7 +163,7 @@ void Protobuf::WriteBin_(const uint32_t Field, byte *bin, uint32_t Length)
     List->BaseTree->Child->emplace_back(Tree{
         GetField(Field, ProtobufStruct::ProtobufStructType::LENGTH),
         Type::BIN_EX,
-        [&] -> BinData *
+        [&]() -> BinData *
         {BinData * Data=new BinData;Data->Length=Length;Int2Varint(Data->Length,&Data->LengthEx); Data->Bin=bin;return Data; }()});
 }
 
@@ -172,7 +172,7 @@ void Protobuf::WriteBin(const uint32_t Field, const LPBYTE bin)
     List->BaseTree->Child->emplace_back(Tree{
         GetField(Field, ProtobufStruct::ProtobufStructType::LENGTH),
         Type::BIN,
-        [&] -> BinData *
+        [&]() -> BinData *
         {BinData * Data=new BinData;Data->Length=XBin::Bin2Int(bin) - 4;Int2Varint(Data->Length,&Data->LengthEx); Data->Bin=bin + 4;return Data; }()});
 }
 
@@ -181,7 +181,7 @@ void Protobuf::WriteBin_(const uint32_t Field, LPBYTE bin)
     List->BaseTree->Child->emplace_back(Tree{
         GetField(Field, ProtobufStruct::ProtobufStructType::LENGTH),
         Type::BIN_EX,
-        [&] -> BinData *
+        [&]() -> BinData *
         {BinData * Data=new BinData;Data->Length=XBin::Bin2Int(bin) - 4;Int2Varint(Data->Length,&Data->LengthEx); Data->Bin=bin + 4;return Data; }()});
 }
 

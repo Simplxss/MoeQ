@@ -11,7 +11,7 @@ namespace Message
         ((Message::text *)Msg->Message)->text = UnPB->GetStr(1);
         if (UnPB->GetField() == 3)
         {
-            delete[]((Message::text *)Msg->Message)->text;
+            delete[] ((Message::text *)Msg->Message)->text;
             ((Message::text *)Msg->Message)->text = nullptr;
             UnPack UnPack(UnPB->GetBin(3));
             UnPack.Skip(7);
@@ -332,8 +332,8 @@ void Android::Fun_Send(const uint PacketType, const byte EncodeType, const char 
     {
     case 10:
         Pack.SetInt(SsoSeq);
-        Pack.SetInt(AndroidQQ_APPID);
-        Pack.SetInt(AndroidQQ_APPID);
+        Pack.SetInt(AndroidQQ_SUB_APPID);
+        Pack.SetInt(AndroidQQ_SUB_APPID);
         Pack.SetBin((byte *)"\1\0\0\0\0\0\0\0\0\0\0\0", 12);
         if (EncodeType == 1)
         {
@@ -402,15 +402,15 @@ void Android::Fun_Send(const uint PacketType, const byte EncodeType, const char 
         std::vector<byte> data;
         Tea::encrypt(QQ.Token.D2Key, bin, bin_len, data);
         Pack.SetBin(&data);
+        break;
     }
-    break;
     case 2:
     {
         std::vector<byte> data;
         Tea::encrypt((byte *)"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0", bin, bin_len, data);
         Pack.SetBin(&data);
+        break;
     }
-    break;
     }
     delete[] bin;
     Pack.SetLength();
@@ -462,7 +462,7 @@ void Android::Fun_Receice(const LPBYTE bin)
     const byte EncodeType = UnPack.GetByte();
     uint CompressType;
     UnPack.GetByte();
-    UnPack.GetBin(UnPack.GetInt() - 4);
+    const char* uin = UnPack.GetStr(UnPack.GetInt() - 4);
 
     std::vector<byte> buffer;
     switch (EncodeType)
@@ -965,7 +965,7 @@ void Android::Un_Tlv_Get(const unsigned short cmd, const byte *bin, const uint l
         UnPack.GetInt();  /* QQ */
         UnPack.GetBin(4); /* IP */
         UnPack.GetInt();  /* Time */
-        UnPack.GetInt();  /* APPID */
+        UnPack.GetInt();  /* SUB_APPID */
         break;
     case 0x528:
         /* {"QIM_invitation_bit":"1"} */
@@ -977,7 +977,7 @@ void Android::Un_Tlv_Get(const unsigned short cmd, const byte *bin, const uint l
         UnPack.GetByte();
         UnPack.GetBin(4); /* IP */
         UnPack.GetInt();  /* Time */
-        UnPack.GetInt();  /* appid */
+        UnPack.GetInt();  /* SUB_APPID */
         break;
     case 0x543:
         break;
@@ -1031,21 +1031,23 @@ void Android::Unpack_wtlogin(const LPBYTE BodyBin, const uint sso_seq)
             byte *key = Utils::MD5(QQ.Login->ECDH.sharekey, 16);
             Tea::decrypt(key, Buffer, len, data);
             delete[] key;
-
-            /*
-             * QQ.Login->ECDH.pubkeyLen = UnPack.GetShort();
-             * memcpy(QQ.Login->ECDH.pubkey, UnPack.GetBin(QQ.Login->ECDH.pubkeyLen), QQ.Login->ECDH.pubkeyLen);
-             * Utils::Ecdh_CountSharekey(QQ.Login->ECDH);
-             * key = Utils::MD5(QQ.Login->ECDH.sharekey, QQ.Login->ECDH.sharekeyLen);
-             * std::vector<byte> buffer;
-             * Tea::decrypt(key, UnPack.GetCurrentPoint(), UnPack.GetLeftLength(), buffer);
-             * delete[] key;
-             * UnPack.Reset(&buffer);
-             */
         }
         break;
     case 3:
         Tea::decrypt(QQ.Token.wtSessionTicketKey, Buffer, len, data);
+        break;
+    case 4:
+    {
+        QQ.Login->ECDH.pubkeyLen = UnPack.GetShort();
+        memcpy(QQ.Login->ECDH.pubkey, UnPack.GetBin(QQ.Login->ECDH.pubkeyLen), QQ.Login->ECDH.pubkeyLen);
+        Utils::Ecdh_CountSharekey(QQ.Login->ECDH);
+        byte *key = Utils::MD5(QQ.Login->ECDH.sharekey, QQ.Login->ECDH.sharekeyLen);
+        std::vector<byte> buffer;
+        Tea::decrypt(key, UnPack.GetCurrentPoint(), UnPack.GetLeftLength(), buffer);
+        delete[] key;
+        UnPack.Reset(&buffer);
+    }
+    break;
     default:
         break;
     }
@@ -1300,6 +1302,7 @@ void Android::Unpack_OnlinePush_ReqPush(const LPBYTE BodyBin, const uint sso_seq
                     LPBYTE v_protobuf;
                     ::UnJce UnJce(v_msg);
                     UnJce.Read(sub_msg_type, 0);
+                    UnJce.Read(v_protobuf, 1);
                     UnProtobuf UnPB(v_protobuf);
                     switch (sub_msg_type)
                     {
@@ -1332,7 +1335,7 @@ void Android::Unpack_OnlinePush_ReqPush(const LPBYTE BodyBin, const uint sso_seq
                     switch (i_type)
                     {
                     case 0x10:
-                    case 0x11: //群消息撤回
+                    case 0x11: // 群消息撤回
                     case 0x14:
                     case 0x15:
                     {
@@ -1359,7 +1362,7 @@ void Android::Unpack_OnlinePush_ReqPush(const LPBYTE BodyBin, const uint sso_seq
                         UnPB.StepOut();
                     }
                     break;
-                    case 0x0c: //全群禁言
+                    case 0x0c: // 全群禁言
                     {
                         Event::NoticeEvent::NoticeEvent NoticeEvent{Event::NoticeEvent::NoticeEventType::group_mute, new Event::NoticeEvent::group_mute};
                         ((Event::NoticeEvent::group_mute *)NoticeEvent.Information)->FromGroup = group_code;
@@ -1454,7 +1457,7 @@ void Android::Unpack_MessageSvc_PushNotify(const LPBYTE BodyBin, const uint sso_
                                       case 37:
                                       case 45:
                                       case 46:
-                                      case 84: //申请进群
+                                      case 84: // 申请进群
                                       case 85:
                                       case 86:
                                       case 87:
@@ -1598,7 +1601,7 @@ void Android::Unpack_MessageSvc_PushNotify(const LPBYTE BodyBin, const uint sso_
                                           Message::DestoryMsg(PrivateMsg.Msg);
                                       }
                                       break;
-                                      case 187: //加好友
+                                      case 187: // 加好友
                                       case 188:
                                       case 189:
                                       case 190:
@@ -1620,7 +1623,7 @@ void Android::Unpack_MessageSvc_PushNotify(const LPBYTE BodyBin, const uint sso_
 
                                                                 switch (subType)
                                                                 {
-                                                                case 1: //好友申请
+                                                                case 1: // 好友申请
                                                                 {
                                                                     Event::RequestEvent::RequestEvent RequestEvent{Event::RequestEvent::RequestEventType::add_friend, new Event::RequestEvent::add_friend};
 
@@ -1633,9 +1636,9 @@ void Android::Unpack_MessageSvc_PushNotify(const LPBYTE BodyBin, const uint sso_
                                                                     Log::AddLog(Log::LogType::INFORMATION, Log::MsgType::OTHER, &RequestEvent);
                                                                 }
                                                                 break;
-                                                                case 3: //已同意
+                                                                case 3: // 已同意
                                                                     break;
-                                                                case 7: //已拒绝
+                                                                case 7: // 已拒绝
                                                                     break;
                                                                 default:
                                                                     break;
@@ -1667,7 +1670,7 @@ void Android::Unpack_MessageSvc_PushNotify(const LPBYTE BodyBin, const uint sso_
 void Android::Unpack_MessageSvc_PushForceOffline(const LPBYTE BodyBin, const uint sso_seq)
 {
     QQ_Offline();
-    //QQ_Online();
+    // QQ_Online();
 }
 
 void Android::Unpack_StatSvc_QueryHB(const LPBYTE BodyBin, const uint sso_seq)
