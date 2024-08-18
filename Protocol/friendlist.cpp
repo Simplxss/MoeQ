@@ -55,8 +55,8 @@ LPBYTE friendlist::getTroopMemberList(const uint Group)
     Jce.Write(Group, 1);
     Jce.Write(0, 2);
     Jce.Write(Group, 3);
-    Jce.Write(2, 4);
-    Jce.Write(1, 5);
+    Jce.Write(3, 4);
+    Jce.Write(7, 5);
     Jce.Write(0, 6);
     Jce.Write(1, 7);
 
@@ -69,7 +69,7 @@ LPBYTE friendlist::getTroopMemberList(const uint Group)
 
     uint len = Jce.GetAll(bin);
 
-    return Make_Body_Request_Packet(3, 0, "mqq.IMService.FriendListServiceServantObj", "GetFriendListReq", bin, len);
+    return Make_Body_Request_Packet(3, 0, "mqq.IMService.FriendListServiceServantObj", "GetTroopMemberListReq", bin, len);
 }
 
 LPBYTE friendlist::ModifyGroupCardReq(const uint Group, const uint QQ, const char *NewGroupCard)

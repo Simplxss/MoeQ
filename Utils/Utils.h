@@ -44,6 +44,8 @@ namespace Utils
 	bool Ecdh_Crypt(ECDHKEY &ECDHKEY, byte *SvrPubKey, int SvrPubKeyLen);
 	bool Ecdh_CountSharekey(ECDHKEY &ECDHKEY);
 
+	std::pair<std::vector<byte>, std::vector<byte>> Aes_256_Gcm_Encrypt(const std::vector<byte> &data, const std::vector<byte> &aad, const byte key[32], const byte iv[16]);
+
 	long CurrentTimeMillis();
 
 	LPBYTE ZlibCompress(const char *source);

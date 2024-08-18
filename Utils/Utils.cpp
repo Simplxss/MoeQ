@@ -222,6 +222,29 @@ bool Utils::Ecdh_CountSharekey(ECDHKEY &ECDHKEY)
     return true;
 }
 
+std::pair<std::vector<byte>, std::vector<byte>> Utils::Aes_256_Gcm_Encrypt(const std::vector<byte> &data, const std::vector<byte> &aad, const byte key[32], const byte iv[16])
+{
+    EVP_CIPHER_CTX *ctx;
+    std::vector<byte> ciphertext;
+    std::vector<byte> tag(16);
+
+    ctx = EVP_CIPHER_CTX_new();
+    EVP_EncryptInit_ex(ctx, EVP_aes_256_gcm(), NULL, NULL, NULL);
+    EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_GCM_SET_IVLEN, 16, NULL);
+    EVP_EncryptInit_ex(ctx, NULL, NULL, key, iv);
+
+    int len;
+    ciphertext.resize(data.size());
+    EVP_EncryptUpdate(ctx, NULL, &len, aad.data(), aad.size());
+    EVP_EncryptUpdate(ctx, ciphertext.data(), &len, data.data(), data.size());
+    EVP_EncryptFinal_ex(ctx, ciphertext.data(), &len);
+
+    EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_GCM_GET_TAG, 16, tag.data());
+
+    EVP_CIPHER_CTX_free(ctx);
+    return std::make_pair(ciphertext, tag);
+}
+
 long Utils::CurrentTimeMillis()
 {
     return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();

@@ -192,7 +192,7 @@ int main()
             throw "First login";
     }
     catch (...)
-    { //一次登录
+    { // 一次登录
 
         std::cout << "Start first login\n";
 
