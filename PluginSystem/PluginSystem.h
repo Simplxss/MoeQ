@@ -74,7 +74,7 @@ private:
 	typedef ::Event::ReturnType(__stdcall *NoticeEvent)(const ::Event::NoticeEvent::NoticeEvent *);
 	std::vector<NoticeEvent> NoticeEventList[4]; //4 subevents
 
-	typedef ::Event::ReturnType(__stdcall *RequestEvent)(const ::Event::RequestEvent::RequestEvent *RequestEvent, const uint64_t responseFlag);
+	typedef ::Event::ReturnType(__stdcall *RequestEvent)(const ::Event::RequestEvent::RequestEvent *, const uint64_t );
 	std::vector<RequestEvent> RequestEventList[3]; //3 subevents
 #endif
 #if defined(_LINUX_PLATFORM_)
@@ -87,7 +87,7 @@ private:
 	typedef ::Event::ReturnType (*NoticeEvent)(const ::Event::NoticeEvent::NoticeEvent *);
 	std::vector<NoticeEvent> NoticeEventList[4]; //4 subevents
 
-	typedef ::Event::::ReturnType (*RequestEvent)(const ::Event::RequestEvent::RequestEvent *, const uint64_t);
+	typedef ::Event::ReturnType (*RequestEvent)(const ::Event::RequestEvent::RequestEvent *, const uint64_t);
 	std::vector<RequestEvent> RequestEventList[3]; //3 subevents
 #endif
 public:

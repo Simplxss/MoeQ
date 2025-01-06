@@ -72,14 +72,22 @@ bool Socket::Receive(byte *buffer, uint32_t Length)
     if (state < 0)
     {
         Connected = false;
+#if defined(_WIN_PLATFORM_)
         throw WSAGetLastError();
-        return false;
+#endif
+#if defined(_LINUX_PLATFORM_)
+        throw errno;
+#endif
     }
     else if (state == 0)
     {
         Connected = false;
+#if defined(_WIN_PLATFORM_)
         throw WSAGetLastError();
-        return false;
+#endif
+#if defined(_LINUX_PLATFORM_)
+        throw errno;
+#endif
     }
     return true;
 }
@@ -92,7 +100,12 @@ LPBYTE Socket::Receive()
     if (state < 0)
     {
         Connected = false;
+#if defined(_WIN_PLATFORM_)
         throw WSAGetLastError();
+#endif
+#if defined(_LINUX_PLATFORM_)
+        throw errno;
+#endif
     }
 
     uint length = XBin::Bin2Int(len);
@@ -105,14 +118,19 @@ LPBYTE Socket::Receive()
         {
             delete[] buffer;
             Connected = false;
+#if defined(_WIN_PLATFORM_)
             throw WSAGetLastError();
+#endif
+#if defined(_LINUX_PLATFORM_)
+            throw errno;
+#endif
         }
         reclen += state;
     }
     return buffer;
 }
 
-//域名取IP(域名, IP 指针回传)
+// 域名取IP(域名, IP 指针回传)
 void Socket::DomainGetIP(const
 #if defined(_WIN_PLATFORM_)
                          wchar_t

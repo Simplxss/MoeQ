@@ -319,7 +319,7 @@ void PluginSystem::Load(
         {
             if (std::regex_match(dirent->d_name, reg_obj)) // regex_match()匹配
             {
-                dirent->d_name;
+                // dirent->d_name;
             }
         }
         closedir(dir);

@@ -35,7 +35,7 @@ FUNC(bool, getDataPath, char8_t *Path)
 	_Path.append(u8"/");
 #endif
 
-	if (_Path.length() <= MAX_PATH)
+	if (_Path.length() <= PATH_MAX)
 	{
 		memcpy(Path, _Path.c_str(), _Path.length());
 		return true;

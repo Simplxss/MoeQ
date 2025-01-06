@@ -615,7 +615,7 @@ FUNC(547, const byte *ClientPow)
         default:
             break;
         }
-        delete origin;
+        delete[] origin;
     }
     break;
     case 2:
@@ -667,7 +667,8 @@ FUNC(548)
     PowValue.hasHashResult = 1;
 
     PowValue.baseCount = 10;
-    PowValue.filling;
+    PowValue.filling[0] = 0;
+    PowValue.filling[1] = 0;
 
     PowValue.originSize = 128;
     PowValue.origin = Utils::GetRandomBin(PowValue.originSize);

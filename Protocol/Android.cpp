@@ -462,7 +462,7 @@ void Android::Fun_Receice(const LPBYTE bin)
     const byte EncodeType = UnPack.GetByte();
     uint CompressType;
     UnPack.GetByte();
-    const char* uin = UnPack.GetStr(UnPack.GetInt() - 4);
+    const char *uin = UnPack.GetStr(UnPack.GetInt() - 4);
 
     std::vector<byte> buffer;
     switch (EncodeType)
@@ -1977,8 +1977,7 @@ void Android::QQ_SetOnlineType(const byte Type)
 void Android::QQ_Heart_Beat()
 {
     Fun_Send_Sync(10, 1, "StatSvc.SimpleGet", StatSvc::SimpleGet(),
-                  [&](uint sso_seq, LPBYTE BodyBin) {
-                  });
+                  [&](uint sso_seq, LPBYTE BodyBin) {});
 }
 
 void Android::QQ_SyncCookie()
@@ -2203,15 +2202,7 @@ std::tuple<bool, char8_t *, char8_t *> Android::QQ_UploadImage_Private(const uin
                                                                               char *IP = XBin::Int2IP(UnPB.GetVarint(6));
                                                                               uint Port = UnPB.GetVarint(7);
                                                                               LPBYTE ukey = UnPB.GetBin(8);
-                                                                              try
-                                                                              {
-                                                                                  PicUp::DataUp(Image, ImageLength, ImageMD5, 2, IP, Port, ukey);
-                                                                              }
-                                                                              catch (const char *e)
-                                                                              {
-                                                                                  Log::AddLog(Log::LogType::NOTICE, Log::MsgType::OTHER, u8"Upload fail", e);
-                                                                                  return std::make_tuple(false, new char8_t, new char8_t);
-                                                                              }
+                                                                              PicUp::DataUp(Image, ImageLength, ImageMD5, 2, IP, Port, ukey);
                                                                               delete IP;
                                                                               delete ukey;
                                                                           }
@@ -2254,15 +2245,7 @@ uint Android::QQ_UploadImage_Group(const uint Group, const char8_t *ImageName, c
                                             char *IP = XBin::Int2IP(UnPB.GetVarint(6));
                                             uint Port = UnPB.GetVarint(7);
                                             LPBYTE ukey = UnPB.GetBin(8);
-                                            try
-                                            {
-                                                PicUp::DataUp(Image, ImageLength, ImageMD5, 2, IP, Port, ukey);
-                                            }
-                                            catch (const char *e)
-                                            {
-                                                Log::AddLog(Log::LogType::NOTICE, Log::MsgType::OTHER, u8"Upload fail", e);
-                                                return 0;
-                                            }
+                                            PicUp::DataUp(Image, ImageLength, ImageMD5, 2, IP, Port, ukey);
                                             delete IP;
                                             delete ukey;
                                         }

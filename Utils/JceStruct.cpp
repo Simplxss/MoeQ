@@ -5,11 +5,10 @@ void Jce::WriteHead(const JceStruct::JceStructType type, const byte tag)
 	if (tag < 15) {
 		Pack::SetByte((tag << 4) | static_cast<int>(type));
 	}
-	else if (tag < 256) {
+	else {
 		Pack::SetByte(static_cast<int>(type) | 0xF0);
 		Pack::SetByte(tag);
 	}
-	else throw "tag is too large";
 }
 
 void Jce::Write(const char i, const byte tag)

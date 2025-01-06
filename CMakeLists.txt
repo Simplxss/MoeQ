@@ -39,13 +39,15 @@ add_definitions(-D _AMD64_)
 
 find_package(ZLIB REQUIRED)
 find_package(OpenSSL REQUIRED)
-find_package(unofficial-sqlite3 CONFIG REQUIRED)
+# find_package(unofficial-sqlite3 CONFIG REQUIRED)
+find_package(SQLite3 REQUIRED)
 
 file(GLOB_RECURSE SOURCES "Main/*.cpp" "Protocol/*.cpp" "PluginSystem/*.cpp" "Utils/*.cpp")
 add_executable(${TARGET_NAME} ${SOURCES} "MoeQ.cpp")
 
 target_link_libraries(${TARGET_NAME} PRIVATE ZLIB::ZLIB)
-target_link_libraries(${TARGET_NAME} PRIVATE unofficial::sqlite3::sqlite3)
+# target_link_libraries(${TARGET_NAME} PRIVATE unofficial::sqlite3::sqlite3)
+target_link_libraries(${TARGET_NAME} PRIVATE SQLite3)
 target_link_libraries(${TARGET_NAME} PRIVATE OpenSSL::SSL OpenSSL::Crypto)
 
 message(STATUS ${TARGET_NAME})

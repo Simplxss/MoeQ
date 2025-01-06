@@ -2,8 +2,18 @@
     "version": 2,
     "configurePresets": [
         {
+            "name": "ninja-arm64",
+            "displayName": "Ninja Multi-Config Configure Settings(arm64)",
+            "description": "Sets Ninja generator, build and install directory",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/out/build/${presetName}",
+            "cacheVariables": {
+                "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/${presetName}"
+            }
+        },
+        {
             "name": "ninja-vcpkg-x64",
-            "displayName": "Ninja Multi-Config Configure Settings",
+            "displayName": "Ninja Multi-Config Configure Settings(x64)",
             "description": "Configure with vcpkg toolchain",
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/build/${presetName}",
